@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import AppSidebar from "@/components/layout/AppSidebar";
 
@@ -44,6 +44,10 @@ const DashboardLayout = ({ children, title, subtitle, userRole }: DashboardLayou
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon">
                 <Sun className="h-5 w-5" />
+              </Button>
+              <Button variant="outline" onClick={handleLogout} className="gap-2">
+                <LogOut className="h-4 w-4" />
+                Logout
               </Button>
             </div>
           </div>
