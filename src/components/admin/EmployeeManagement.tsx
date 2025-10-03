@@ -28,6 +28,9 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
     email: "",
     password: "",
     full_name: "",
+    department: "",
+    position: "",
+    phone: "",
     role: "employee" as "employee" | "hr_manager" | "super_admin",
     base_salary: 0,
     daily_rate: 0,
@@ -110,6 +113,20 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
       if (authError) throw authError;
       if (!authData.user) throw new Error("Failed to create user");
 
+      // Update profile with additional fields
+      if (newEmployeeForm.department || newEmployeeForm.position || newEmployeeForm.phone) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            department: newEmployeeForm.department || null,
+            position: newEmployeeForm.position || null,
+            phone: newEmployeeForm.phone || null,
+          })
+          .eq("id", authData.user.id);
+
+        if (profileError) throw profileError;
+      }
+
       // Update role if not employee
       if (newEmployeeForm.role !== "employee") {
         const { error: roleError } = await supabase
@@ -137,6 +154,9 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
         email: "",
         password: "",
         full_name: "",
+        department: "",
+        position: "",
+        phone: "",
         role: "employee",
         base_salary: 0,
         daily_rate: 0,
@@ -228,6 +248,37 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="new_department">Department</Label>
+                <Input
+                  id="new_department"
+                  value={newEmployeeForm.department}
+                  onChange={(e) =>
+                    setNewEmployeeForm({ ...newEmployeeForm, department: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new_position">Position</Label>
+                <Input
+                  id="new_position"
+                  value={newEmployeeForm.position}
+                  onChange={(e) =>
+                    setNewEmployeeForm({ ...newEmployeeForm, position: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new_phone">Phone</Label>
+                <Input
+                  id="new_phone"
+                  type="tel"
+                  value={newEmployeeForm.phone}
+                  onChange={(e) =>
+                    setNewEmployeeForm({ ...newEmployeeForm, phone: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="new_role">Role</Label>
                 <Select
                   value={newEmployeeForm.role}
@@ -294,6 +345,8 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Department</TableHead>
+              <TableHead>Position</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Base Salary</TableHead>
               <TableHead>Daily Rate</TableHead>
@@ -306,6 +359,8 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
               <TableRow key={employee.id}>
                 <TableCell className="font-medium">{employee.full_name}</TableCell>
                 <TableCell>{employee.email}</TableCell>
+                <TableCell>{employee.department || "-"}</TableCell>
+                <TableCell>{employee.position || "-"}</TableCell>
                 <TableCell>
                   {employee.user_roles?.[0]
                     ? getRoleBadge(employee.user_roles[0].role)
