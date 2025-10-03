@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,9 @@ interface SuperAdminDashboardProps {
 }
 
 const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "overview";
+
   const [stats, setStats] = useState({
     totalEmployees: 0,
     totalSalary: 0,
@@ -51,11 +55,25 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
       subtitle="Complete system control and HR manager management"
       userRole="super_admin"
     >
-      <Tabs defaultValue="overview" className="space-y-8">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+      <Tabs value={activeTab} onValueChange={(value) => setSearchParams({ tab: value })} className="space-y-8">
+        <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <LayoutDashboard className="h-4 w-4" />
             Overview
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            All Users
+          </TabsTrigger>
+          <TabsTrigger value="managers" className="flex items-center gap-2">
+            Managers
+          </TabsTrigger>
+          <TabsTrigger value="employees" className="flex items-center gap-2">
+            Employees
+          </TabsTrigger>
+          <TabsTrigger value="attendance" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Attendance
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -117,6 +135,29 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           </div>
 
           <EmployeeManagement onUpdate={fetchStats} userRole="super_admin" />
+          <AttendanceOverview />
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-8">
+          <EmployeeManagement onUpdate={fetchStats} userRole="super_admin" />
+        </TabsContent>
+
+        <TabsContent value="managers" className="space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>HR Managers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">HR Manager management coming soon...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="employees" className="space-y-8">
+          <EmployeeManagement onUpdate={fetchStats} userRole="super_admin" />
+        </TabsContent>
+
+        <TabsContent value="attendance" className="space-y-8">
           <AttendanceOverview />
         </TabsContent>
 

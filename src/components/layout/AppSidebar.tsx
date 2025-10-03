@@ -8,17 +8,17 @@ interface AppSidebarProps {
 
 const AppSidebar = ({ userRole }: AppSidebarProps) => {
   const systemManagement = [
-    { title: "System Dashboard", url: "/dashboard", icon: LayoutDashboard },
-    { title: "All Users", url: "/dashboard", icon: Users },
-    { title: "HR Managers", url: "/dashboard", icon: UserCog },
-    { title: "System Settings", url: "/dashboard", icon: Settings },
+    { title: "System Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
+    { title: "All Users", url: "/dashboard?tab=users", icon: Users },
+    { title: "HR Managers", url: "/dashboard?tab=managers", icon: UserCog },
+    { title: "System Settings", url: "/dashboard?tab=settings", icon: Settings },
   ];
 
   const hrOperations = [
-    { title: "Employees", url: "/dashboard", icon: UsersRound },
-    { title: "Attendance", url: "/dashboard", icon: CalendarCheck },
-    { title: "Salaries", url: "/dashboard", icon: DollarSign },
-    { title: "Reports", url: "/dashboard", icon: FileText },
+    { title: "Employees", url: "/dashboard?tab=employees", icon: UsersRound },
+    { title: "Attendance", url: "/dashboard?tab=attendance", icon: CalendarCheck },
+    { title: "Salaries", url: "/dashboard?tab=salaries", icon: DollarSign },
+    { title: "Reports", url: "/dashboard?tab=reports", icon: FileText },
   ];
 
   return (
