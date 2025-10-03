@@ -106,7 +106,7 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
             </Card>
           </div>
 
-          <EmployeeManagement onUpdate={fetchStats} />
+          <EmployeeManagement onUpdate={fetchStats} userRole="super_admin" />
           <AttendanceOverview />
         </TabsContent>
 

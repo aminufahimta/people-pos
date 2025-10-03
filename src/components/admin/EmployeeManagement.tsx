@@ -13,9 +13,10 @@ import { Pencil, Trash2, UserPlus } from "lucide-react";
 
 interface EmployeeManagementProps {
   onUpdate?: () => void;
+  userRole?: string;
 }
 
-const EmployeeManagement = ({ onUpdate }: EmployeeManagementProps) => {
+const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => {
   const [employees, setEmployees] = useState<any[]>([]);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const [isCreatingEmployee, setIsCreatingEmployee] = useState(false);
@@ -239,8 +240,12 @@ const EmployeeManagement = ({ onUpdate }: EmployeeManagementProps) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="employee">Employee</SelectItem>
-                    <SelectItem value="hr_manager">HR Manager</SelectItem>
-                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                    {userRole === "super_admin" && (
+                      <>
+                        <SelectItem value="hr_manager">HR Manager</SelectItem>
+                        <SelectItem value="super_admin">Super Admin</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

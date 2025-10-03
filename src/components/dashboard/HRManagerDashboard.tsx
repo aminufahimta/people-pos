@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Calendar, TrendingDown } from "lucide-react";
-import EmployeeList from "@/components/hr/EmployeeList";
+import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
 
 interface HRManagerDashboardProps {
@@ -80,7 +80,7 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
           </Card>
         </div>
 
-        <EmployeeList />
+        <EmployeeManagement onUpdate={fetchStats} userRole="hr_manager" />
         <AttendanceOverview />
       </div>
     </DashboardLayout>
