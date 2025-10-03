@@ -38,6 +38,11 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
             Super Admin
           </span>
         )}
+        {userRole === "hr_manager" && (
+          <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-accent text-accent-foreground rounded">
+            HR Manager
+          </span>
+        )}
       </div>
 
       {/* Navigation */}
@@ -86,6 +91,39 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
               </div>
             </div>
           </>
+        )}
+
+        {userRole === "hr_manager" && (
+          <div>
+            <h2 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              HR Management
+            </h2>
+            <div className="space-y-1">
+              <NavLink
+                to="/dashboard?tab=overview"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors",
+                  "text-sidebar-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Overview</span>
+              </NavLink>
+              {hrOperations.map((item) => (
+                <NavLink
+                  key={item.title}
+                  to={item.url}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors",
+                    "text-sidebar-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.title}</span>
+                </NavLink>
+              ))}
+            </div>
+          </div>
         )}
       </nav>
     </div>
