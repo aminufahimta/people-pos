@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,14 +7,47 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Building2 } from "lucide-react";
+import { bootstrapSuperAdmin } from "@/utils/bootstrap";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [showBootstrap, setShowBootstrap] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+    checkIfBootstrapNeeded();
+  }, []);
+
+  const checkIfBootstrapNeeded = async () => {
+    const { data } = await supabase.from('profiles').select('id').limit(1);
+    setShowBootstrap(!data || data.length === 0);
+  };
+
+  const handleBootstrap = async () => {
+    setIsLoading(true);
+    try {
+      const result = await bootstrapSuperAdmin(
+        "aminu@skypro.ng",
+        "Mskid1m$",
+        "Super Admin"
+      );
+
+      if (result.success) {
+        toast.success("Super admin account created! You can now login.");
+        setShowBootstrap(false);
+      } else {
+        toast.error(result.error);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create admin account");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +112,23 @@ const Auth = () => {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+          
+          {showBootstrap && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <p className="text-sm text-muted-foreground text-center mb-3">
+                No admin account found. Click below to create the initial super admin account.
+              </p>
+              <Button 
+                onClick={handleBootstrap} 
+                variant="outline" 
+                className="w-full"
+                disabled={isLoading}
+              >
+                Create Super Admin Account
+              </Button>
+            </div>
+          )}
+
           <p className="mt-4 text-center text-sm text-muted-foreground">
             Contact your administrator to create an account
           </p>
