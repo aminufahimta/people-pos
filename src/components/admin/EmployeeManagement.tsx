@@ -20,7 +20,12 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
   const [employees, setEmployees] = useState<any[]>([]);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const [isCreatingEmployee, setIsCreatingEmployee] = useState(false);
-  const [salaryForm, setSalaryForm] = useState({
+  const [editForm, setEditForm] = useState({
+    full_name: "",
+    email: "",
+    department: "",
+    position: "",
+    phone: "",
     base_salary: 0,
     daily_rate: 0,
   });
@@ -53,41 +58,56 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
     setEmployees(profiles || []);
   };
 
-  const handleUpdateSalary = async () => {
+  const handleUpdateEmployee = async () => {
     if (!editingEmployee) return;
 
     try {
+      // Update profile
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          full_name: editForm.full_name,
+          email: editForm.email,
+          department: editForm.department || null,
+          position: editForm.position || null,
+          phone: editForm.phone || null,
+        })
+        .eq("id", editingEmployee.id);
+
+      if (profileError) throw profileError;
+
+      // Update salary info
       const salaryData = editingEmployee.salary_info?.[0];
-      const newCurrentSalary = salaryForm.base_salary - (salaryData?.total_deductions || 0);
+      const newCurrentSalary = editForm.base_salary - (salaryData?.total_deductions || 0);
 
       if (salaryData?.id) {
         const { error } = await supabase
           .from("salary_info")
           .update({
-            base_salary: salaryForm.base_salary,
-            daily_rate: salaryForm.daily_rate,
+            base_salary: editForm.base_salary,
+            daily_rate: editForm.daily_rate,
             current_salary: newCurrentSalary,
           })
           .eq("id", salaryData.id);
 
         if (error) throw error;
-      } else {
+      } else if (editForm.base_salary > 0 || editForm.daily_rate > 0) {
         const { error } = await supabase.from("salary_info").insert({
           user_id: editingEmployee.id,
-          base_salary: salaryForm.base_salary,
-          daily_rate: salaryForm.daily_rate,
+          base_salary: editForm.base_salary,
+          daily_rate: editForm.daily_rate,
           current_salary: newCurrentSalary,
         });
 
         if (error) throw error;
       }
 
-      toast.success("Salary updated successfully");
+      toast.success("Employee updated successfully");
       setEditingEmployee(null);
       fetchEmployees();
       onUpdate?.();
     } catch (error: any) {
-      toast.error(error.message || "Failed to update salary");
+      toast.error(error.message || "Failed to update employee");
     }
   };
 
@@ -174,9 +194,23 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
     if (!confirm("Are you sure you want to delete this employee?")) return;
 
     try {
-      const { error } = await supabase.auth.admin.deleteUser(employeeId);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
 
-      if (error) throw error;
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ userId: employeeId }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to delete employee");
+      }
 
       toast.success("Employee deleted successfully");
       fetchEmployees();
@@ -384,7 +418,12 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
                           variant="outline"
                           onClick={() => {
                             setEditingEmployee(employee);
-                            setSalaryForm({
+                            setEditForm({
+                              full_name: employee.full_name,
+                              email: employee.email,
+                              department: employee.department || "",
+                              position: employee.position || "",
+                              phone: employee.phone || "",
                               base_salary: employee.salary_info?.[0]?.base_salary || 0,
                               daily_rate: employee.salary_info?.[0]?.daily_rate || 0,
                             });
@@ -393,41 +432,93 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
-                          <DialogTitle>Update Salary - {employee.full_name}</DialogTitle>
+                          <DialogTitle>Edit Employee - {employee.full_name}</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="base_salary">Base Salary (₦)</Label>
+                            <Label htmlFor="edit_full_name">Full Name</Label>
                             <Input
-                              id="base_salary"
-                              type="number"
-                              value={salaryForm.base_salary}
+                              id="edit_full_name"
+                              value={editForm.full_name}
                               onChange={(e) =>
-                                setSalaryForm({
-                                  ...salaryForm,
+                                setEditForm({ ...editForm, full_name: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit_email">Email</Label>
+                            <Input
+                              id="edit_email"
+                              type="email"
+                              value={editForm.email}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, email: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit_department">Department</Label>
+                            <Input
+                              id="edit_department"
+                              value={editForm.department}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, department: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit_position">Position</Label>
+                            <Input
+                              id="edit_position"
+                              value={editForm.position}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, position: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit_phone">Phone</Label>
+                            <Input
+                              id="edit_phone"
+                              type="tel"
+                              value={editForm.phone}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, phone: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit_base_salary">Base Salary (₦)</Label>
+                            <Input
+                              id="edit_base_salary"
+                              type="number"
+                              value={editForm.base_salary}
+                              onChange={(e) =>
+                                setEditForm({
+                                  ...editForm,
                                   base_salary: Number(e.target.value),
                                 })
                               }
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="daily_rate">Daily Rate (₦)</Label>
+                            <Label htmlFor="edit_daily_rate">Daily Rate (₦)</Label>
                             <Input
-                              id="daily_rate"
+                              id="edit_daily_rate"
                               type="number"
-                              value={salaryForm.daily_rate}
+                              value={editForm.daily_rate}
                               onChange={(e) =>
-                                setSalaryForm({
-                                  ...salaryForm,
+                                setEditForm({
+                                  ...editForm,
                                   daily_rate: Number(e.target.value),
                                 })
                               }
                             />
                           </div>
-                          <Button onClick={handleUpdateSalary} className="w-full">
-                            Update Salary
+                          <Button onClick={handleUpdateEmployee} className="w-full">
+                            Update Employee
                           </Button>
                         </div>
                       </DialogContent>
