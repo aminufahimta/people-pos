@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,7 @@ import { Sun, Moon, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import AppSidebar from "@/components/layout/AppSidebar";
+import UserProfile from "@/components/profile/UserProfile";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -18,6 +19,15 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children, title, subtitle, userRole }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -48,6 +58,7 @@ const DashboardLayout = ({ children, title, subtitle, userRole }: DashboardLayou
               {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
             </div>
             <div className="flex items-center gap-2">
+              {user && userRole && <UserProfile user={user} userRole={userRole} />}
               <Button variant="ghost" size="icon" onClick={toggleTheme}>
                 {theme === "dark" ? (
                   <Sun className="h-5 w-5" />

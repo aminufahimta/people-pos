@@ -10,6 +10,9 @@ import { Settings as SettingsIcon } from "lucide-react";
 const SystemSettings = () => {
   const [deductionPercentage, setDeductionPercentage] = useState<number>(100);
   const [workingDays, setWorkingDays] = useState<number>(22);
+  const [companyName, setCompanyName] = useState<string>("");
+  const [loginPageTitle, setLoginPageTitle] = useState<string>("");
+  const [loginPageSubtitle, setLoginPageSubtitle] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -21,7 +24,7 @@ const SystemSettings = () => {
       const { data, error } = await supabase
         .from("system_settings")
         .select("setting_key, setting_value")
-        .in("setting_key", ["absence_deduction_percentage", "working_days_per_month"]);
+        .in("setting_key", ["absence_deduction_percentage", "working_days_per_month", "company_name", "login_page_title", "login_page_subtitle"]);
 
       if (error) throw error;
 
@@ -31,6 +34,12 @@ const SystemSettings = () => {
             setDeductionPercentage(Number(setting.setting_value));
           } else if (setting.setting_key === "working_days_per_month") {
             setWorkingDays(Number(setting.setting_value));
+          } else if (setting.setting_key === "company_name") {
+            setCompanyName(setting.setting_value);
+          } else if (setting.setting_key === "login_page_title") {
+            setLoginPageTitle(setting.setting_value);
+          } else if (setting.setting_key === "login_page_subtitle") {
+            setLoginPageSubtitle(setting.setting_value);
           }
         });
       }
@@ -61,13 +70,29 @@ const SystemSettings = () => {
           setting_key: "working_days_per_month",
           setting_value: String(workingDays),
         },
+        {
+          setting_key: "company_name",
+          setting_value: companyName,
+        },
+        {
+          setting_key: "login_page_title",
+          setting_value: loginPageTitle,
+        },
+        {
+          setting_key: "login_page_subtitle",
+          setting_value: loginPageSubtitle,
+        },
       ];
 
       for (const update of updates) {
         const { error } = await supabase
           .from("system_settings")
-          .update({ setting_value: update.setting_value })
-          .eq("setting_key", update.setting_key);
+          .upsert({
+            setting_key: update.setting_key,
+            setting_value: update.setting_value,
+          }, {
+            onConflict: 'setting_key'
+          });
 
         if (error) throw error;
       }
@@ -92,6 +117,39 @@ const SystemSettings = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="companyName">Company Name</Label>
+          <Input
+            id="companyName"
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            placeholder="Enter company name"
+          />
+          <p className="text-sm text-muted-foreground">
+            This will be displayed throughout the system
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="loginTitle">Login Page Title</Label>
+          <Input
+            id="loginTitle"
+            value={loginPageTitle}
+            onChange={(e) => setLoginPageTitle(e.target.value)}
+            placeholder="e.g., Welcome to HR System"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="loginSubtitle">Login Page Subtitle</Label>
+          <Input
+            id="loginSubtitle"
+            value={loginPageSubtitle}
+            onChange={(e) => setLoginPageSubtitle(e.target.value)}
+            placeholder="e.g., Manage your workforce efficiently"
+          />
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="deduction">
             Absence Deduction Percentage (%)

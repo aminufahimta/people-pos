@@ -18,6 +18,7 @@ interface EmployeeManagementProps {
 
 const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => {
   const [employees, setEmployees] = useState<any[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const [isCreatingEmployee, setIsCreatingEmployee] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -43,6 +44,11 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
 
   useEffect(() => {
     fetchEmployees();
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setCurrentUserId(user.id);
+    };
+    getCurrentUser();
   }, []);
 
   const fetchEmployees = async () => {
@@ -60,6 +66,12 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
 
   const handleUpdateEmployee = async () => {
     if (!editingEmployee) return;
+
+    // HR managers cannot edit their own account
+    if (userRole === "hr_manager" && editingEmployee.id === (await supabase.auth.getUser()).data.user?.id) {
+      toast.error("You cannot edit your own account");
+      return;
+    }
 
     try {
       // Update profile
@@ -348,7 +360,9 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
           <TableBody>
             {employees.map((employee) => {
               const employeeRole = employee.user_roles?.[0]?.role;
-              const canEdit = userRole === "super_admin" || employeeRole !== "super_admin";
+              const isOwnAccount = employee.id === currentUserId;
+              const canEdit = userRole === "super_admin" || 
+                              (employeeRole !== "super_admin" && !(userRole === "hr_manager" && isOwnAccount));
               
               return (
                 <TableRow key={employee.id}>
