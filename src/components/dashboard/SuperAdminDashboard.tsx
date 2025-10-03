@@ -75,6 +75,13 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
             <Calendar className="h-4 w-4" />
             Attendance
           </TabsTrigger>
+          <TabsTrigger value="salaries" className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            Salaries
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="flex items-center gap-2">
+            Reports
+          </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Settings
@@ -159,6 +166,28 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="attendance" className="space-y-8">
           <AttendanceOverview />
+        </TabsContent>
+
+        <TabsContent value="salaries" className="space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Salary Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Comprehensive salary management coming soon...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Reports & Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Detailed reports and analytics coming soon...</p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-8">
