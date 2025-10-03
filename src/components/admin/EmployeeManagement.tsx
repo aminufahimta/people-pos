@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, UserPlus } from "lucide-react";
 
 interface EmployeeManagementProps {
   onUpdate?: () => void;
@@ -18,7 +18,16 @@ interface EmployeeManagementProps {
 const EmployeeManagement = ({ onUpdate }: EmployeeManagementProps) => {
   const [employees, setEmployees] = useState<any[]>([]);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
+  const [isCreatingEmployee, setIsCreatingEmployee] = useState(false);
   const [salaryForm, setSalaryForm] = useState({
+    base_salary: 0,
+    daily_rate: 0,
+  });
+  const [newEmployeeForm, setNewEmployeeForm] = useState({
+    email: "",
+    password: "",
+    full_name: "",
+    role: "employee" as "employee" | "hr_manager" | "super_admin",
     base_salary: 0,
     daily_rate: 0,
   });
@@ -78,6 +87,68 @@ const EmployeeManagement = ({ onUpdate }: EmployeeManagementProps) => {
     }
   };
 
+  const handleCreateEmployee = async () => {
+    if (!newEmployeeForm.email || !newEmployeeForm.password || !newEmployeeForm.full_name) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsCreatingEmployee(true);
+    try {
+      // Create the user account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: newEmployeeForm.email,
+        password: newEmployeeForm.password,
+        options: {
+          data: {
+            full_name: newEmployeeForm.full_name,
+          },
+        },
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Failed to create user");
+
+      // Update role if not employee
+      if (newEmployeeForm.role !== "employee") {
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .update({ role: newEmployeeForm.role })
+          .eq("user_id", authData.user.id);
+
+        if (roleError) throw roleError;
+      }
+
+      // Create salary info if provided
+      if (newEmployeeForm.base_salary > 0 && newEmployeeForm.daily_rate > 0) {
+        const { error: salaryError } = await supabase.from("salary_info").insert({
+          user_id: authData.user.id,
+          base_salary: newEmployeeForm.base_salary,
+          daily_rate: newEmployeeForm.daily_rate,
+          current_salary: newEmployeeForm.base_salary,
+        });
+
+        if (salaryError) throw salaryError;
+      }
+
+      toast.success("Employee created successfully");
+      setNewEmployeeForm({
+        email: "",
+        password: "",
+        full_name: "",
+        role: "employee",
+        base_salary: 0,
+        daily_rate: 0,
+      });
+      fetchEmployees();
+      onUpdate?.();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create employee");
+    } finally {
+      setIsCreatingEmployee(false);
+    }
+  };
+
   const handleDeleteEmployee = async (employeeId: string) => {
     if (!confirm("Are you sure you want to delete this employee?")) return;
 
@@ -109,8 +180,108 @@ const EmployeeManagement = ({ onUpdate }: EmployeeManagementProps) => {
 
   return (
     <Card className="shadow-[var(--shadow-elegant)]">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Employee Management</CardTitle>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              Add Employee
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create New Employee</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new_full_name">Full Name *</Label>
+                <Input
+                  id="new_full_name"
+                  value={newEmployeeForm.full_name}
+                  onChange={(e) =>
+                    setNewEmployeeForm({ ...newEmployeeForm, full_name: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new_email">Email *</Label>
+                <Input
+                  id="new_email"
+                  type="email"
+                  value={newEmployeeForm.email}
+                  onChange={(e) =>
+                    setNewEmployeeForm({ ...newEmployeeForm, email: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new_password">Password *</Label>
+                <Input
+                  id="new_password"
+                  type="password"
+                  value={newEmployeeForm.password}
+                  onChange={(e) =>
+                    setNewEmployeeForm({ ...newEmployeeForm, password: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new_role">Role</Label>
+                <Select
+                  value={newEmployeeForm.role}
+                  onValueChange={(value: any) =>
+                    setNewEmployeeForm({ ...newEmployeeForm, role: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="employee">Employee</SelectItem>
+                    <SelectItem value="hr_manager">HR Manager</SelectItem>
+                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new_base_salary">Base Salary (₦)</Label>
+                <Input
+                  id="new_base_salary"
+                  type="number"
+                  value={newEmployeeForm.base_salary}
+                  onChange={(e) =>
+                    setNewEmployeeForm({
+                      ...newEmployeeForm,
+                      base_salary: Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new_daily_rate">Daily Rate (₦)</Label>
+                <Input
+                  id="new_daily_rate"
+                  type="number"
+                  value={newEmployeeForm.daily_rate}
+                  onChange={(e) =>
+                    setNewEmployeeForm({
+                      ...newEmployeeForm,
+                      daily_rate: Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <Button
+                onClick={handleCreateEmployee}
+                disabled={isCreatingEmployee}
+                className="w-full"
+              >
+                {isCreatingEmployee ? "Creating..." : "Create Employee"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardHeader>
       <CardContent>
         <Table>
