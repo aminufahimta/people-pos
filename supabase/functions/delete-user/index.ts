@@ -73,6 +73,21 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Check the role of the user being deleted
+    const { data: targetRoleData } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .single()
+
+    // HR managers cannot delete super admins
+    if (roleData.role === 'hr_manager' && targetRoleData?.role === 'super_admin') {
+      return new Response(
+        JSON.stringify({ error: 'HR managers cannot delete super admin accounts' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Delete the user using admin client
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
     

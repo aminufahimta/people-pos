@@ -346,151 +346,158 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
             </TableRow>
           </TableHeader>
           <TableBody>
-            {employees.map((employee) => (
-              <TableRow key={employee.id}>
-                <TableCell className="font-medium">{employee.full_name}</TableCell>
-                <TableCell>{employee.email}</TableCell>
-                <TableCell>{employee.department || "-"}</TableCell>
-                <TableCell>{employee.position || "-"}</TableCell>
-                <TableCell>
-                  {employee.user_roles?.[0]
-                    ? getRoleBadge(employee.user_roles[0].role)
-                    : "-"}
-                </TableCell>
-                <TableCell>
-                  ₦{Number(employee.salary_info?.[0]?.base_salary || 0).toLocaleString()}
-                </TableCell>
-                <TableCell>
-                  ₦{Number(employee.salary_info?.[0]?.daily_rate || 0).toLocaleString()}
-                </TableCell>
-                <TableCell>
-                  ₦{Number(employee.salary_info?.[0]?.current_salary || 0).toLocaleString()}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
+            {employees.map((employee) => {
+              const employeeRole = employee.user_roles?.[0]?.role;
+              const canEdit = userRole === "super_admin" || employeeRole !== "super_admin";
+              
+              return (
+                <TableRow key={employee.id}>
+                  <TableCell className="font-medium">{employee.full_name}</TableCell>
+                  <TableCell>{employee.email}</TableCell>
+                  <TableCell>{employee.department || "-"}</TableCell>
+                  <TableCell>{employee.position || "-"}</TableCell>
+                  <TableCell>
+                    {employeeRole ? getRoleBadge(employeeRole) : "-"}
+                  </TableCell>
+                  <TableCell>
+                    ₦{Number(employee.salary_info?.[0]?.base_salary || 0).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    ₦{Number(employee.salary_info?.[0]?.daily_rate || 0).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    ₦{Number(employee.salary_info?.[0]?.current_salary || 0).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    {canEdit ? (
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingEmployee(employee);
+                                setEditForm({
+                                  full_name: employee.full_name,
+                                  email: employee.email,
+                                  department: employee.department || "",
+                                  position: employee.position || "",
+                                  phone: employee.phone || "",
+                                  base_salary: employee.salary_info?.[0]?.base_salary || 0,
+                                  daily_rate: employee.salary_info?.[0]?.daily_rate || 0,
+                                });
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Edit Employee - {employee.full_name}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="edit_full_name">Full Name</Label>
+                                <Input
+                                  id="edit_full_name"
+                                  value={editForm.full_name}
+                                  onChange={(e) =>
+                                    setEditForm({ ...editForm, full_name: e.target.value })
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit_email">Email</Label>
+                                <Input
+                                  id="edit_email"
+                                  type="email"
+                                  value={editForm.email}
+                                  onChange={(e) =>
+                                    setEditForm({ ...editForm, email: e.target.value })
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit_department">Department</Label>
+                                <Input
+                                  id="edit_department"
+                                  value={editForm.department}
+                                  onChange={(e) =>
+                                    setEditForm({ ...editForm, department: e.target.value })
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit_position">Position</Label>
+                                <Input
+                                  id="edit_position"
+                                  value={editForm.position}
+                                  onChange={(e) =>
+                                    setEditForm({ ...editForm, position: e.target.value })
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit_phone">Phone</Label>
+                                <Input
+                                  id="edit_phone"
+                                  type="tel"
+                                  value={editForm.phone}
+                                  onChange={(e) =>
+                                    setEditForm({ ...editForm, phone: e.target.value })
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit_base_salary">Base Salary (₦)</Label>
+                                <Input
+                                  id="edit_base_salary"
+                                  type="number"
+                                  value={editForm.base_salary}
+                                  onChange={(e) =>
+                                    setEditForm({
+                                      ...editForm,
+                                      base_salary: Number(e.target.value),
+                                    })
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit_daily_rate">Daily Rate (₦)</Label>
+                                <Input
+                                  id="edit_daily_rate"
+                                  type="number"
+                                  value={editForm.daily_rate}
+                                  onChange={(e) =>
+                                    setEditForm({
+                                      ...editForm,
+                                      daily_rate: Number(e.target.value),
+                                    })
+                                  }
+                                />
+                              </div>
+                              <Button onClick={handleUpdateEmployee} className="w-full">
+                                Update Employee
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setEditingEmployee(employee);
-                            setEditForm({
-                              full_name: employee.full_name,
-                              email: employee.email,
-                              department: employee.department || "",
-                              position: employee.position || "",
-                              phone: employee.phone || "",
-                              base_salary: employee.salary_info?.[0]?.base_salary || 0,
-                              daily_rate: employee.salary_info?.[0]?.daily_rate || 0,
-                            });
-                          }}
+                          variant="destructive"
+                          onClick={() => handleDeleteEmployee(employee.id)}
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Edit Employee - {employee.full_name}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="edit_full_name">Full Name</Label>
-                            <Input
-                              id="edit_full_name"
-                              value={editForm.full_name}
-                              onChange={(e) =>
-                                setEditForm({ ...editForm, full_name: e.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="edit_email">Email</Label>
-                            <Input
-                              id="edit_email"
-                              type="email"
-                              value={editForm.email}
-                              onChange={(e) =>
-                                setEditForm({ ...editForm, email: e.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="edit_department">Department</Label>
-                            <Input
-                              id="edit_department"
-                              value={editForm.department}
-                              onChange={(e) =>
-                                setEditForm({ ...editForm, department: e.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="edit_position">Position</Label>
-                            <Input
-                              id="edit_position"
-                              value={editForm.position}
-                              onChange={(e) =>
-                                setEditForm({ ...editForm, position: e.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="edit_phone">Phone</Label>
-                            <Input
-                              id="edit_phone"
-                              type="tel"
-                              value={editForm.phone}
-                              onChange={(e) =>
-                                setEditForm({ ...editForm, phone: e.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="edit_base_salary">Base Salary (₦)</Label>
-                            <Input
-                              id="edit_base_salary"
-                              type="number"
-                              value={editForm.base_salary}
-                              onChange={(e) =>
-                                setEditForm({
-                                  ...editForm,
-                                  base_salary: Number(e.target.value),
-                                })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="edit_daily_rate">Daily Rate (₦)</Label>
-                            <Input
-                              id="edit_daily_rate"
-                              type="number"
-                              value={editForm.daily_rate}
-                              onChange={(e) =>
-                                setEditForm({
-                                  ...editForm,
-                                  daily_rate: Number(e.target.value),
-                                })
-                              }
-                            />
-                          </div>
-                          <Button onClick={handleUpdateEmployee} className="w-full">
-                            Update Employee
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDeleteEmployee(employee.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">No actions available</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>

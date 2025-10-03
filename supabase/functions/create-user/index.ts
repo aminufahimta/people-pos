@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     }
 
     // Validate role permissions
-    if (roleData.role === 'hr_manager' && role !== 'employee') {
+    if (roleData.role === 'hr_manager' && role && role !== 'employee') {
       return new Response(
         JSON.stringify({ error: 'HR managers can only create employee accounts' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
