@@ -46,7 +46,11 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
   };
 
   return (
-    <DashboardLayout title="HR Manager Dashboard" subtitle="Employee management & attendance">
+    <DashboardLayout 
+      title="HR Manager Dashboard" 
+      subtitle="Employee management & attendance"
+      userRole="hr_manager"
+    >
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">

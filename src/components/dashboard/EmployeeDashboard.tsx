@@ -96,7 +96,11 @@ const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
   };
 
   return (
-    <DashboardLayout title="Employee Dashboard" subtitle={profile?.full_name}>
+    <DashboardLayout 
+      title="Employee Dashboard" 
+      subtitle={profile?.full_name}
+      userRole="employee"
+    >
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">

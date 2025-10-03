@@ -46,8 +46,12 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
   };
 
   return (
-    <DashboardLayout title="Super Admin Dashboard" subtitle="Complete system control">
-      <Tabs defaultValue="overview" className="space-y-8 animate-fade-in">
+    <DashboardLayout 
+      title="Super Admin Dashboard" 
+      subtitle="Complete system control and HR manager management"
+      userRole="super_admin"
+    >
+      <Tabs defaultValue="overview" className="space-y-8">
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <LayoutDashboard className="h-4 w-4" />
@@ -60,48 +64,54 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-8">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-glow)] transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="bg-card border-border">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalEmployees}</div>
+                <div className="text-3xl font-bold text-foreground">{stats.totalEmployees}</div>
+                <p className="text-xs text-muted-foreground mt-1">All system users</p>
               </CardContent>
             </Card>
 
-            <Card className="shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-glow)] transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Payroll</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ₦{stats.totalSalary.toLocaleString()}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-glow)] transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Present Today</CardTitle>
+            <Card className="bg-card border-border">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">System Attendance</CardTitle>
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.presentToday}</div>
+                <div className="text-3xl font-bold text-success">
+                  {stats.totalEmployees > 0 
+                    ? Math.round((stats.presentToday / stats.totalEmployees) * 100) 
+                    : 0}%
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Organization-wide attendance</p>
               </CardContent>
             </Card>
 
-            <Card className="shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-glow)] transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Deductions</CardTitle>
+            <Card className="bg-card border-border">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Payroll</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">
+                  ₦{stats.totalSalary.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Monthly organization cost</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">System Health</CardTitle>
                 <TrendingDown className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  ₦{stats.totalDeductions.toLocaleString()}
-                </div>
+                <div className="text-3xl font-bold text-success">98%</div>
+                <p className="text-xs text-muted-foreground mt-1">Overall system performance</p>
               </CardContent>
             </Card>
           </div>

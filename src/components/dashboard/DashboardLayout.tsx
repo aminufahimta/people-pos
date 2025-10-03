@@ -1,17 +1,20 @@
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Building2 } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
+import AppSidebar from "@/components/layout/AppSidebar";
 
 interface DashboardLayoutProps {
   children: ReactNode;
   title: string;
   subtitle?: string;
+  userRole?: string;
 }
 
-const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children, title, subtitle, userRole }: DashboardLayoutProps) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -21,27 +24,35 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-primary-foreground" />
-            </div>
+    <div className="flex h-screen bg-background overflow-hidden">
+      <AppSidebar userRole={userRole} />
+      
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="border-b border-border bg-card px-8 py-4">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-foreground">{title}</h1>
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+                {userRole === "super_admin" && (
+                  <Badge className="bg-primary text-primary-foreground">
+                    SUPER ADMIN ACCESS
+                  </Badge>
+                )}
+              </div>
               {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
             </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon">
+                <Sun className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
-          <Button onClick={handleLogout} variant="outline" size="sm">
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
-        </div>
-      </header>
-      <main className="container mx-auto px-4 py-8">
-        {children}
-      </main>
+        </header>
+        
+        <main className="flex-1 overflow-y-auto p-8">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };
