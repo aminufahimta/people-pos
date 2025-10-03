@@ -85,40 +85,31 @@ const HRManagerManagement = ({ onUpdate }: HRManagerManagementProps) => {
 
     setIsCreatingManager(true);
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: newManagerForm.email,
-        password: newManagerForm.password,
-        options: {
-          data: {
-            full_name: newManagerForm.full_name,
-          },
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify({
+          email: newManagerForm.email,
+          password: newManagerForm.password,
+          full_name: newManagerForm.full_name,
+          role: 'hr_manager',
+          department: newManagerForm.department || null,
+          position: newManagerForm.position || null,
+          phone: newManagerForm.phone || null,
+        }),
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Failed to create user");
-
-      // Update profile with additional fields
-      if (newManagerForm.department || newManagerForm.position || newManagerForm.phone) {
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .update({
-            department: newManagerForm.department || null,
-            position: newManagerForm.position || null,
-            phone: newManagerForm.phone || null,
-          })
-          .eq("id", authData.user.id);
-
-        if (profileError) throw profileError;
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to create HR Manager");
       }
-
-      // Set role to hr_manager
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .update({ role: "hr_manager" })
-        .eq("user_id", authData.user.id);
-
-      if (roleError) throw roleError;
 
       toast.success("HR Manager created successfully");
       setNewManagerForm({

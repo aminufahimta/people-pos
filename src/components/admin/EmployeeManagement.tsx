@@ -119,54 +119,32 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
 
     setIsCreatingEmployee(true);
     try {
-      // Create the user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: newEmployeeForm.email,
-        password: newEmployeeForm.password,
-        options: {
-          data: {
-            full_name: newEmployeeForm.full_name,
-          },
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify({
+          email: newEmployeeForm.email,
+          password: newEmployeeForm.password,
+          full_name: newEmployeeForm.full_name,
+          role: newEmployeeForm.role,
+          department: newEmployeeForm.department || null,
+          position: newEmployeeForm.position || null,
+          phone: newEmployeeForm.phone || null,
+          base_salary: newEmployeeForm.base_salary || 0,
+          daily_rate: newEmployeeForm.daily_rate || 0,
+        }),
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Failed to create user");
-
-      // Update profile with additional fields
-      if (newEmployeeForm.department || newEmployeeForm.position || newEmployeeForm.phone) {
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .update({
-            department: newEmployeeForm.department || null,
-            position: newEmployeeForm.position || null,
-            phone: newEmployeeForm.phone || null,
-          })
-          .eq("id", authData.user.id);
-
-        if (profileError) throw profileError;
-      }
-
-      // Update role if not employee
-      if (newEmployeeForm.role !== "employee") {
-        const { error: roleError } = await supabase
-          .from("user_roles")
-          .update({ role: newEmployeeForm.role })
-          .eq("user_id", authData.user.id);
-
-        if (roleError) throw roleError;
-      }
-
-      // Create salary info if provided
-      if (newEmployeeForm.base_salary > 0 && newEmployeeForm.daily_rate > 0) {
-        const { error: salaryError } = await supabase.from("salary_info").insert({
-          user_id: authData.user.id,
-          base_salary: newEmployeeForm.base_salary,
-          daily_rate: newEmployeeForm.daily_rate,
-          current_salary: newEmployeeForm.base_salary,
-        });
-
-        if (salaryError) throw salaryError;
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to create employee");
       }
 
       toast.success("Employee created successfully");
