@@ -9,6 +9,8 @@ import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings } 
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
 import SystemSettings from "@/components/admin/SystemSettings";
+import SalaryManagement from "@/components/admin/SalaryManagement";
+import ReportsGeneration from "@/components/admin/ReportsGeneration";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -169,25 +171,11 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
         </TabsContent>
 
         <TabsContent value="salaries" className="space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Salary Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Comprehensive salary management coming soon...</p>
-            </CardContent>
-          </Card>
+          <SalaryManagement />
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Reports & Analytics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Detailed reports and analytics coming soon...</p>
-            </CardContent>
-          </Card>
+          <ReportsGeneration />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-8">
