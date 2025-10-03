@@ -11,6 +11,7 @@ import AttendanceOverview from "@/components/admin/AttendanceOverview";
 import SystemSettings from "@/components/admin/SystemSettings";
 import SalaryManagement from "@/components/admin/SalaryManagement";
 import ReportsGeneration from "@/components/admin/ReportsGeneration";
+import HRManagerManagement from "@/components/admin/HRManagerManagement";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -152,14 +153,7 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
         </TabsContent>
 
         <TabsContent value="managers" className="space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>HR Managers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">HR Manager management coming soon...</p>
-            </CardContent>
-          </Card>
+          <HRManagerManagement onUpdate={fetchStats} />
         </TabsContent>
 
         <TabsContent value="employees" className="space-y-8">
