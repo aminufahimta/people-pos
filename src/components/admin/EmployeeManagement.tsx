@@ -119,16 +119,8 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
 
     setIsCreatingEmployee(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
           email: newEmployeeForm.email,
           password: newEmployeeForm.password,
           full_name: newEmployeeForm.full_name,
@@ -138,14 +130,10 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
           phone: newEmployeeForm.phone || null,
           base_salary: newEmployeeForm.base_salary || 0,
           daily_rate: newEmployeeForm.daily_rate || 0,
-        }),
+        },
       });
 
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to create employee");
-      }
+      if (error) throw new Error(error.message || "Failed to create employee");
 
       toast.success("Employee created successfully");
       setNewEmployeeForm({
@@ -175,20 +163,11 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ userId: employeeId }),
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId: employeeId },
       });
 
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to delete employee");
-      }
+      if (error) throw new Error(error.message || "Failed to delete employee");
 
       toast.success("Employee deleted successfully");
       fetchEmployees();

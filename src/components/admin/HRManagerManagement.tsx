@@ -88,13 +88,8 @@ const HRManagerManagement = ({ onUpdate }: HRManagerManagementProps) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
           email: newManagerForm.email,
           password: newManagerForm.password,
           full_name: newManagerForm.full_name,
@@ -102,14 +97,10 @@ const HRManagerManagement = ({ onUpdate }: HRManagerManagementProps) => {
           department: newManagerForm.department || null,
           position: newManagerForm.position || null,
           phone: newManagerForm.phone || null,
-        }),
+        },
       });
 
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to create HR Manager");
-      }
+      if (error) throw new Error(error.message || "Failed to create HR Manager");
 
       toast.success("HR Manager created successfully");
       setNewManagerForm({
@@ -133,23 +124,11 @@ const HRManagerManagement = ({ onUpdate }: HRManagerManagementProps) => {
     if (!confirm("Are you sure you want to delete this HR Manager?")) return;
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ userId: managerId }),
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId: managerId },
       });
 
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to delete HR Manager");
-      }
+      if (error) throw new Error(error.message || "Failed to delete HR Manager");
 
       toast.success("HR Manager deleted successfully");
       fetchManagers();
