@@ -28,7 +28,7 @@ const DashboardLayout = ({ children, title, subtitle, userRole }: DashboardLayou
       <AppSidebar userRole={userRole} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="border-b border-border bg-card px-8 py-4">
+        <header className="border-b border-border bg-card/80 backdrop-blur-sm px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-1">

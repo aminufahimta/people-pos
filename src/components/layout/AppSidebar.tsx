@@ -22,9 +22,9 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
   ];
 
   return (
-    <div className="w-64 h-screen bg-[hsl(var(--sidebar))] border-r border-border flex flex-col">
+    <div className="w-64 h-screen bg-sidebar border-r border-sidebar-border flex flex-col">
       {/* Logo */}
-      <div className="p-6 border-b border-border">
+      <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3 mb-3">
           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
             <Shield className="h-6 w-6 text-primary" />
