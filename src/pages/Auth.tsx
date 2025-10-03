@@ -49,6 +49,40 @@ const Auth = () => {
     }
   };
 
+  const handleFixEmail = async () => {
+    setIsLoading(true);
+    try {
+      // First login with the old email to get access
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email: "aminufahimta@gmail.com",
+        password: "Mskid1m$",
+      });
+
+      if (loginError) {
+        toast.error("Please login with aminufahimta@gmail.com first");
+        return;
+      }
+
+      // Call the edge function to update auth email
+      const { data, error } = await supabase.functions.invoke('update-auth-email', {
+        body: {
+          userId: '307168b0-3267-47ba-9f02-a1846a8c3760',
+          newEmail: 'aminu@skypro.ng',
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("Email updated! Please login with aminu@skypro.ng");
+      await supabase.auth.signOut();
+      setFormData({ email: "aminu@skypro.ng", password: "" });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update email");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -125,6 +159,22 @@ const Auth = () => {
                 disabled={isLoading}
               >
                 Create Super Admin Account
+              </Button>
+            </div>
+          )}
+
+          {!showBootstrap && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <p className="text-sm text-muted-foreground text-center mb-3">
+                Having trouble logging in? Click below to sync your auth email.
+              </p>
+              <Button 
+                onClick={handleFixEmail} 
+                variant="outline" 
+                className="w-full"
+                disabled={isLoading}
+              >
+                Fix Email Sync Issue
               </Button>
             </div>
           )}
