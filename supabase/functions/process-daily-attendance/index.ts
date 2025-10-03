@@ -19,6 +19,16 @@ Deno.serve(async (req) => {
     const today = new Date().toISOString().split('T')[0];
     console.log(`Processing attendance for date: ${today}`);
 
+    // Get deduction percentage from settings
+    const { data: settingsData } = await supabaseClient
+      .from('system_settings')
+      .select('setting_value')
+      .eq('setting_key', 'absence_deduction_percentage')
+      .single();
+    
+    const deductionPercentage = settingsData ? Number(settingsData.setting_value) : 100;
+    console.log(`Using deduction percentage: ${deductionPercentage}%`);
+
     // Get all employees
     const { data: employees, error: employeesError } = await supabaseClient
       .from('profiles')
@@ -63,7 +73,8 @@ Deno.serve(async (req) => {
         }
 
         const dailyRate = Number(salaryInfo.daily_rate);
-        const newTotalDeductions = Number(salaryInfo.total_deductions) + dailyRate;
+        const deductionAmount = (dailyRate * deductionPercentage) / 100;
+        const newTotalDeductions = Number(salaryInfo.total_deductions) + deductionAmount;
         const newCurrentSalary = Number(salaryInfo.base_salary) - newTotalDeductions;
 
         // Update salary with deduction
@@ -88,7 +99,7 @@ Deno.serve(async (req) => {
               user_id: employee.id,
               date: today,
               status: 'absent',
-              deduction_amount: dailyRate,
+              deduction_amount: deductionAmount,
             });
 
           if (insertError) {
@@ -99,7 +110,7 @@ Deno.serve(async (req) => {
           const { error: updateAttendanceError } = await supabaseClient
             .from('attendance')
             .update({
-              deduction_amount: dailyRate,
+              deduction_amount: deductionAmount,
             })
             .eq('id', attendance.id);
 
@@ -110,7 +121,7 @@ Deno.serve(async (req) => {
         }
 
         absentCount++;
-        console.log(`Applied deduction of ₦${dailyRate} for absent employee ${employee.id}`);
+        console.log(`Applied deduction of ₦${deductionAmount} (${deductionPercentage}% of ₦${dailyRate}) for absent employee ${employee.id}`);
       }
 
       processedCount++;
