@@ -190,23 +190,7 @@ const Auth = () => {
             </div>
           )}
 
-          {!showBootstrap && (
-            <div className="mt-6 pt-6 border-t border-border">
-              <p className="text-sm text-muted-foreground text-center mb-3">
-                Having trouble logging in? Click below to sync your auth email.
-              </p>
-              <Button 
-                onClick={handleFixEmail} 
-                variant="outline" 
-                className="w-full"
-                disabled={isLoading}
-              >
-                Fix Email Sync Issue
-              </Button>
-            </div>
-          )}
-
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Contact your administrator to create an account
           </p>
         </CardContent>
