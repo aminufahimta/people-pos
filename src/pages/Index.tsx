@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Users, TrendingUp, Clock } from "lucide-react";
-import logo from "@/assets/logo-dark.svg";
+import logo from "@/assets/logo.png";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
