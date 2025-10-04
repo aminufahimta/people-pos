@@ -17,9 +17,9 @@ All colors MUST be HSL.
     --popover: 220 20% 12%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 0 84% 60%;
+    --primary: 214 95% 56%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 0 84% 70%;
+    --primary-glow: 214 95% 66%;
 
     --secondary: 220 15% 20%;
     --secondary-foreground: 0 0% 95%;
@@ -35,7 +35,7 @@ All colors MUST be HSL.
 
     --border: 220 15% 20%;
     --input: 220 15% 20%;
-    --ring: 0 84% 60%;
+    --ring: 214 95% 56%;
 
     --radius: 0.5rem;
     
@@ -45,16 +45,16 @@ All colors MUST be HSL.
     
     --sidebar-background: 220 20% 8%;
     --sidebar-foreground: 0 0% 70%;
-    --sidebar-primary: 0 84% 60%;
+    --sidebar-primary: 214 95% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 15% 25%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 0 84% 60%;
+    --sidebar-ring: 214 95% 56%;
 
     --shadow-elegant: 0 4px 20px rgba(0, 0, 0, 0.5);
-    --shadow-glow: 0 0 20px rgba(239, 68, 68, 0.3);
-    --gradient-primary: linear-gradient(135deg, hsl(0 84% 60%), hsl(0 84% 50%));
+    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+    --gradient-primary: linear-gradient(135deg, hsl(214 95% 56%), hsl(214 95% 46%));
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --chart-1: 12 76% 61%;
