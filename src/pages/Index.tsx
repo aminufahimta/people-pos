@@ -17,23 +17,29 @@ const Index = () => {
   }, []);
 
   const fetchSettings = async () => {
-    const { data } = await supabase
-      .from("system_settings")
-      .select("setting_key, setting_value")
-      .in("setting_key", ["home_page_title", "home_page_subtitle", "home_page_description"]);
+    try {
+      const { data, error } = await supabase
+        .from("system_settings")
+        .select("setting_key, setting_value")
+        .in("setting_key", ["home_page_title", "home_page_subtitle", "home_page_description"]);
 
-    if (data) {
-      const newSettings: any = {};
-      data.forEach((setting) => {
-        if (setting.setting_key === "home_page_title" && setting.setting_value) {
-          newSettings.title = setting.setting_value;
-        } else if (setting.setting_key === "home_page_subtitle" && setting.setting_value) {
-          newSettings.subtitle = setting.setting_value;
-        } else if (setting.setting_key === "home_page_description" && setting.setting_value) {
-          newSettings.description = setting.setting_value;
-        }
-      });
-      setSettings((prev) => ({ ...prev, ...newSettings }));
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const newSettings: any = {};
+        data.forEach((setting) => {
+          if (setting.setting_key === "home_page_title" && setting.setting_value) {
+            newSettings.title = setting.setting_value;
+          } else if (setting.setting_key === "home_page_subtitle" && setting.setting_value) {
+            newSettings.subtitle = setting.setting_value;
+          } else if (setting.setting_key === "home_page_description" && setting.setting_value) {
+            newSettings.description = setting.setting_value;
+          }
+        });
+        setSettings((prev) => ({ ...prev, ...newSettings }));
+      }
+    } catch (error) {
+      console.error("Error fetching homepage settings:", error);
     }
   };
 
@@ -52,7 +58,8 @@ const Index = () => {
               {settings.title}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              {settings.subtitle} {settings.description}
+              {settings.subtitle}
+              {settings.description && settings.description !== "with our comprehensive HR solution" && ` - ${settings.description}`}
             </p>
           </div>
 
