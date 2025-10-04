@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Building2 } from "lucide-react";
+import logo from "@/assets/logo-dark.svg";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -106,9 +106,7 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-[var(--shadow-elegant)]">
         <CardHeader className="space-y-3 text-center">
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-              <Building2 className="h-8 w-8 text-primary-foreground" />
-            </div>
+            <img src={logo} alt="Logo" className="h-16 w-auto" />
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
             {settings.loginTitle}

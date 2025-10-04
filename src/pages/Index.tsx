@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Building2, Users, TrendingUp, Clock } from "lucide-react";
+import { Users, TrendingUp, Clock } from "lucide-react";
+import logo from "@/assets/logo-dark.svg";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
@@ -48,9 +49,7 @@ const Index = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center space-y-8 max-w-4xl mx-auto">
           <div className="flex justify-center">
-            <div className="h-24 w-24 rounded-3xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-[var(--shadow-elegant)]">
-              <Building2 className="h-12 w-12 text-primary-foreground" />
-            </div>
+            <img src={logo} alt="Logo" className="h-24 w-auto" />
           </div>
 
           <div className="space-y-4">
