@@ -1,9 +1,41 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Building2, Users, TrendingUp, Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [settings, setSettings] = useState({
+    title: "HR Management System",
+    subtitle: "Streamline employee management, track attendance, and automate payroll",
+    description: "with our comprehensive HR solution",
+  });
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    const { data } = await supabase
+      .from("system_settings")
+      .select("setting_key, setting_value")
+      .in("setting_key", ["home_page_title", "home_page_subtitle", "home_page_description"]);
+
+    if (data) {
+      const newSettings: any = {};
+      data.forEach((setting) => {
+        if (setting.setting_key === "home_page_title" && setting.setting_value) {
+          newSettings.title = setting.setting_value;
+        } else if (setting.setting_key === "home_page_subtitle" && setting.setting_value) {
+          newSettings.subtitle = setting.setting_value;
+        } else if (setting.setting_key === "home_page_description" && setting.setting_value) {
+          newSettings.description = setting.setting_value;
+        }
+      });
+      setSettings((prev) => ({ ...prev, ...newSettings }));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10">
@@ -17,10 +49,10 @@ const Index = () => {
 
           <div className="space-y-4">
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
-              HR Management System
+              {settings.title}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Streamline employee management, track attendance, and automate payroll with our comprehensive HR solution
+              {settings.subtitle} {settings.description}
             </p>
           </div>
 

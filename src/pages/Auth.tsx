@@ -17,10 +17,37 @@ const Auth = () => {
     email: "",
     password: "",
   });
+  const [settings, setSettings] = useState({
+    companyName: "HR Management System",
+    loginTitle: "HR Management System",
+    loginSubtitle: "Sign in to access your dashboard",
+  });
 
   useEffect(() => {
     checkIfBootstrapNeeded();
+    fetchSettings();
   }, []);
+
+  const fetchSettings = async () => {
+    const { data } = await supabase
+      .from("system_settings")
+      .select("setting_key, setting_value")
+      .in("setting_key", ["company_name", "login_page_title", "login_page_subtitle"]);
+
+    if (data) {
+      const newSettings: any = {};
+      data.forEach((setting) => {
+        if (setting.setting_key === "company_name" && setting.setting_value) {
+          newSettings.companyName = setting.setting_value;
+        } else if (setting.setting_key === "login_page_title" && setting.setting_value) {
+          newSettings.loginTitle = setting.setting_value;
+        } else if (setting.setting_key === "login_page_subtitle" && setting.setting_value) {
+          newSettings.loginSubtitle = setting.setting_value;
+        }
+      });
+      setSettings((prev) => ({ ...prev, ...newSettings }));
+    }
+  };
 
   const checkIfBootstrapNeeded = async () => {
     const { data } = await supabase.from('profiles').select('id').limit(1);
@@ -114,9 +141,9 @@ const Auth = () => {
             </div>
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-            HR Management System
+            {settings.loginTitle}
           </CardTitle>
-          <CardDescription>Sign in to access your dashboard</CardDescription>
+          <CardDescription>{settings.loginSubtitle}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
