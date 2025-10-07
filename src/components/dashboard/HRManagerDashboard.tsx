@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard } from "lucide-react";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
+import AttendanceProcessing from "@/components/admin/AttendanceProcessing";
 import SalaryManagement from "@/components/admin/SalaryManagement";
 import ReportsGeneration from "@/components/admin/ReportsGeneration";
 
@@ -147,6 +148,7 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
         </TabsContent>
 
         <TabsContent value="attendance" className="space-y-8">
+          <AttendanceProcessing />
           <AttendanceOverview />
         </TabsContent>
 
