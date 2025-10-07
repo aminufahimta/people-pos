@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Settings as SettingsIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import CronJobsManagement from "./CronJobsManagement";
 
 const SystemSettings = () => {
   const [deductionPercentage, setDeductionPercentage] = useState<number>(100);
@@ -137,152 +138,156 @@ const SystemSettings = () => {
   };
 
   return (
-    <Card className="shadow-[var(--shadow-elegant)]">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <SettingsIcon className="h-5 w-5 text-primary" />
-          <CardTitle>System Settings</CardTitle>
-        </div>
-        <CardDescription>
-          Configure salary deduction and attendance settings
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-8">
-        {/* General Settings */}
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold">General Settings</h3>
-            <p className="text-sm text-muted-foreground">Basic company information</p>
+    <div className="space-y-8">
+      <Card className="shadow-[var(--shadow-elegant)]">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <SettingsIcon className="h-5 w-5 text-primary" />
+            <CardTitle>System Settings</CardTitle>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="companyName">Company Name</Label>
-            <Input
-              id="companyName"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="Enter company name"
-            />
-            <p className="text-sm text-muted-foreground">
-              This will be displayed throughout the system
-            </p>
+          <CardDescription>
+            Configure salary deduction and attendance settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          {/* General Settings */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">General Settings</h3>
+              <p className="text-sm text-muted-foreground">Basic company information</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="companyName">Company Name</Label>
+              <Input
+                id="companyName"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="Enter company name"
+              />
+              <p className="text-sm text-muted-foreground">
+                This will be displayed throughout the system
+              </p>
+            </div>
           </div>
-        </div>
 
-        <Separator />
+          <Separator />
 
-        {/* Login Page Settings */}
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold">Login Page Settings</h3>
-            <p className="text-sm text-muted-foreground">Customize the login page appearance</p>
+          {/* Login Page Settings */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">Login Page Settings</h3>
+              <p className="text-sm text-muted-foreground">Customize the login page appearance</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="loginTitle">Login Page Title</Label>
+              <Input
+                id="loginTitle"
+                value={loginPageTitle}
+                onChange={(e) => setLoginPageTitle(e.target.value)}
+                placeholder="e.g., Welcome to HR System"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="loginSubtitle">Login Page Subtitle</Label>
+              <Input
+                id="loginSubtitle"
+                value={loginPageSubtitle}
+                onChange={(e) => setLoginPageSubtitle(e.target.value)}
+                placeholder="e.g., Sign in to access your dashboard"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="loginTitle">Login Page Title</Label>
-            <Input
-              id="loginTitle"
-              value={loginPageTitle}
-              onChange={(e) => setLoginPageTitle(e.target.value)}
-              placeholder="e.g., Welcome to HR System"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="loginSubtitle">Login Page Subtitle</Label>
-            <Input
-              id="loginSubtitle"
-              value={loginPageSubtitle}
-              onChange={(e) => setLoginPageSubtitle(e.target.value)}
-              placeholder="e.g., Sign in to access your dashboard"
-            />
-          </div>
-        </div>
 
-        <Separator />
+          <Separator />
 
-        {/* Home Page Settings */}
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold">Home Page Settings</h3>
-            <p className="text-sm text-muted-foreground">Customize the home page content</p>
+          {/* Home Page Settings */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">Home Page Settings</h3>
+              <p className="text-sm text-muted-foreground">Customize the home page content</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="homeTitle">Home Page Title</Label>
+              <Input
+                id="homeTitle"
+                value={homePageTitle}
+                onChange={(e) => setHomePageTitle(e.target.value)}
+                placeholder="e.g., HR Management System"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="homeSubtitle">Home Page Subtitle</Label>
+              <Input
+                id="homeSubtitle"
+                value={homePageSubtitle}
+                onChange={(e) => setHomePageSubtitle(e.target.value)}
+                placeholder="e.g., Streamline your workforce management"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="homeDescription">Home Page Description</Label>
+              <Input
+                id="homeDescription"
+                value={homePageDescription}
+                onChange={(e) => setHomePageDescription(e.target.value)}
+                placeholder="e.g., Comprehensive HR solution for modern businesses"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="homeTitle">Home Page Title</Label>
-            <Input
-              id="homeTitle"
-              value={homePageTitle}
-              onChange={(e) => setHomePageTitle(e.target.value)}
-              placeholder="e.g., HR Management System"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="homeSubtitle">Home Page Subtitle</Label>
-            <Input
-              id="homeSubtitle"
-              value={homePageSubtitle}
-              onChange={(e) => setHomePageSubtitle(e.target.value)}
-              placeholder="e.g., Streamline your workforce management"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="homeDescription">Home Page Description</Label>
-            <Input
-              id="homeDescription"
-              value={homePageDescription}
-              onChange={(e) => setHomePageDescription(e.target.value)}
-              placeholder="e.g., Comprehensive HR solution for modern businesses"
-            />
-          </div>
-        </div>
 
-        <Separator />
+          <Separator />
 
-        {/* Payroll Settings */}
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold">Payroll Settings</h3>
-            <p className="text-sm text-muted-foreground">Configure salary deduction and attendance settings</p>
+          {/* Payroll Settings */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">Payroll Settings</h3>
+              <p className="text-sm text-muted-foreground">Configure salary deduction and attendance settings</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="deduction">
+                Absence Deduction Percentage (%)
+              </Label>
+              <Input
+                id="deduction"
+                type="number"
+                min="0"
+                max="100"
+                value={deductionPercentage}
+                onChange={(e) => setDeductionPercentage(Number(e.target.value))}
+              />
+              <p className="text-sm text-muted-foreground">
+                Percentage of daily rate to deduct when an employee is absent (0-100%).
+                {deductionPercentage === 100 && " Currently set to deduct full daily rate."}
+                {deductionPercentage === 50 && " Currently set to deduct half daily rate."}
+                {deductionPercentage === 0 && " Currently set to no deduction."}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="workingDays">
+                Working Days Per Month
+              </Label>
+              <Input
+                id="workingDays"
+                type="number"
+                min="1"
+                max="31"
+                value={workingDays}
+                onChange={(e) => setWorkingDays(Number(e.target.value))}
+              />
+              <p className="text-sm text-muted-foreground">
+                Number of working days per month for salary calculations
+              </p>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="deduction">
-              Absence Deduction Percentage (%)
-            </Label>
-            <Input
-              id="deduction"
-              type="number"
-              min="0"
-              max="100"
-              value={deductionPercentage}
-              onChange={(e) => setDeductionPercentage(Number(e.target.value))}
-            />
-            <p className="text-sm text-muted-foreground">
-              Percentage of daily rate to deduct when an employee is absent (0-100%).
-              {deductionPercentage === 100 && " Currently set to deduct full daily rate."}
-              {deductionPercentage === 50 && " Currently set to deduct half daily rate."}
-              {deductionPercentage === 0 && " Currently set to no deduction."}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="workingDays">
-              Working Days Per Month
-            </Label>
-            <Input
-              id="workingDays"
-              type="number"
-              min="1"
-              max="31"
-              value={workingDays}
-              onChange={(e) => setWorkingDays(Number(e.target.value))}
-            />
-            <p className="text-sm text-muted-foreground">
-              Number of working days per month for salary calculations
-            </p>
-          </div>
-        </div>
 
-        <Button onClick={handleSave} disabled={loading} className="w-full">
-          {loading ? "Saving..." : "Save Settings"}
-        </Button>
-      </CardContent>
-    </Card>
+          <Button onClick={handleSave} disabled={loading} className="w-full">
+            {loading ? "Saving..." : "Save Settings"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <CronJobsManagement />
+    </div>
   );
 };
 
