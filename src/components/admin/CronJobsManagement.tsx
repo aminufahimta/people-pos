@@ -1,13 +1,75 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Calendar, RefreshCw, Clock, Play } from "lucide-react";
+import { Calendar, RefreshCw, Clock, Play, Link as LinkIcon, Save } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const CronJobsManagement = () => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [cronJobUrl, setCronJobUrl] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    fetchCronJobUrl();
+  }, []);
+
+  const fetchCronJobUrl = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("system_settings")
+        .select("setting_value")
+        .eq("setting_key", "cron_job_url")
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setCronJobUrl(data.setting_value);
+      }
+    } catch (error) {
+      console.error("Error fetching cron job URL:", error);
+    }
+  };
+
+  const handleSaveCronJobUrl = async () => {
+    if (!cronJobUrl.trim()) {
+      toast.error("Please enter a valid URL");
+      return;
+    }
+
+    try {
+      // Basic URL validation
+      new URL(cronJobUrl);
+    } catch {
+      toast.error("Please enter a valid URL format");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("system_settings")
+        .upsert({
+          setting_key: "cron_job_url",
+          setting_value: cronJobUrl,
+          description: "URL for manual cron job configuration"
+        }, {
+          onConflict: 'setting_key'
+        });
+
+      if (error) throw error;
+      toast.success("Cron job URL saved successfully");
+    } catch (error: any) {
+      console.error("Error saving cron job URL:", error);
+      toast.error("Failed to save cron job URL");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const cronJobs = [
     {
@@ -53,7 +115,56 @@ const CronJobsManagement = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Cron Job URL Configuration */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <LinkIcon className="h-4 w-4" />
+                Cron Job URL Configuration
+              </h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                Add a URL to manually configure external cron job services (e.g., cron-job.org, EasyCron)
+              </p>
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="cronJobUrl">Cron Job Service URL</Label>
+                <Input
+                  id="cronJobUrl"
+                  value={cronJobUrl}
+                  onChange={(e) => setCronJobUrl(e.target.value)}
+                  placeholder="https://example.com/cron-job"
+                  type="url"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter the endpoint URL from your external cron service
+                </p>
+              </div>
+              <Button
+                onClick={handleSaveCronJobUrl}
+                disabled={isSaving}
+                size="sm"
+              >
+                {isSaving ? (
+                  <>
+                    <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-3 w-3" />
+                    Save URL
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Existing Cron Jobs */}
+          <div className="space-y-4">
           {cronJobs.map((job) => (
             <div
               key={job.id}
@@ -120,6 +231,7 @@ const CronJobsManagement = () => {
               </div>
             </div>
           ))}
+          </div>
         </div>
       </CardContent>
     </Card>
