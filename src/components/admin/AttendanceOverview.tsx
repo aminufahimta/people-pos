@@ -7,23 +7,61 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const AttendanceOverview = () => {
   const [attendance, setAttendance] = useState<any[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedRange, setSelectedRange] = useState("today");
+  const [stats, setStats] = useState({ present: 0, absent: 0, late: 0, total: 0 });
 
   useEffect(() => {
     fetchAttendance();
-  }, [selectedDate]);
+  }, [selectedRange]);
+
+  const getDateRange = () => {
+    const today = new Date();
+    let startDate = new Date();
+
+    switch (selectedRange) {
+      case "week":
+        startDate.setDate(today.getDate() - 7);
+        break;
+      case "month":
+        startDate.setMonth(today.getMonth() - 1);
+        break;
+      default:
+        startDate = today;
+    }
+
+    return {
+      start: startDate.toISOString().split("T")[0],
+      end: today.toISOString().split("T")[0]
+    };
+  };
 
   const fetchAttendance = async () => {
-    const { data } = await supabase
+    const { start, end } = getDateRange();
+    
+    let query = supabase
       .from("attendance")
       .select(`
         *,
         profiles (full_name, department)
       `)
-      .eq("date", selectedDate)
+      .order("date", { ascending: false })
       .order("clock_in", { ascending: false });
 
-    setAttendance(data || []);
+    if (selectedRange === "today") {
+      query = query.eq("date", end);
+    } else {
+      query = query.gte("date", start).lte("date", end);
+    }
+
+    const { data } = await query;
+    const records = data || [];
+    setAttendance(records);
+
+    // Calculate stats
+    const present = records.filter(r => r.status === "present").length;
+    const absent = records.filter(r => r.status === "absent").length;
+    const late = records.filter(r => r.status === "late").length;
+    setStats({ present, absent, late, total: records.length });
   };
 
   const getStatusBadge = (status: string) => {
@@ -39,36 +77,55 @@ const AttendanceOverview = () => {
     }
   };
 
-  const generateDateOptions = () => {
-    const options = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
-      options.push(
-        <SelectItem key={dateStr} value={dateStr}>
-          {i === 0 ? "Today" : i === 1 ? "Yesterday" : date.toLocaleDateString()}
-        </SelectItem>
-      );
-    }
-    return options;
-  };
 
   return (
     <Card className="shadow-[var(--shadow-elegant)]">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Attendance Overview</CardTitle>
-        <Select value={selectedDate} onValueChange={setSelectedDate}>
+        <Select value={selectedRange} onValueChange={setSelectedRange}>
           <SelectTrigger className="w-[200px]">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>{generateDateOptions()}</SelectContent>
+          <SelectContent>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="week">Past Week</SelectItem>
+            <SelectItem value="month">Past Month</SelectItem>
+          </SelectContent>
         </Select>
       </CardHeader>
       <CardContent>
+        {selectedRange !== "today" && (
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold">{stats.total}</div>
+                <p className="text-xs text-muted-foreground">Total Records</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-success">{stats.present}</div>
+                <p className="text-xs text-muted-foreground">Present</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-warning">{stats.late}</div>
+                <p className="text-xs text-muted-foreground">Late</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-destructive">{stats.absent}</div>
+                <p className="text-xs text-muted-foreground">Absent</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
         <Table>
           <TableHeader>
             <TableRow>
+              {selectedRange !== "today" && <TableHead>Date</TableHead>}
               <TableHead>Employee</TableHead>
               <TableHead>Department</TableHead>
               <TableHead>Status</TableHead>
@@ -80,13 +137,16 @@ const AttendanceOverview = () => {
           <TableBody>
             {attendance.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
-                  No attendance records for this date
+                <TableCell colSpan={selectedRange !== "today" ? 7 : 6} className="text-center text-muted-foreground">
+                  No attendance records for this period
                 </TableCell>
               </TableRow>
             ) : (
               attendance.map((record) => (
                 <TableRow key={record.id}>
+                  {selectedRange !== "today" && (
+                    <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
+                  )}
                   <TableCell className="font-medium">
                     {record.profiles?.full_name || "Unknown"}
                   </TableCell>
