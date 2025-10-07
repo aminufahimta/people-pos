@@ -4,19 +4,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const AttendanceOverview = () => {
   const [attendance, setAttendance] = useState<any[]>([]);
   const [selectedRange, setSelectedRange] = useState("today");
   const [stats, setStats] = useState({ present: 0, absent: 0, late: 0, total: 0 });
+  const [customStartDate, setCustomStartDate] = useState<Date>();
+  const [customEndDate, setCustomEndDate] = useState<Date>();
 
   useEffect(() => {
     fetchAttendance();
-  }, [selectedRange]);
+  }, [selectedRange, customStartDate, customEndDate]);
 
   const getDateRange = () => {
     const today = new Date();
     let startDate = new Date();
+
+    if (selectedRange === "custom") {
+      return {
+        start: customStartDate ? customStartDate.toISOString().split("T")[0] : today.toISOString().split("T")[0],
+        end: customEndDate ? customEndDate.toISOString().split("T")[0] : today.toISOString().split("T")[0]
+      };
+    }
 
     switch (selectedRange) {
       case "week":
@@ -80,18 +95,73 @@ const AttendanceOverview = () => {
 
   return (
     <Card className="shadow-[var(--shadow-elegant)]">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Attendance Overview</CardTitle>
-        <Select value={selectedRange} onValueChange={setSelectedRange}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="today">Today</SelectItem>
-            <SelectItem value="week">Past Week</SelectItem>
-            <SelectItem value="month">Past Month</SelectItem>
-          </SelectContent>
-        </Select>
+      <CardHeader className="flex flex-col gap-4">
+        <div className="flex flex-row items-center justify-between">
+          <CardTitle>Attendance Overview</CardTitle>
+          <Select value={selectedRange} onValueChange={setSelectedRange}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">Past Week</SelectItem>
+              <SelectItem value="month">Past Month</SelectItem>
+              <SelectItem value="custom">Custom Range</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {selectedRange === "custom" && (
+          <div className="flex gap-4 items-center">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-[240px] justify-start text-left font-normal",
+                    !customStartDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {customStartDate ? format(customStartDate, "PPP") : <span>Start date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customStartDate}
+                  onSelect={setCustomStartDate}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-[240px] justify-start text-left font-normal",
+                    !customEndDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {customEndDate ? format(customEndDate, "PPP") : <span>End date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customEndDate}
+                  onSelect={setCustomEndDate}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {selectedRange !== "today" && (
