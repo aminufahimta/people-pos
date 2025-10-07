@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Settings as SettingsIcon } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Settings as SettingsIcon, Building2, Palette, DollarSign, Clock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CronJobsManagement from "./CronJobsManagement";
 
 const SystemSettings = () => {
@@ -138,20 +138,38 @@ const SystemSettings = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <Card className="shadow-[var(--shadow-elegant)]">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <SettingsIcon className="h-5 w-5 text-primary" />
-            <CardTitle>System Settings</CardTitle>
-          </div>
-          <CardDescription>
-            Configure salary deduction and attendance settings
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-8">
-          {/* General Settings */}
-          <div className="space-y-4">
+    <Card className="shadow-[var(--shadow-elegant)]">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <SettingsIcon className="h-5 w-5 text-primary" />
+          <CardTitle>System Settings</CardTitle>
+        </div>
+        <CardDescription>
+          Configure your system preferences and settings
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="general" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="general" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              General
+            </TabsTrigger>
+            <TabsTrigger value="appearance" className="flex items-center gap-2">
+              <Palette className="h-4 w-4" />
+              Appearance
+            </TabsTrigger>
+            <TabsTrigger value="payroll" className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Payroll
+            </TabsTrigger>
+            <TabsTrigger value="cron" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Scheduled Jobs
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="general" className="space-y-4">
             <div>
               <h3 className="text-lg font-semibold">General Settings</h3>
               <p className="text-sm text-muted-foreground">Basic company information</p>
@@ -168,77 +186,77 @@ const SystemSettings = () => {
                 This will be displayed throughout the system
               </p>
             </div>
-          </div>
+            <Button onClick={handleSave} disabled={loading} className="w-full">
+              {loading ? "Saving..." : "Save Settings"}
+            </Button>
+          </TabsContent>
 
-          <Separator />
+          <TabsContent value="appearance" className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold">Login Page Settings</h3>
+                <p className="text-sm text-muted-foreground">Customize the login page appearance</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="loginTitle">Login Page Title</Label>
+                <Input
+                  id="loginTitle"
+                  value={loginPageTitle}
+                  onChange={(e) => setLoginPageTitle(e.target.value)}
+                  placeholder="e.g., Welcome to HR System"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="loginSubtitle">Login Page Subtitle</Label>
+                <Input
+                  id="loginSubtitle"
+                  value={loginPageSubtitle}
+                  onChange={(e) => setLoginPageSubtitle(e.target.value)}
+                  placeholder="e.g., Sign in to access your dashboard"
+                />
+              </div>
+            </div>
 
-          {/* Login Page Settings */}
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold">Login Page Settings</h3>
-              <p className="text-sm text-muted-foreground">Customize the login page appearance</p>
+            <div className="space-y-4 pt-4 border-t">
+              <div>
+                <h3 className="text-lg font-semibold">Home Page Settings</h3>
+                <p className="text-sm text-muted-foreground">Customize the home page content</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="homeTitle">Home Page Title</Label>
+                <Input
+                  id="homeTitle"
+                  value={homePageTitle}
+                  onChange={(e) => setHomePageTitle(e.target.value)}
+                  placeholder="e.g., HR Management System"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="homeSubtitle">Home Page Subtitle</Label>
+                <Input
+                  id="homeSubtitle"
+                  value={homePageSubtitle}
+                  onChange={(e) => setHomePageSubtitle(e.target.value)}
+                  placeholder="e.g., Streamline your workforce management"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="homeDescription">Home Page Description</Label>
+                <Input
+                  id="homeDescription"
+                  value={homePageDescription}
+                  onChange={(e) => setHomePageDescription(e.target.value)}
+                  placeholder="e.g., Comprehensive HR solution for modern businesses"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="loginTitle">Login Page Title</Label>
-              <Input
-                id="loginTitle"
-                value={loginPageTitle}
-                onChange={(e) => setLoginPageTitle(e.target.value)}
-                placeholder="e.g., Welcome to HR System"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="loginSubtitle">Login Page Subtitle</Label>
-              <Input
-                id="loginSubtitle"
-                value={loginPageSubtitle}
-                onChange={(e) => setLoginPageSubtitle(e.target.value)}
-                placeholder="e.g., Sign in to access your dashboard"
-              />
-            </div>
-          </div>
 
-          <Separator />
+            <Button onClick={handleSave} disabled={loading} className="w-full">
+              {loading ? "Saving..." : "Save Settings"}
+            </Button>
+          </TabsContent>
 
-          {/* Home Page Settings */}
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold">Home Page Settings</h3>
-              <p className="text-sm text-muted-foreground">Customize the home page content</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="homeTitle">Home Page Title</Label>
-              <Input
-                id="homeTitle"
-                value={homePageTitle}
-                onChange={(e) => setHomePageTitle(e.target.value)}
-                placeholder="e.g., HR Management System"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="homeSubtitle">Home Page Subtitle</Label>
-              <Input
-                id="homeSubtitle"
-                value={homePageSubtitle}
-                onChange={(e) => setHomePageSubtitle(e.target.value)}
-                placeholder="e.g., Streamline your workforce management"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="homeDescription">Home Page Description</Label>
-              <Input
-                id="homeDescription"
-                value={homePageDescription}
-                onChange={(e) => setHomePageDescription(e.target.value)}
-                placeholder="e.g., Comprehensive HR solution for modern businesses"
-              />
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Payroll Settings */}
-          <div className="space-y-4">
+          <TabsContent value="payroll" className="space-y-4">
             <div>
               <h3 className="text-lg font-semibold">Payroll Settings</h3>
               <p className="text-sm text-muted-foreground">Configure salary deduction and attendance settings</p>
@@ -278,16 +296,17 @@ const SystemSettings = () => {
                 Number of working days per month for salary calculations
               </p>
             </div>
-          </div>
+            <Button onClick={handleSave} disabled={loading} className="w-full">
+              {loading ? "Saving..." : "Save Settings"}
+            </Button>
+          </TabsContent>
 
-          <Button onClick={handleSave} disabled={loading} className="w-full">
-            {loading ? "Saving..." : "Save Settings"}
-          </Button>
-        </CardContent>
-      </Card>
-
-      <CronJobsManagement />
-    </div>
+          <TabsContent value="cron">
+            <CronJobsManagement />
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 
