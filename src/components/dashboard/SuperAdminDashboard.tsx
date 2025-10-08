@@ -6,6 +6,7 @@ import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings } from "lucide-react";
+import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
 import SystemSettings from "@/components/admin/SystemSettings";
@@ -30,7 +31,25 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
   useEffect(() => {
     fetchStats();
+    processAttendance();
   }, []);
+
+  const processAttendance = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('process-daily-attendance');
+      
+      if (error) {
+        console.error('Auto attendance processing error:', error);
+        return;
+      }
+
+      if (data?.absent > 0) {
+        toast.success(`Attendance processed: ${data.absent} absent employees with deductions applied`);
+      }
+    } catch (error) {
+      console.error('Failed to process attendance:', error);
+    }
+  };
 
   const fetchStats = async () => {
     const { data: profiles } = await supabase.from("profiles").select("*");
