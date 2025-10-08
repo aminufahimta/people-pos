@@ -154,6 +154,18 @@ Deno.serve(async (req) => {
 
     console.log(`Processing complete. Processed: ${processedCount}, Absent: ${absentCount}`);
 
+    // Update last run time
+    const now = new Date().toISOString();
+    await supabaseClient
+      .from('system_settings')
+      .upsert({
+        setting_key: 'cron_last_run',
+        setting_value: now,
+        description: 'Last time the daily attendance cron job ran'
+      }, {
+        onConflict: 'setting_key'
+      });
+
     return new Response(
       JSON.stringify({
         success: true,

@@ -6,17 +6,41 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Calendar, RefreshCw, Clock, Play, Link as LinkIcon, Save, Server } from "lucide-react";
+import { Calendar, RefreshCw, Clock, Play, Link as LinkIcon, Save, Server, CheckCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { format } from "date-fns";
 
 const CronJobsManagement = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [cronJobUrl, setCronJobUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [lastRunTime, setLastRunTime] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCronJobUrl();
+    fetchLastRunTime();
+    
+    // Poll for updates every 30 seconds
+    const interval = setInterval(fetchLastRunTime, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  const fetchLastRunTime = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("system_settings")
+        .select("setting_value")
+        .eq("setting_key", "cron_last_run")
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setLastRunTime(data.setting_value);
+      }
+    } catch (error) {
+      console.error("Error fetching last run time:", error);
+    }
+  };
 
   const fetchCronJobUrl = async () => {
     try {
@@ -92,6 +116,8 @@ const CronJobsManagement = () => {
 
       if (data?.success) {
         toast.success(`${jobName} completed! ${data.absent} employees marked absent with deductions.`);
+        // Refresh last run time after manual trigger
+        await fetchLastRunTime();
       } else {
         toast.error(`Failed to run ${jobName}`);
       }
@@ -116,6 +142,21 @@ const CronJobsManagement = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
+          {/* Cron Job Monitor */}
+          {lastRunTime && (
+            <div className="bg-success/10 border border-success/20 rounded-lg p-4 flex items-center gap-3">
+              <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-success">
+                  Cron Job last ran on: {format(new Date(lastRunTime), "yyyy-MM-dd hh:mm:ss a")}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  External cron job is working properly
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Cron Job URL Configuration */}
           <div className="space-y-4">
             <div>
