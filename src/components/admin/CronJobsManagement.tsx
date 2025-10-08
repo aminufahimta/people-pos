@@ -16,6 +16,11 @@ const CronJobsManagement = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [lastRunTime, setLastRunTime] = useState<string | null>(null);
 
+  // Get dynamic endpoint URL from environment
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+  const endpointUrl = `${supabaseUrl}/functions/v1/process-daily-attendance`;
+
   useEffect(() => {
     fetchCronJobUrl();
     fetchLastRunTime();
@@ -292,14 +297,14 @@ const CronJobsManagement = () => {
               <div className="space-y-2">
                 <p className="text-xs font-medium text-primary">Endpoint URL</p>
                 <code className="block bg-background p-2 rounded text-xs break-all">
-                  https://zvjhorkuoxejjvmmmhwd.supabase.co/functions/v1/process-daily-attendance
+                  {endpointUrl}
                 </code>
               </div>
               
               <div className="space-y-2">
                 <p className="text-xs font-medium text-primary">Authorization Header</p>
                 <code className="block bg-background p-2 rounded text-xs break-all">
-                  Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2amhvcmt1b3hlamp2bW1taHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzOTczMDIsImV4cCI6MjA3NDk3MzMwMn0.Ii6OGAUzudnR_vkSGTNzrd-S4YS1DmcnybJubE3a7Jc
+                  Bearer {supabaseAnonKey}
                 </code>
               </div>
 
@@ -308,7 +313,7 @@ const CronJobsManagement = () => {
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground"># Run daily at 11:59 PM</p>
                   <code className="block bg-background p-2 rounded text-xs break-all">
-                    59 23 * * * curl -X POST "https://zvjhorkuoxejjvmmmhwd.supabase.co/functions/v1/process-daily-attendance" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2amhvcmt1b3hlamp2bW1taHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzOTczMDIsImV4cCI6MjA3NDk3MzMwMn0.Ii6OGAUzudnR_vkSGTNzrd-S4YS1DmcnybJubE3a7Jc"
+                    59 23 * * * curl -X POST "{endpointUrl}" -H "Authorization: Bearer {supabaseAnonKey}"
                   </code>
                 </div>
               </div>
