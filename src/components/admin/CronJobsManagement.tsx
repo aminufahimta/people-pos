@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Calendar, RefreshCw, Clock, Play, Link as LinkIcon, Save } from "lucide-react";
+import { Calendar, RefreshCw, Clock, Play, Link as LinkIcon, Save, Server } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 const CronJobsManagement = () => {
@@ -231,6 +231,47 @@ const CronJobsManagement = () => {
               </div>
             </div>
           ))}
+          </div>
+
+          <Separator />
+
+          {/* External Hosting Endpoint Information */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Server className="h-4 w-4" />
+                External Hosting Setup
+              </h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                Use these endpoints if you host the software on external infrastructure
+              </p>
+            </div>
+            
+            <div className="border-l-4 border-primary/30 bg-muted/30 p-4 rounded-r space-y-3">
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-primary">Endpoint URL</p>
+                <code className="block bg-background p-2 rounded text-xs break-all">
+                  https://zvjhorkuoxejjvmmmhwd.supabase.co/functions/v1/process-daily-attendance
+                </code>
+              </div>
+              
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-primary">Authorization Header</p>
+                <code className="block bg-background p-2 rounded text-xs break-all">
+                  Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2amhvcmt1b3hlamp2bW1taHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzOTczMDIsImV4cCI6MjA3NDk3MzMwMn0.Ii6OGAUzudnR_vkSGTNzrd-S4YS1DmcnybJubE3a7Jc
+                </code>
+              </div>
+
+              <div className="bg-muted/50 p-3 rounded space-y-2">
+                <p className="text-xs font-medium">Example cron configuration:</p>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground"># Run daily at 11:59 PM</p>
+                  <code className="block bg-background p-2 rounded text-xs break-all">
+                    59 23 * * * curl -X POST "https://zvjhorkuoxejjvmmmhwd.supabase.co/functions/v1/process-daily-attendance" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2amhvcmt1b3hlamp2bW1taHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzOTczMDIsImV4cCI6MjA3NDk3MzMwMn0.Ii6OGAUzudnR_vkSGTNzrd-S4YS1DmcnybJubE3a7Jc"
+                  </code>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>
