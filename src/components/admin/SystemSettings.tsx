@@ -274,9 +274,9 @@ const SystemSettings = () => {
                 onChange={(e) => setDeductionPercentage(Number(e.target.value))}
               />
               <p className="text-sm text-muted-foreground">
-                Percentage of daily rate to deduct when an employee is absent (0-100%).
-                {deductionPercentage === 100 && " Currently set to deduct full daily rate."}
-                {deductionPercentage === 50 && " Currently set to deduct half daily rate."}
+                Percentage of base salary to deduct for each absence on weekdays (Monday-Friday). 
+                Weekends are automatically excluded from deductions.
+                {deductionPercentage === 100 && " Currently set to deduct full base salary per absence."}
                 {deductionPercentage === 0 && " Currently set to no deduction."}
               </p>
             </div>

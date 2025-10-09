@@ -17,6 +17,26 @@ Deno.serve(async (req) => {
     );
 
     const today = new Date().toISOString().split('T')[0];
+    const todayDate = new Date();
+    const dayOfWeek = todayDate.getDay(); // 0 = Sunday, 6 = Saturday
+    
+    // Skip processing on weekends
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      console.log(`Skipping attendance processing - today is a weekend (day ${dayOfWeek})`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          processed: 0,
+          absent: 0,
+          message: 'Skipped processing - weekends are not working days',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+    
     console.log(`Processing attendance for date: ${today}`);
 
     // Get settings: deduction percentage and working days per month
@@ -81,23 +101,10 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        let dailyRate = Number(salaryInfo.daily_rate);
         const baseSalary = Number(salaryInfo.base_salary);
 
-        if (!dailyRate || dailyRate <= 0) {
-          dailyRate = workingDays > 0 ? Number((baseSalary / workingDays).toFixed(2)) : 0;
-          console.log(`Daily rate missing for ${employee.id}. Recalculated as ₦${dailyRate} using workingDays=${workingDays}`);
-          // Persist recalculated daily rate for future runs
-          const { error: dailyRateUpdateError } = await supabaseClient
-            .from('salary_info')
-            .update({ daily_rate: dailyRate })
-            .eq('user_id', employee.id);
-          if (dailyRateUpdateError) {
-            console.warn(`Failed to persist recalculated daily rate for ${employee.id}:`, dailyRateUpdateError);
-          }
-        }
-
-        const deductionAmount = Number(((dailyRate * deductionPercentage) / 100).toFixed(2));
+        // Calculate deduction as percentage of base salary
+        const deductionAmount = Number(((baseSalary * deductionPercentage) / 100).toFixed(2));
         const newTotalDeductions = Number((Number(salaryInfo.total_deductions) + deductionAmount).toFixed(2));
         let newCurrentSalary = Number((baseSalary - newTotalDeductions).toFixed(2));
         if (newCurrentSalary < 0) newCurrentSalary = 0;
@@ -146,7 +153,7 @@ Deno.serve(async (req) => {
         }
 
         absentCount++;
-        console.log(`Applied deduction of ₦${deductionAmount} (${deductionPercentage}% of ₦${dailyRate}) for absent employee ${employee.id}`);
+        console.log(`Applied deduction of ₦${deductionAmount} (${deductionPercentage}% of ₦${baseSalary} base salary) for absent employee ${employee.id}`);
       }
 
       processedCount++;
