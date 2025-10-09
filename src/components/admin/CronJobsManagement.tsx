@@ -134,6 +134,30 @@ const CronJobsManagement = () => {
     }
   };
 
+  const handleRecalculateDeductions = async () => {
+    if (!confirm('This will recalculate ALL historical deductions based on the current settings. This action cannot be undone. Continue?')) {
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('recalculate-deductions');
+      
+      if (error) throw error;
+      
+      if (data?.success) {
+        toast.success(data.message || 'Successfully recalculated all deductions');
+      } else {
+        toast.error('Failed to recalculate deductions');
+      }
+    } catch (error: any) {
+      console.error('Error recalculating deductions:', error);
+      toast.error(error.message || 'Failed to recalculate deductions');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <Card className="shadow-[var(--shadow-elegant)]">
       <CardHeader>
@@ -245,12 +269,13 @@ const CronJobsManagement = () => {
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-border">
+              <div className="pt-2 border-t border-border space-y-2">
                 <Button
                   onClick={() => handleManualTrigger(job.functionName, job.name)}
                   disabled={isProcessing}
                   size="sm"
                   variant="outline"
+                  className="w-full"
                 >
                   {isProcessing ? (
                     <>
@@ -261,6 +286,26 @@ const CronJobsManagement = () => {
                     <>
                       <Play className="mr-2 h-3 w-3" />
                       Run Now
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  onClick={handleRecalculateDeductions}
+                  disabled={isProcessing}
+                  size="sm"
+                  variant="destructive"
+                  className="w-full"
+                >
+                  {isProcessing ? (
+                    <>
+                      <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
+                      Recalculating...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="mr-2 h-3 w-3" />
+                      Recalculate All Historical Deductions
                     </>
                   )}
                 </Button>
