@@ -52,7 +52,7 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
   }, []);
 
   const fetchEmployees = async () => {
-    const { data: profiles } = await supabase
+    const { data: profiles, error } = await supabase
       .from("profiles")
       .select(`
         *,
@@ -61,6 +61,13 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
       `)
       .order("full_name");
 
+    if (error) {
+      console.error("Error fetching employees:", error);
+      toast.error("Failed to fetch employees");
+      return;
+    }
+
+    console.log("Fetched employees with salary info:", profiles);
     setEmployees(profiles || []);
   };
 
@@ -374,13 +381,19 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
                     {employeeRole ? getRoleBadge(employeeRole) : "-"}
                   </TableCell>
                   <TableCell>
-                    ₦{Number(employee.salary_info?.[0]?.base_salary || 0).toLocaleString()}
+                    {employee.salary_info && employee.salary_info.length > 0 
+                      ? `₦${Number(employee.salary_info[0].base_salary || 0).toLocaleString()}`
+                      : "-"}
                   </TableCell>
                   <TableCell>
-                    ₦{Number(employee.salary_info?.[0]?.daily_rate || 0).toLocaleString()}
+                    {employee.salary_info && employee.salary_info.length > 0 
+                      ? `₦${Number(employee.salary_info[0].daily_rate || 0).toLocaleString()}`
+                      : "-"}
                   </TableCell>
                   <TableCell>
-                    ₦{Number(employee.salary_info?.[0]?.current_salary || 0).toLocaleString()}
+                    {employee.salary_info && employee.salary_info.length > 0 
+                      ? `₦${Number(employee.salary_info[0].current_salary || 0).toLocaleString()}`
+                      : "-"}
                   </TableCell>
                   <TableCell>
                     {canEdit ? (
