@@ -15,6 +15,7 @@ const CronJobsManagement = () => {
   const [cronJobUrl, setCronJobUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [lastRunTime, setLastRunTime] = useState<string | null>(null);
+  const [monthlyResetLastRun, setMonthlyResetLastRun] = useState<string | null>(null);
 
   // Get dynamic endpoint URL from environment
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -24,9 +25,13 @@ const CronJobsManagement = () => {
   useEffect(() => {
     fetchCronJobUrl();
     fetchLastRunTime();
+    fetchMonthlyResetLastRun();
     
     // Poll for updates every 30 seconds
-    const interval = setInterval(fetchLastRunTime, 30000);
+    const interval = setInterval(() => {
+      fetchLastRunTime();
+      fetchMonthlyResetLastRun();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -44,6 +49,23 @@ const CronJobsManagement = () => {
       }
     } catch (error) {
       console.error("Error fetching last run time:", error);
+    }
+  };
+
+  const fetchMonthlyResetLastRun = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("system_settings")
+        .select("setting_value")
+        .eq("setting_key", "monthly_reset_last_run")
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setMonthlyResetLastRun(data.setting_value);
+      }
+    } catch (error) {
+      console.error("Error fetching monthly reset last run:", error);
     }
   };
 
@@ -108,7 +130,18 @@ const CronJobsManagement = () => {
       schedule: "59 23 * * *",
       scheduleText: "Every day at 11:59 PM",
       status: "active",
-      functionName: "process-daily-attendance"
+      functionName: "process-daily-attendance",
+      lastRun: lastRunTime
+    },
+    {
+      id: "reset-monthly-salary",
+      name: "Monthly Salary Reset",
+      description: "Resets all employee salaries to base amount at the start of each month",
+      schedule: "0 0 1 * *",
+      scheduleText: "1st day of every month at 12:00 AM",
+      status: "active",
+      functionName: "reset-monthly-salary",
+      lastRun: monthlyResetLastRun
     }
   ];
 
@@ -120,9 +153,15 @@ const CronJobsManagement = () => {
       if (error) throw error;
 
       if (data?.success) {
-        toast.success(`${jobName} completed! ${data.absent} employees marked absent with deductions.`);
-        // Refresh last run time after manual trigger
+        const message = data.absent 
+          ? `${jobName} completed! ${data.absent} employees marked absent with deductions.`
+          : data.reset 
+            ? `${jobName} completed! ${data.reset} employee salaries reset to base amount.`
+            : `${jobName} completed successfully!`;
+        toast.success(message);
+        // Refresh last run times after manual trigger
         await fetchLastRunTime();
+        await fetchMonthlyResetLastRun();
       } else {
         toast.error(`Failed to run ${jobName}`);
       }
@@ -172,19 +211,34 @@ const CronJobsManagement = () => {
       <CardContent>
         <div className="space-y-6">
           {/* Cron Job Monitor */}
-          {lastRunTime && (
-            <div className="bg-success/10 border border-success/20 rounded-lg p-4 flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-success">
-                  Cron Job last ran on: {format(new Date(lastRunTime), "yyyy-MM-dd hh:mm:ss a")}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  External cron job is working properly
-                </p>
+          <div className="space-y-3">
+            {lastRunTime && (
+              <div className="bg-success/10 border border-success/20 rounded-lg p-4 flex items-center gap-3">
+                <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-success">
+                    Daily Attendance last ran: {format(new Date(lastRunTime), "yyyy-MM-dd hh:mm:ss a")}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    External cron job is working properly
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+            {monthlyResetLastRun && (
+              <div className="bg-success/10 border border-success/20 rounded-lg p-4 flex items-center gap-3">
+                <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-success">
+                    Monthly Salary Reset last ran: {format(new Date(monthlyResetLastRun), "yyyy-MM-dd hh:mm:ss a")}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    All salaries reset to base amount for new month
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Cron Job URL Configuration */}
           <div className="space-y-4">
@@ -311,14 +365,29 @@ const CronJobsManagement = () => {
                 </Button>
               </div>
 
+              {job.lastRun && (
+                <div className="bg-muted/30 p-2 rounded text-xs text-muted-foreground">
+                  Last run: {format(new Date(job.lastRun), "yyyy-MM-dd hh:mm:ss a")}
+                </div>
+              )}
+
               <div className="bg-muted/50 p-3 rounded text-xs space-y-1">
                 <p className="font-medium">How it works:</p>
-                <ul className="list-disc list-inside text-muted-foreground space-y-0.5">
-                  <li>Checks all employees for attendance records</li>
-                  <li>Marks absent employees who didn't clock in</li>
-                  <li>Applies salary deductions based on system settings</li>
-                  <li>Creates attendance history records automatically</li>
-                </ul>
+                {job.id === "process-daily-attendance" ? (
+                  <ul className="list-disc list-inside text-muted-foreground space-y-0.5">
+                    <li>Checks all employees for attendance records</li>
+                    <li>Marks absent employees who didn't clock in</li>
+                    <li>Applies salary deductions based on system settings</li>
+                    <li>Creates attendance history records automatically</li>
+                  </ul>
+                ) : (
+                  <ul className="list-disc list-inside text-muted-foreground space-y-0.5">
+                    <li>Resets all employee salaries to their base amount</li>
+                    <li>Clears all accumulated deductions from previous month</li>
+                    <li>Provides fresh start for new month's attendance tracking</li>
+                    <li>Runs automatically on the 1st of every month</li>
+                  </ul>
+                )}
               </div>
             </div>
           ))}
