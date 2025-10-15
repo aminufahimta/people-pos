@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { DollarSign, Edit, Loader2 } from "lucide-react";
+import { DollarSign, Edit, Loader2, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface Employee {
   id: string;
@@ -125,6 +126,40 @@ const SalaryManagement = () => {
     }
   };
 
+  const handleClearDeductions = async (userId: string) => {
+    try {
+      const salary = salaries[userId];
+      if (!salary) {
+        toast.error("No salary information found");
+        return;
+      }
+
+      // Update salary_info to clear deductions
+      const { error: salaryError } = await supabase
+        .from("salary_info")
+        .update({
+          total_deductions: 0,
+          current_salary: salary.base_salary,
+        })
+        .eq("user_id", userId);
+
+      if (salaryError) throw salaryError;
+
+      // Clear deduction amounts from attendance records
+      const { error: attendanceError } = await supabase
+        .from("attendance")
+        .update({ deduction_amount: 0 })
+        .eq("user_id", userId);
+
+      if (attendanceError) throw attendanceError;
+
+      toast.success("Deductions cleared successfully");
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to clear deductions");
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -184,53 +219,86 @@ const SalaryManagement = () => {
                       ₦{salary ? salary.total_deductions.toLocaleString() : "0"}
                     </TableCell>
                     <TableCell>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setEditingSalary({
-                                userId: employee.id,
-                                baseSalary: salary?.base_salary || 0,
-                              })
-                            }
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Update Salary - {employee.full_name}</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="baseSalary">Base Salary (₦)</Label>
-                              <Input
-                                id="baseSalary"
-                                type="number"
-                                value={editingSalary?.baseSalary || 0}
-                                onChange={(e) =>
-                                  setEditingSalary(
-                                    editingSalary
-                                      ? { ...editingSalary, baseSalary: Number(e.target.value) }
-                                      : null
-                                  )
-                                }
-                              />
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              Daily Rate: ₦
-                              {editingSalary
-                                ? (editingSalary.baseSalary / workingDays).toFixed(2)
-                                : "0"}
-                            </div>
-                            <Button onClick={handleUpdateSalary} className="w-full">
-                              Update Salary
+                      <div className="flex items-center gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                setEditingSalary({
+                                  userId: employee.id,
+                                  baseSalary: salary?.base_salary || 0,
+                                })
+                              }
+                            >
+                              <Edit className="h-4 w-4" />
                             </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Update Salary - {employee.full_name}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="baseSalary">Base Salary (₦)</Label>
+                                <Input
+                                  id="baseSalary"
+                                  type="number"
+                                  value={editingSalary?.baseSalary || 0}
+                                  onChange={(e) =>
+                                    setEditingSalary(
+                                      editingSalary
+                                        ? { ...editingSalary, baseSalary: Number(e.target.value) }
+                                        : null
+                                    )
+                                  }
+                                />
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Daily Rate: ₦
+                                {editingSalary
+                                  ? (editingSalary.baseSalary / workingDays).toFixed(2)
+                                  : "0"}
+                              </div>
+                              <Button onClick={handleUpdateSalary} className="w-full">
+                                Update Salary
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+
+                        {salary && salary.total_deductions > 0 && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Clear Salary Deductions?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will remove all deductions (₦{salary.total_deductions.toLocaleString()}) for {employee.full_name} and restore their salary to ₦{salary.base_salary.toLocaleString()}. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleClearDeductions(employee.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Clear Deductions
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
