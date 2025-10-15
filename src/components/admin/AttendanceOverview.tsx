@@ -242,8 +242,7 @@ const AttendanceOverview = () => {
               <TableHead>Employee</TableHead>
               <TableHead>Department</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Clock In</TableHead>
-              <TableHead>Clock Out</TableHead>
+              <TableHead>Time Marked</TableHead>
               <TableHead>Deduction</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -251,7 +250,7 @@ const AttendanceOverview = () => {
           <TableBody>
             {attendance.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={selectedRange !== "today" ? 8 : 7} className="text-center text-muted-foreground">
+                <TableCell colSpan={selectedRange !== "today" ? 7 : 6} className="text-center text-muted-foreground">
                   No attendance records for this period
                 </TableCell>
               </TableRow>
@@ -267,13 +266,8 @@ const AttendanceOverview = () => {
                   <TableCell>{record.profiles?.department || "-"}</TableCell>
                   <TableCell>{getStatusBadge(record.status)}</TableCell>
                   <TableCell>
-                    {record.clock_in
-                      ? new Date(record.clock_in).toLocaleTimeString()
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {record.clock_out
-                      ? new Date(record.clock_out).toLocaleTimeString()
+                    {record.created_at
+                      ? new Date(record.created_at).toLocaleTimeString()
                       : "-"}
                   </TableCell>
                   <TableCell>
