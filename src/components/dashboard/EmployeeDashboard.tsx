@@ -48,48 +48,40 @@ const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
     setTodayAttendance(attendanceData);
   };
 
-  const handleClockIn = async () => {
+  const handleMarkAttendance = async () => {
     setIsClockingIn(true);
     try {
       const today = new Date().toISOString().split("T")[0];
       const now = new Date().toISOString();
 
-      const { error } = await supabase.from("attendance").upsert({
-        user_id: user.id,
-        date: today,
-        clock_in: now,
-        status: "present",
-      }, {
-        onConflict: "user_id,date"
-      });
+      // If no attendance record or no clock_in, clock in
+      if (!todayAttendance || !todayAttendance.clock_in) {
+        const { error } = await supabase.from("attendance").upsert({
+          user_id: user.id,
+          date: today,
+          clock_in: now,
+          status: "present",
+        }, {
+          onConflict: "user_id,date"
+        });
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success("Clocked in successfully!");
+      } 
+      // If already clocked in but not clocked out, clock out
+      else if (todayAttendance.clock_in && !todayAttendance.clock_out) {
+        const { error } = await supabase
+          .from("attendance")
+          .update({ clock_out: now })
+          .eq("id", todayAttendance.id);
 
-      toast.success("Clocked in successfully!");
+        if (error) throw error;
+        toast.success("Clocked out successfully!");
+      }
+
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || "Failed to clock in");
-    } finally {
-      setIsClockingIn(false);
-    }
-  };
-
-  const handleClockOut = async () => {
-    setIsClockingIn(true);
-    try {
-      const now = new Date().toISOString();
-
-      const { error } = await supabase
-        .from("attendance")
-        .update({ clock_out: now })
-        .eq("id", todayAttendance.id);
-
-      if (error) throw error;
-
-      toast.success("Clocked out successfully!");
-      fetchData();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to clock out");
+      toast.error(error.message || "Failed to mark attendance");
     } finally {
       setIsClockingIn(false);
     }
@@ -164,22 +156,24 @@ const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
           <CardHeader>
             <CardTitle>Attendance Clock</CardTitle>
           </CardHeader>
-          <CardContent className="flex gap-4">
+          <CardContent>
             <Button
-              onClick={handleClockIn}
-              disabled={isClockingIn || todayAttendance?.clock_in}
-              className="flex-1"
+              onClick={handleMarkAttendance}
+              disabled={isClockingIn || (todayAttendance?.clock_in && todayAttendance?.clock_out)}
+              className="w-full"
+              size="lg"
             >
-              {todayAttendance?.clock_in ? "Already Clocked In" : "Clock In"}
+              {!todayAttendance || !todayAttendance.clock_in 
+                ? "Mark Attendance" 
+                : todayAttendance.clock_out 
+                  ? "Attendance Completed" 
+                  : "Mark Attendance"}
             </Button>
-            <Button
-              onClick={handleClockOut}
-              disabled={isClockingIn || !todayAttendance?.clock_in || todayAttendance?.clock_out}
-              variant="outline"
-              className="flex-1"
-            >
-              {todayAttendance?.clock_out ? "Already Clocked Out" : "Clock Out"}
-            </Button>
+            {todayAttendance?.clock_in && !todayAttendance?.clock_out && (
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Click again to clock out
+              </p>
+            )}
           </CardContent>
         </Card>
 

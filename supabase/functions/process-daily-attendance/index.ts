@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
     const today = new Date().toISOString().split('T')[0];
     const todayDate = new Date();
     const dayOfWeek = todayDate.getDay(); // 0 = Sunday, 6 = Saturday
+    const currentHour = todayDate.getHours();
     
     // Skip processing on weekends
     if (dayOfWeek === 0 || dayOfWeek === 6) {
@@ -29,6 +30,23 @@ Deno.serve(async (req) => {
           processed: 0,
           absent: 0,
           message: 'Skipped processing - weekends are not working days',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+    
+    // Only process at the end of the work day (after 6 PM)
+    if (currentHour < 18) {
+      console.log(`Skipping attendance processing - too early in the day (current hour: ${currentHour})`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          processed: 0,
+          absent: 0,
+          message: 'Skipped processing - attendance is only processed at end of work day (after 6 PM)',
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
