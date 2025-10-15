@@ -50,8 +50,6 @@ const AttendanceHistory = ({ userId }: AttendanceHistoryProps) => {
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Clock In</TableHead>
-              <TableHead>Clock Out</TableHead>
               <TableHead>Deduction</TableHead>
             </TableRow>
           </TableHeader>
@@ -60,16 +58,6 @@ const AttendanceHistory = ({ userId }: AttendanceHistoryProps) => {
               <TableRow key={record.id}>
                 <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
                 <TableCell>{getStatusBadge(record.status)}</TableCell>
-                <TableCell>
-                  {record.clock_in
-                    ? new Date(record.clock_in).toLocaleTimeString()
-                    : "-"}
-                </TableCell>
-                <TableCell>
-                  {record.clock_out
-                    ? new Date(record.clock_out).toLocaleTimeString()
-                    : "-"}
-                </TableCell>
                 <TableCell>
                   {record.deduction_amount > 0
                     ? `₦${Number(record.deduction_amount).toLocaleString()}`

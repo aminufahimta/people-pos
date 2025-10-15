@@ -52,33 +52,17 @@ const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
     setIsClockingIn(true);
     try {
       const today = new Date().toISOString().split("T")[0];
-      const now = new Date().toISOString();
 
-      // If no attendance record or no clock_in, clock in
-      if (!todayAttendance || !todayAttendance.clock_in) {
-        const { error } = await supabase.from("attendance").upsert({
-          user_id: user.id,
-          date: today,
-          clock_in: now,
-          status: "present",
-        }, {
-          onConflict: "user_id,date"
-        });
+      const { error } = await supabase.from("attendance").upsert({
+        user_id: user.id,
+        date: today,
+        status: "present",
+      }, {
+        onConflict: "user_id,date"
+      });
 
-        if (error) throw error;
-        toast.success("Clocked in successfully!");
-      } 
-      // If already clocked in but not clocked out, clock out
-      else if (todayAttendance.clock_in && !todayAttendance.clock_out) {
-        const { error } = await supabase
-          .from("attendance")
-          .update({ clock_out: now })
-          .eq("id", todayAttendance.id);
-
-        if (error) throw error;
-        toast.success("Clocked out successfully!");
-      }
-
+      if (error) throw error;
+      toast.success("Attendance marked successfully!");
       fetchData();
     } catch (error: any) {
       toast.error(error.message || "Failed to mark attendance");
@@ -129,13 +113,8 @@ const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold capitalize text-foreground">
-                {todayAttendance?.status || "Absent"}
+                {todayAttendance?.status || "Not Marked"}
               </div>
-              {todayAttendance?.clock_in && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  In: {new Date(todayAttendance.clock_in).toLocaleTimeString()}
-                </p>
-              )}
             </CardContent>
           </Card>
 
@@ -154,26 +133,19 @@ const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
 
         <Card className="shadow-[var(--shadow-elegant)]">
           <CardHeader>
-            <CardTitle>Attendance Clock</CardTitle>
+            <CardTitle>Mark Attendance</CardTitle>
           </CardHeader>
           <CardContent>
             <Button
               onClick={handleMarkAttendance}
-              disabled={isClockingIn || (todayAttendance?.clock_in && todayAttendance?.clock_out)}
+              disabled={isClockingIn || todayAttendance?.status === "present"}
               className="w-full"
               size="lg"
             >
-              {!todayAttendance || !todayAttendance.clock_in 
-                ? "Mark Attendance" 
-                : todayAttendance.clock_out 
-                  ? "Attendance Completed" 
-                  : "Mark Attendance"}
+              {todayAttendance?.status === "present" 
+                ? "Attendance Marked" 
+                : "Mark Attendance"}
             </Button>
-            {todayAttendance?.clock_in && !todayAttendance?.clock_out && (
-              <p className="text-xs text-muted-foreground mt-2 text-center">
-                Click again to clock out
-              </p>
-            )}
           </CardContent>
         </Card>
 
