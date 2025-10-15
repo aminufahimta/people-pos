@@ -7,9 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const AttendanceOverview = () => {
   const [attendance, setAttendance] = useState<any[]>([]);
@@ -89,6 +91,47 @@ const AttendanceOverview = () => {
         return <Badge className="bg-warning text-warning-foreground">Late</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  const handleClearDailyDeduction = async (attendanceId: string, userId: string, deductionAmount: number) => {
+    try {
+      // Clear the deduction on this specific attendance record
+      const { error: attendanceError } = await supabase
+        .from("attendance")
+        .update({ deduction_amount: 0 })
+        .eq("id", attendanceId);
+
+      if (attendanceError) throw attendanceError;
+
+      // Fetch the user's salary info
+      const { data: salaryData, error: salaryFetchError } = await supabase
+        .from("salary_info")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (salaryFetchError) throw salaryFetchError;
+
+      // Recalculate total deductions and current salary
+      const newTotalDeductions = Math.max(0, salaryData.total_deductions - deductionAmount);
+      const newCurrentSalary = salaryData.base_salary - newTotalDeductions;
+
+      // Update salary info
+      const { error: salaryUpdateError } = await supabase
+        .from("salary_info")
+        .update({
+          total_deductions: newTotalDeductions,
+          current_salary: newCurrentSalary,
+        })
+        .eq("user_id", userId);
+
+      if (salaryUpdateError) throw salaryUpdateError;
+
+      toast.success("Daily deduction cleared successfully");
+      fetchAttendance();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to clear deduction");
     }
   };
 
@@ -202,12 +245,13 @@ const AttendanceOverview = () => {
               <TableHead>Clock In</TableHead>
               <TableHead>Clock Out</TableHead>
               <TableHead>Deduction</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {attendance.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={selectedRange !== "today" ? 7 : 6} className="text-center text-muted-foreground">
+                <TableCell colSpan={selectedRange !== "today" ? 8 : 7} className="text-center text-muted-foreground">
                   No attendance records for this period
                 </TableCell>
               </TableRow>
@@ -236,6 +280,38 @@ const AttendanceOverview = () => {
                     {record.deduction_amount > 0
                       ? `₦${Number(record.deduction_amount).toLocaleString()}`
                       : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {record.deduction_amount > 0 && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Clear Daily Deduction?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will remove the ₦{Number(record.deduction_amount).toLocaleString()} deduction from {record.profiles?.full_name || "this employee"}'s salary for {new Date(record.date).toLocaleDateString()}. This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleClearDailyDeduction(record.id, record.user_id, record.deduction_amount)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Clear Deduction
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
