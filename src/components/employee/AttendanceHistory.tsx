@@ -50,6 +50,7 @@ const AttendanceHistory = ({ userId }: AttendanceHistoryProps) => {
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Time Marked</TableHead>
               <TableHead>Deduction</TableHead>
             </TableRow>
           </TableHeader>
@@ -58,6 +59,11 @@ const AttendanceHistory = ({ userId }: AttendanceHistoryProps) => {
               <TableRow key={record.id}>
                 <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
                 <TableCell>{getStatusBadge(record.status)}</TableCell>
+                <TableCell>
+                  {record.created_at
+                    ? new Date(record.created_at).toLocaleTimeString()
+                    : "-"}
+                </TableCell>
                 <TableCell>
                   {record.deduction_amount > 0
                     ? `₦${Number(record.deduction_amount).toLocaleString()}`
