@@ -187,26 +187,34 @@ const SuspensionManagement = ({ userRole, currentUserId }: SuspensionManagementP
       const currentStrikes = profileData?.strike_count || 0;
       const newStrikes = currentStrikes + (strikeNumber || 0);
 
+      // Only suspend if it's not just a warning (strike > 0)
+      const updateData: any = {
+        strike_count: newStrikes
+      };
+
+      if (strikeNumber && strikeNumber > 0) {
+        updateData.is_suspended = true;
+        updateData.suspension_end_date = suspensionEnd.toISOString();
+      }
+
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({
-          is_suspended: true,
-          suspension_end_date: suspensionEnd.toISOString(),
-          strike_count: newStrikes
-        })
+        .update(updateData)
         .eq("id", formData.user_id);
 
       if (profileError) {
         toast({
           title: "Error",
-          description: "Failed to activate suspension",
+          description: strikeNumber && strikeNumber > 0 
+            ? "Failed to activate suspension" 
+            : "Failed to issue warning",
           variant: "destructive",
         });
         return;
       }
 
-      // Apply salary deduction if any
-      if (parseFloat(formData.salary_deduction) > 0) {
+      // Apply salary deduction if any (only for actual suspensions, not warnings)
+      if (strikeNumber && strikeNumber > 0 && parseFloat(formData.salary_deduction) > 0) {
         const { data: salaryData } = await supabase
           .from("salary_info")
           .select("base_salary, current_salary, total_deductions")
@@ -229,7 +237,7 @@ const SuspensionManagement = ({ userRole, currentUserId }: SuspensionManagementP
     toast({
       title: "Success",
       description: userRole === "super_admin" 
-        ? "Suspension activated successfully" 
+        ? (strikeNumber && strikeNumber > 0 ? "Suspension activated successfully" : "Warning issued successfully")
         : "Suspension request submitted for approval",
     });
     setIsCreateOpen(false);
@@ -289,13 +297,19 @@ const SuspensionManagement = ({ userRole, currentUserId }: SuspensionManagementP
     const currentStrikes = profileData?.strike_count || 0;
     const newStrikes = currentStrikes + (suspension.strike_number || 0);
 
+    // Only suspend if it's not just a warning (strike > 0)
+    const updateData: any = {
+      strike_count: newStrikes
+    };
+
+    if (suspension.strike_number && suspension.strike_number > 0) {
+      updateData.is_suspended = true;
+      updateData.suspension_end_date = suspension.suspension_end;
+    }
+
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({
-        is_suspended: true,
-        suspension_end_date: suspension.suspension_end,
-        strike_count: newStrikes
-      })
+      .update(updateData)
       .eq("id", suspension.user_id);
 
     if (profileError) {
@@ -307,8 +321,8 @@ const SuspensionManagement = ({ userRole, currentUserId }: SuspensionManagementP
       return;
     }
 
-    // Apply salary deduction if any
-    if (suspension.salary_deduction_percentage > 0) {
+    // Apply salary deduction if any (only for actual suspensions, not warnings)
+    if (suspension.strike_number && suspension.strike_number > 0 && suspension.salary_deduction_percentage > 0) {
       const { data: salaryData } = await supabase
         .from("salary_info")
         .select("base_salary, current_salary, total_deductions")

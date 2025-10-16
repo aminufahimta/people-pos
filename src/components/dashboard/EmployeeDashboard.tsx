@@ -8,6 +8,7 @@ import { DollarSign, Calendar, Clock, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 import AttendanceHistory from "@/components/employee/AttendanceHistory";
 import SuspendedView from "@/components/employee/SuspendedView";
+import WarningBanner from "@/components/employee/WarningBanner";
 
 interface EmployeeDashboardProps {
   user: User;
@@ -89,6 +90,9 @@ const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
       userRole="employee"
     >
       <div className="space-y-6">
+        {/* Show warning banner for active warnings */}
+        <WarningBanner userId={user.id} />
+        
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
