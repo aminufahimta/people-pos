@@ -99,24 +99,55 @@ const SuspensionManagement = ({ userRole, currentUserId }: SuspensionManagementP
   const handleCreateSuspension = async () => {
     const suspensionEnd = new Date();
     suspensionEnd.setDate(suspensionEnd.getDate() + parseInt(formData.duration_days));
+    const strikeNumber = parseInt(formData.strike_number) || null;
+
+    // Check if this is strike 3 (termination)
+    if (strikeNumber === 3) {
+      const { error: terminateError } = await supabase
+        .from("profiles")
+        .update({ is_terminated: true })
+        .eq("id", formData.user_id);
+
+      if (terminateError) {
+        toast({
+          title: "Error",
+          description: "Failed to terminate employee",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Employee Terminated",
+        description: "Strike 3: Employee has been terminated",
+        variant: "destructive",
+      });
+      setIsCreateOpen(false);
+      fetchSuspensions();
+      return;
+    }
 
     const suspensionData: any = {
       user_id: formData.user_id,
       created_by: currentUserId,
       reason: formData.reason,
       suspension_end: suspensionEnd.toISOString(),
-      strike_number: parseInt(formData.strike_number) || null,
+      strike_number: strikeNumber,
       salary_deduction_percentage: parseFloat(formData.salary_deduction) || 0,
     };
 
-    // Super Admin can approve immediately
+    // Super Admin can activate immediately
     if (userRole === "super_admin") {
-      suspensionData.status = "approved";
+      suspensionData.status = "active";
       suspensionData.approved_by = currentUserId;
       suspensionData.suspension_start = new Date().toISOString();
     }
 
-    const { error } = await supabase.from("suspensions").insert(suspensionData);
+    const { data: insertedSuspension, error } = await supabase
+      .from("suspensions")
+      .insert(suspensionData)
+      .select()
+      .single();
 
     if (error) {
       toast({
@@ -124,48 +155,166 @@ const SuspensionManagement = ({ userRole, currentUserId }: SuspensionManagementP
         description: "Failed to create suspension",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: userRole === "super_admin" 
-          ? "Suspension activated successfully" 
-          : "Suspension request submitted for approval",
-      });
-      setIsCreateOpen(false);
-      setFormData({
-        user_id: "",
-        reason: "",
-        duration_days: "7",
-        strike_number: "0",
-        salary_deduction: "0",
-      });
-      fetchSuspensions();
+      return;
     }
+
+    // If Super Admin, immediately update profile
+    if (userRole === "super_admin" && insertedSuspension) {
+      // Get current strike count
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("strike_count")
+        .eq("id", formData.user_id)
+        .single();
+
+      const currentStrikes = profileData?.strike_count || 0;
+      const newStrikes = currentStrikes + (strikeNumber || 0);
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          is_suspended: true,
+          suspension_end_date: suspensionEnd.toISOString(),
+          strike_count: newStrikes
+        })
+        .eq("id", formData.user_id);
+
+      if (profileError) {
+        toast({
+          title: "Error",
+          description: "Failed to activate suspension",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Apply salary deduction if any
+      if (parseFloat(formData.salary_deduction) > 0) {
+        const { data: salaryData } = await supabase
+          .from("salary_info")
+          .select("base_salary, current_salary, total_deductions")
+          .eq("user_id", formData.user_id)
+          .single();
+
+        if (salaryData) {
+          const deductionAmount = (salaryData.current_salary * parseFloat(formData.salary_deduction)) / 100;
+          await supabase
+            .from("salary_info")
+            .update({
+              current_salary: salaryData.current_salary - deductionAmount,
+              total_deductions: (salaryData.total_deductions || 0) + deductionAmount
+            })
+            .eq("user_id", formData.user_id);
+        }
+      }
+    }
+
+    toast({
+      title: "Success",
+      description: userRole === "super_admin" 
+        ? "Suspension activated successfully" 
+        : "Suspension request submitted for approval",
+    });
+    setIsCreateOpen(false);
+    setFormData({
+      user_id: "",
+      reason: "",
+      duration_days: "7",
+      strike_number: "0",
+      salary_deduction: "0",
+    });
+    fetchSuspensions();
   };
 
   const handleApproveSuspension = async (suspensionId: string) => {
-    const { error } = await supabase
+    // Get suspension details first
+    const { data: suspension, error: fetchError } = await supabase
+      .from("suspensions")
+      .select("*")
+      .eq("id", suspensionId)
+      .single();
+
+    if (fetchError || !suspension) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch suspension details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update suspension to active
+    const { error: updateError } = await supabase
       .from("suspensions")
       .update({
-        status: "approved",
+        status: "active",
         approved_by: currentUserId,
         suspension_start: new Date().toISOString(),
       })
       .eq("id", suspensionId);
 
-    if (error) {
+    if (updateError) {
       toast({
         title: "Error",
         description: "Failed to approve suspension",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Suspension approved and activated",
-      });
-      fetchSuspensions();
+      return;
     }
+
+    // Update profile
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("strike_count")
+      .eq("id", suspension.user_id)
+      .single();
+
+    const currentStrikes = profileData?.strike_count || 0;
+    const newStrikes = currentStrikes + (suspension.strike_number || 0);
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({
+        is_suspended: true,
+        suspension_end_date: suspension.suspension_end,
+        strike_count: newStrikes
+      })
+      .eq("id", suspension.user_id);
+
+    if (profileError) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Apply salary deduction if any
+    if (suspension.salary_deduction_percentage > 0) {
+      const { data: salaryData } = await supabase
+        .from("salary_info")
+        .select("base_salary, current_salary, total_deductions")
+        .eq("user_id", suspension.user_id)
+        .single();
+
+      if (salaryData) {
+        const deductionAmount = (salaryData.current_salary * suspension.salary_deduction_percentage) / 100;
+        await supabase
+          .from("salary_info")
+          .update({
+            current_salary: salaryData.current_salary - deductionAmount,
+            total_deductions: (salaryData.total_deductions || 0) + deductionAmount
+          })
+          .eq("user_id", suspension.user_id);
+      }
+    }
+
+    toast({
+      title: "Success",
+      description: "Suspension approved and activated",
+    });
+    fetchSuspensions();
   };
 
   const handleRejectSuspension = async (suspensionId: string) => {
