@@ -64,8 +64,12 @@ export type Database = {
           full_name: string
           hire_date: string | null
           id: string
+          is_suspended: boolean | null
+          is_terminated: boolean | null
           phone: string | null
           position: string | null
+          strike_count: number | null
+          suspension_end_date: string | null
           updated_at: string | null
         }
         Insert: {
@@ -76,8 +80,12 @@ export type Database = {
           full_name: string
           hire_date?: string | null
           id: string
+          is_suspended?: boolean | null
+          is_terminated?: boolean | null
           phone?: string | null
           position?: string | null
+          strike_count?: number | null
+          suspension_end_date?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -88,8 +96,12 @@ export type Database = {
           full_name?: string
           hire_date?: string | null
           id?: string
+          is_suspended?: boolean | null
+          is_terminated?: boolean | null
           phone?: string | null
           position?: string | null
+          strike_count?: number | null
+          suspension_end_date?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -133,6 +145,73 @@ export type Database = {
             foreignKeyName: "salary_info_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suspensions: {
+        Row: {
+          approved_by: string | null
+          created_at: string | null
+          created_by: string
+          id: string
+          reason: string
+          salary_deduction_percentage: number | null
+          status: Database["public"]["Enums"]["suspension_status"]
+          strike_number: number | null
+          suspension_end: string
+          suspension_start: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string | null
+          created_by: string
+          id?: string
+          reason: string
+          salary_deduction_percentage?: number | null
+          status?: Database["public"]["Enums"]["suspension_status"]
+          strike_number?: number | null
+          suspension_end: string
+          suspension_start?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          reason?: string
+          salary_deduction_percentage?: number | null
+          status?: Database["public"]["Enums"]["suspension_status"]
+          strike_number?: number | null
+          suspension_end?: string
+          suspension_start?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suspensions_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suspensions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suspensions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -199,6 +278,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_suspension_expiry: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -213,6 +296,12 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "hr_manager" | "employee"
+      suspension_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "active"
+        | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -341,6 +430,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "hr_manager", "employee"],
+      suspension_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "active",
+        "completed",
+      ],
     },
   },
 } as const

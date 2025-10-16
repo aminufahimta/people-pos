@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DollarSign, Calendar, Clock, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 import AttendanceHistory from "@/components/employee/AttendanceHistory";
+import SuspendedView from "@/components/employee/SuspendedView";
 
 interface EmployeeDashboardProps {
   user: User;
@@ -47,6 +48,16 @@ const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
     setSalary(salaryData);
     setTodayAttendance(attendanceData);
   };
+
+  // Check if user is suspended
+  if (profile?.is_suspended && profile?.suspension_end_date) {
+    return (
+      <SuspendedView
+        suspensionEndDate={profile.suspension_end_date}
+        strikeCount={profile.strike_count || 0}
+      />
+    );
+  }
 
   const handleMarkAttendance = async () => {
     setIsClockingIn(true);

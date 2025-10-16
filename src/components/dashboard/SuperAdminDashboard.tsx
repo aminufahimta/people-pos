@@ -13,6 +13,7 @@ import SystemSettings from "@/components/admin/SystemSettings";
 import SalaryManagement from "@/components/admin/SalaryManagement";
 import ReportsGeneration from "@/components/admin/ReportsGeneration";
 import HRManagerManagement from "@/components/admin/HRManagerManagement";
+import SuspensionManagement from "@/components/admin/SuspensionManagement";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -85,6 +86,9 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           </TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center gap-2">
             Reports
+          </TabsTrigger>
+          <TabsTrigger value="suspensions" className="flex items-center gap-2">
+            Suspensions
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -171,6 +175,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="reports" className="space-y-8">
           <ReportsGeneration />
+        </TabsContent>
+
+        <TabsContent value="suspensions" className="space-y-8">
+          <SuspensionManagement userRole="super_admin" currentUserId={user.id} />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-8">
