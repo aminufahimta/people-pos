@@ -76,10 +76,11 @@ Deno.serve(async (req) => {
     );
     console.log(`Using deduction percentage: ${deductionPercentage}% | working days: ${workingDays}`);
 
-    // Get all employees
+    // Get all employees (excluding suspended ones)
     const { data: employees, error: employeesError } = await supabaseClient
       .from('profiles')
-      .select('id');
+      .select('id')
+      .eq('is_suspended', false);
 
     if (employeesError) {
       console.error('Error fetching employees:', employeesError);
