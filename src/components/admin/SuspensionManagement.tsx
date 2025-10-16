@@ -10,8 +10,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle, XCircle, Clock } from "lucide-react";
+import { AlertCircle, CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Suspension {
   id: string;
@@ -338,6 +349,96 @@ const SuspensionManagement = ({ userRole, currentUserId }: SuspensionManagementP
     }
   };
 
+  const handleDeleteSuspension = async (suspensionId: string) => {
+    // Get suspension details first
+    const { data: suspension, error: fetchError } = await supabase
+      .from("suspensions")
+      .select("*")
+      .eq("id", suspensionId)
+      .single();
+
+    if (fetchError || !suspension) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch suspension details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // If suspension is active, revert the profile changes
+    if (suspension.status === "active") {
+      // Get current profile data
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("strike_count")
+        .eq("id", suspension.user_id)
+        .single();
+
+      const currentStrikes = profileData?.strike_count || 0;
+      const newStrikes = Math.max(0, currentStrikes - (suspension.strike_number || 0));
+
+      // Update profile to remove suspension
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          is_suspended: false,
+          suspension_end_date: null,
+          strike_count: newStrikes
+        })
+        .eq("id", suspension.user_id);
+
+      if (profileError) {
+        toast({
+          title: "Error",
+          description: "Failed to update profile",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Revert salary deduction if any
+      if (suspension.salary_deduction_percentage > 0) {
+        const { data: salaryData } = await supabase
+          .from("salary_info")
+          .select("base_salary, current_salary, total_deductions")
+          .eq("user_id", suspension.user_id)
+          .single();
+
+        if (salaryData) {
+          const deductionAmount = (salaryData.base_salary * suspension.salary_deduction_percentage) / 100;
+          await supabase
+            .from("salary_info")
+            .update({
+              current_salary: salaryData.current_salary + deductionAmount,
+              total_deductions: Math.max(0, (salaryData.total_deductions || 0) - deductionAmount)
+            })
+            .eq("user_id", suspension.user_id);
+        }
+      }
+    }
+
+    // Delete the suspension record
+    const { error: deleteError } = await supabase
+      .from("suspensions")
+      .delete()
+      .eq("id", suspensionId);
+
+    if (deleteError) {
+      toast({
+        title: "Error",
+        description: "Failed to delete suspension",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Suspension deleted successfully",
+      });
+      fetchSuspensions();
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { icon: any; variant: any; label: string }> = {
       pending: { icon: Clock, variant: "secondary", label: "Pending" },
@@ -471,15 +572,43 @@ const SuspensionManagement = ({ userRole, currentUserId }: SuspensionManagementP
                 <TableCell>{suspension.salary_deduction_percentage}%</TableCell>
                 <TableCell>{format(new Date(suspension.suspension_end), "MMM dd, yyyy")}</TableCell>
                 <TableCell>{suspension.creator?.full_name}</TableCell>
-                {userRole === "super_admin" && suspension.status === "pending" && (
+                {userRole === "super_admin" && (
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleApproveSuspension(suspension.id)}>
-                        Approve
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleRejectSuspension(suspension.id)}>
-                        Reject
-                      </Button>
+                      {suspension.status === "pending" && (
+                        <>
+                          <Button size="sm" onClick={() => handleApproveSuspension(suspension.id)}>
+                            Approve
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => handleRejectSuspension(suspension.id)}>
+                            Reject
+                          </Button>
+                        </>
+                      )}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Suspension</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this suspension? 
+                              {suspension.status === "active" && 
+                                " This will revert all suspension changes including strike count and salary deductions."}
+                              {" This action cannot be undone."}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteSuspension(suspension.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 )}
