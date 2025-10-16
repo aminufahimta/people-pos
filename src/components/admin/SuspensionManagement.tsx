@@ -101,10 +101,16 @@ const SuspensionManagement = ({ userRole, currentUserId }: SuspensionManagementP
         *,
         user_roles (role)
       `)
-      .eq("user_roles.role", "employee")
       .order("full_name");
 
-    setEmployees(data || []);
+    // Filter out super_admins
+    const filteredData = data?.filter(profile => 
+      profile.user_roles?.some((ur: any) => 
+        ur.role === "employee" || ur.role === "hr_manager"
+      )
+    );
+
+    setEmployees(filteredData || []);
   };
 
   const handleCreateSuspension = async () => {
