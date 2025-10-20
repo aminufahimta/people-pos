@@ -46,6 +46,10 @@ const Dashboard = () => {
 
       if (roleData) {
         setRole(roleData.role);
+        // Super admins bypass approval check
+        if (roleData.role === 'super_admin') {
+          setIsApproved(true);
+        }
       }
       
       setLoading(false);
