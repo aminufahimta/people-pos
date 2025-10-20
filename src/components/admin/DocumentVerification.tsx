@@ -35,20 +35,42 @@ const DocumentVerification = () => {
 
   const fetchDocuments = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    
+    // Fetch documents
+    const { data: docsData, error: docsError } = await supabase
       .from("employee_documents")
-      .select(`
-        *,
-        profile:profiles!employee_documents_user_id_fkey(full_name, email, is_approved)
-      `)
+      .select("*")
       .order("uploaded_at", { ascending: false });
 
-    if (error) {
+    if (docsError) {
       toast.error("Failed to load documents");
-      console.error(error);
-    } else {
-      setDocuments(data as any);
+      console.error(docsError);
+      setLoading(false);
+      return;
     }
+
+    // Fetch profiles
+    const userIds = [...new Set(docsData.map(doc => doc.user_id))];
+    const { data: profilesData, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, full_name, email, is_approved")
+      .in("id", userIds);
+
+    if (profilesError) {
+      toast.error("Failed to load user profiles");
+      console.error(profilesError);
+      setLoading(false);
+      return;
+    }
+
+    // Join documents with profiles
+    const profilesMap = new Map(profilesData.map(p => [p.id, p]));
+    const documentsWithProfiles = docsData.map(doc => ({
+      ...doc,
+      profile: profilesMap.get(doc.user_id) || { full_name: "Unknown", email: "Unknown", is_approved: false }
+    }));
+
+    setDocuments(documentsWithProfiles as any);
     setLoading(false);
   };
 
