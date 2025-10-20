@@ -23,11 +23,10 @@ const Auth = () => {
     fullName: "",
     phone: "",
     position: "",
+    dateOfBirth: "",
   });
   const [documents, setDocuments] = useState({
-    idCard: null as File | null,
-    nin: null as File | null,
-    otherDocument: null as File | null,
+    governmentId: null as File | null,
   });
   const [settings, setSettings] = useState({
     companyName: "HR Management System",
@@ -137,8 +136,8 @@ const Auth = () => {
 
     try {
       // Validate required documents
-      if (!documents.idCard || !documents.nin) {
-        toast.error("Please upload ID Card and NIN documents");
+      if (!documents.governmentId) {
+        toast.error("Please upload Government Issued ID Card");
         setIsLoading(false);
         return;
       }
@@ -164,17 +163,14 @@ const Auth = () => {
         .update({
           phone: signupData.phone,
           position: signupData.position,
+          date_of_birth: signupData.dateOfBirth,
         })
         .eq('id', authData.user.id);
 
       if (profileError) throw profileError;
 
       // Upload documents
-      await Promise.all([
-        uploadDocument(authData.user.id, documents.idCard, 'id_card'),
-        uploadDocument(authData.user.id, documents.nin, 'nin'),
-        documents.otherDocument && uploadDocument(authData.user.id, documents.otherDocument, 'other'),
-      ]);
+      await uploadDocument(authData.user.id, documents.governmentId, 'government_id');
 
       toast.success("Account created successfully! Please wait for admin approval.");
       // Sign out the user so they see the approval message
@@ -294,13 +290,29 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-position">Position</Label>
-                    <Input
+                    <Label htmlFor="signup-position">Position *</Label>
+                    <select
                       id="signup-position"
-                      type="text"
-                      placeholder="Software Engineer"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       value={signupData.position}
                       onChange={(e) => setSignupData({ ...signupData, position: e.target.value })}
+                      required
+                    >
+                      <option value="">Select Position</option>
+                      <option value="Software Engineer">Software Engineer</option>
+                      <option value="Technical Support">Technical Support</option>
+                      <option value="Field Technician">Field Technician</option>
+                      <option value="Customer Service">Customer Service</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-dob">Date of Birth *</Label>
+                    <Input
+                      id="signup-dob"
+                      type="date"
+                      value={signupData.dateOfBirth}
+                      onChange={(e) => setSignupData({ ...signupData, dateOfBirth: e.target.value })}
+                      required
                     />
                   </div>
                   <div className="space-y-2 md:col-span-2">
@@ -319,32 +331,13 @@ const Auth = () => {
                 <div className="space-y-4 pt-4 border-t">
                   <h3 className="font-semibold text-sm">Required Documents</h3>
                   <div className="space-y-2">
-                    <Label htmlFor="id-card">ID Card * (Max 5MB)</Label>
+                    <Label htmlFor="government-id">Government Issued ID Card * (Max 5MB)</Label>
                     <Input
-                      id="id-card"
+                      id="government-id"
                       type="file"
                       accept="image/*,.pdf"
-                      onChange={(e) => handleFileChange('idCard', e.target.files?.[0] || null)}
+                      onChange={(e) => handleFileChange('governmentId', e.target.files?.[0] || null)}
                       required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="nin">NIN Document * (Max 5MB)</Label>
-                    <Input
-                      id="nin"
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => handleFileChange('nin', e.target.files?.[0] || null)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="other-doc">Other Document (Optional, Max 5MB)</Label>
-                    <Input
-                      id="other-doc"
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => handleFileChange('otherDocument', e.target.files?.[0] || null)}
                     />
                   </div>
                 </div>
