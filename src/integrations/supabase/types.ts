@@ -55,6 +55,42 @@ export type Database = {
           },
         ]
       }
+      employee_documents: {
+        Row: {
+          document_type: string
+          file_name: string
+          file_path: string
+          id: string
+          uploaded_at: string
+          user_id: string
+          verified: boolean | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          document_type: string
+          file_name: string
+          file_path: string
+          id?: string
+          uploaded_at?: string
+          user_id: string
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          document_type?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          uploaded_at?: string
+          user_id?: string
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

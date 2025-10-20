@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import logo from "@/assets/logo.png";
 
 const Auth = () => {
@@ -14,6 +15,18 @@ const Auth = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+  });
+  const [signupData, setSignupData] = useState({
+    email: "",
+    password: "",
+    fullName: "",
+    phone: "",
+    position: "",
+  });
+  const [documents, setDocuments] = useState({
+    idCard: null as File | null,
+    nin: null as File | null,
+    otherDocument: null as File | null,
   });
   const [settings, setSettings] = useState({
     companyName: "HR Management System",
@@ -80,6 +93,91 @@ const Auth = () => {
     }
   };
 
+  const handleFileChange = (documentType: keyof typeof documents, file: File | null) => {
+    if (file && file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+    setDocuments({ ...documents, [documentType]: file });
+  };
+
+  const uploadDocument = async (userId: string, file: File, documentType: string) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${userId}/${documentType}-${Date.now()}.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('employee-documents')
+      .upload(fileName, file);
+
+    if (uploadError) throw uploadError;
+
+    // Save document metadata
+    const { error: dbError } = await supabase
+      .from('employee_documents')
+      .insert({
+        user_id: userId,
+        document_type: documentType,
+        file_path: fileName,
+        file_name: file.name,
+      });
+
+    if (dbError) throw dbError;
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      // Validate required documents
+      if (!documents.idCard || !documents.nin) {
+        toast.error("Please upload ID Card and NIN documents");
+        setIsLoading(false);
+        return;
+      }
+
+      // Create user account
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: signupData.email,
+        password: signupData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: signupData.fullName,
+          },
+        },
+      });
+
+      if (signUpError) throw signUpError;
+      if (!authData.user) throw new Error("User creation failed");
+
+      // Update profile with additional information
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          phone: signupData.phone,
+          position: signupData.position,
+        })
+        .eq('id', authData.user.id);
+
+      if (profileError) throw profileError;
+
+      // Upload documents
+      await Promise.all([
+        uploadDocument(authData.user.id, documents.idCard, 'id_card'),
+        uploadDocument(authData.user.id, documents.nin, 'nin'),
+        documents.otherDocument && uploadDocument(authData.user.id, documents.otherDocument, 'other'),
+      ]);
+
+      toast.success("Account created successfully! Please wait for admin approval.");
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Signup failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -103,7 +201,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <Card className="w-full max-w-md shadow-[var(--shadow-elegant)]">
+      <Card className="w-full max-w-2xl shadow-[var(--shadow-elegant)]">
         <CardHeader className="space-y-3 text-center">
           <div className="flex justify-center">
             <img src={logo} alt="Logo" className="h-16 w-auto" />
@@ -114,37 +212,142 @@ const Auth = () => {
           <CardDescription>{settings.loginSubtitle}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Signing in..." : "Sign In"}
+                </Button>
+              </form>
+            </TabsContent>
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            Contact your administrator to create an account
-          </p>
+            <TabsContent value="signup">
+              <form onSubmit={handleSignup} className="space-y-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-fullname">Full Name *</Label>
+                    <Input
+                      id="signup-fullname"
+                      type="text"
+                      placeholder="John Doe"
+                      value={signupData.fullName}
+                      onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email *</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={signupData.email}
+                      onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-phone">Phone Number</Label>
+                    <Input
+                      id="signup-phone"
+                      type="tel"
+                      placeholder="+234 XXX XXX XXXX"
+                      value={signupData.phone}
+                      onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-position">Position</Label>
+                    <Input
+                      id="signup-position"
+                      type="text"
+                      placeholder="Software Engineer"
+                      value={signupData.position}
+                      onChange={(e) => setSignupData({ ...signupData, position: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="signup-password">Password *</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={signupData.password}
+                      onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-sm">Required Documents</h3>
+                  <div className="space-y-2">
+                    <Label htmlFor="id-card">ID Card * (Max 5MB)</Label>
+                    <Input
+                      id="id-card"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileChange('idCard', e.target.files?.[0] || null)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="nin">NIN Document * (Max 5MB)</Label>
+                    <Input
+                      id="nin"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileChange('nin', e.target.files?.[0] || null)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="other-doc">Other Document (Optional, Max 5MB)</Label>
+                    <Input
+                      id="other-doc"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileChange('otherDocument', e.target.files?.[0] || null)}
+                    />
+                  </div>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Creating Account..." : "Sign Up"}
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  * Required fields. Your documents will be reviewed by HR.
+                </p>
+              </form>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
