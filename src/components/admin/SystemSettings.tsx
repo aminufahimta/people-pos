@@ -18,6 +18,9 @@ const SystemSettings = () => {
   const [homePageTitle, setHomePageTitle] = useState<string>("");
   const [homePageSubtitle, setHomePageSubtitle] = useState<string>("");
   const [homePageDescription, setHomePageDescription] = useState<string>("");
+  const [signupPageTitle, setSignupPageTitle] = useState<string>("");
+  const [signupPageSubtitle, setSignupPageSubtitle] = useState<string>("");
+  const [positionOptions, setPositionOptions] = useState<string>("Software Engineer,Technical Support,Field Technician,Customer Service");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,7 +40,10 @@ const SystemSettings = () => {
           "login_page_subtitle",
           "home_page_title",
           "home_page_subtitle",
-          "home_page_description"
+          "home_page_description",
+          "signup_page_title",
+          "signup_page_subtitle",
+          "position_options"
         ]);
 
       if (error) throw error;
@@ -60,6 +66,12 @@ const SystemSettings = () => {
             setHomePageSubtitle(setting.setting_value);
           } else if (setting.setting_key === "home_page_description") {
             setHomePageDescription(setting.setting_value);
+          } else if (setting.setting_key === "signup_page_title") {
+            setSignupPageTitle(setting.setting_value);
+          } else if (setting.setting_key === "signup_page_subtitle") {
+            setSignupPageSubtitle(setting.setting_value);
+          } else if (setting.setting_key === "position_options") {
+            setPositionOptions(setting.setting_value);
           }
         });
       }
@@ -114,6 +126,18 @@ const SystemSettings = () => {
           setting_key: "home_page_description",
           setting_value: homePageDescription,
         },
+        {
+          setting_key: "signup_page_title",
+          setting_value: signupPageTitle,
+        },
+        {
+          setting_key: "signup_page_subtitle",
+          setting_value: signupPageSubtitle,
+        },
+        {
+          setting_key: "position_options",
+          setting_value: positionOptions,
+        },
       ];
 
       for (const update of updates) {
@@ -150,7 +174,7 @@ const SystemSettings = () => {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="general" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               General
@@ -158,6 +182,10 @@ const SystemSettings = () => {
             <TabsTrigger value="appearance" className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
               Appearance
+            </TabsTrigger>
+            <TabsTrigger value="signup" className="flex items-center gap-2">
+              <Palette className="h-4 w-4" />
+              Signup Page
             </TabsTrigger>
             <TabsTrigger value="payroll" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
@@ -251,6 +279,46 @@ const SystemSettings = () => {
               </div>
             </div>
 
+            <Button onClick={handleSave} disabled={loading} className="w-full">
+              {loading ? "Saving..." : "Save Settings"}
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="signup" className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">Signup Page Settings</h3>
+              <p className="text-sm text-muted-foreground">Customize the signup page and form fields</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="signupTitle">Signup Page Title</Label>
+              <Input
+                id="signupTitle"
+                value={signupPageTitle}
+                onChange={(e) => setSignupPageTitle(e.target.value)}
+                placeholder="e.g., Join Our Team"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="signupSubtitle">Signup Page Subtitle</Label>
+              <Input
+                id="signupSubtitle"
+                value={signupPageSubtitle}
+                onChange={(e) => setSignupPageSubtitle(e.target.value)}
+                placeholder="e.g., Create your account to get started"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="positionOptions">Position Options (comma-separated)</Label>
+              <Input
+                id="positionOptions"
+                value={positionOptions}
+                onChange={(e) => setPositionOptions(e.target.value)}
+                placeholder="e.g., Software Engineer, Technical Support"
+              />
+              <p className="text-sm text-muted-foreground">
+                These options will appear in the position dropdown on signup
+              </p>
+            </div>
             <Button onClick={handleSave} disabled={loading} className="w-full">
               {loading ? "Saving..." : "Save Settings"}
             </Button>

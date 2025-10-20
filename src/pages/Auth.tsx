@@ -32,6 +32,9 @@ const Auth = () => {
     companyName: "HR Management System",
     loginTitle: "HR Management System",
     loginSubtitle: "Sign in to access your dashboard",
+    signupTitle: "Join Our Team",
+    signupSubtitle: "Create your account to get started",
+    positionOptions: ["Software Engineer", "Technical Support", "Field Technician", "Customer Service"],
   });
 
   useEffect(() => {
@@ -48,7 +51,7 @@ const Auth = () => {
     const { data } = await supabase
       .from("system_settings")
       .select("setting_key, setting_value")
-      .in("setting_key", ["company_name", "login_page_title", "login_page_subtitle"]);
+      .in("setting_key", ["company_name", "login_page_title", "login_page_subtitle", "signup_page_title", "signup_page_subtitle", "position_options"]);
 
     if (data) {
       const newSettings: any = {};
@@ -59,6 +62,12 @@ const Auth = () => {
           newSettings.loginTitle = setting.setting_value;
         } else if (setting.setting_key === "login_page_subtitle" && setting.setting_value) {
           newSettings.loginSubtitle = setting.setting_value;
+        } else if (setting.setting_key === "signup_page_title" && setting.setting_value) {
+          newSettings.signupTitle = setting.setting_value;
+        } else if (setting.setting_key === "signup_page_subtitle" && setting.setting_value) {
+          newSettings.signupSubtitle = setting.setting_value;
+        } else if (setting.setting_key === "position_options" && setting.setting_value) {
+          newSettings.positionOptions = setting.setting_value.split(",").map((opt: string) => opt.trim());
         }
       });
       setSettings((prev) => ({ ...prev, ...newSettings }));
@@ -256,6 +265,10 @@ const Auth = () => {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4 mt-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-xl font-semibold">{settings.signupTitle}</h3>
+                  <p className="text-sm text-muted-foreground">{settings.signupSubtitle}</p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-fullname">Full Name *</Label>
@@ -299,10 +312,11 @@ const Auth = () => {
                       required
                     >
                       <option value="">Select Position</option>
-                      <option value="Software Engineer">Software Engineer</option>
-                      <option value="Technical Support">Technical Support</option>
-                      <option value="Field Technician">Field Technician</option>
-                      <option value="Customer Service">Customer Service</option>
+                      {settings.positionOptions.map((position) => (
+                        <option key={position} value={position}>
+                          {position}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div className="space-y-2">
