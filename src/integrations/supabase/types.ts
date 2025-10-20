@@ -93,6 +93,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
           created_at: string | null
           department: string | null
@@ -100,6 +102,7 @@ export type Database = {
           full_name: string
           hire_date: string | null
           id: string
+          is_approved: boolean | null
           is_suspended: boolean | null
           is_terminated: boolean | null
           phone: string | null
@@ -109,6 +112,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string | null
           department?: string | null
@@ -116,6 +121,7 @@ export type Database = {
           full_name: string
           hire_date?: string | null
           id: string
+          is_approved?: boolean | null
           is_suspended?: boolean | null
           is_terminated?: boolean | null
           phone?: string | null
@@ -125,6 +131,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string | null
           department?: string | null
@@ -132,6 +140,7 @@ export type Database = {
           full_name?: string
           hire_date?: string | null
           id?: string
+          is_approved?: boolean | null
           is_suspended?: boolean | null
           is_terminated?: boolean | null
           phone?: string | null

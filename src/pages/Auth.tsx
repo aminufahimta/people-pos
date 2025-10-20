@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import logo from "@/assets/logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -36,7 +37,13 @@ const Auth = () => {
 
   useEffect(() => {
     fetchSettings();
-  }, []);
+    
+    // Show message if redirected from signup
+    const message = searchParams.get("message");
+    if (message === "pending_approval") {
+      toast.info("Your account is pending approval. You'll be notified once approved.");
+    }
+  }, [searchParams]);
 
   const fetchSettings = async () => {
     const { data } = await supabase
@@ -170,7 +177,10 @@ const Auth = () => {
       ]);
 
       toast.success("Account created successfully! Please wait for admin approval.");
-      navigate("/dashboard");
+      // Sign out the user so they see the approval message
+      await supabase.auth.signOut();
+      // Switch to login tab
+      navigate("/auth?message=pending_approval");
     } catch (error: any) {
       toast.error(error.message || "Signup failed");
     } finally {

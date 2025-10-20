@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck } from "lucide-react";
 import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
@@ -14,6 +14,7 @@ import SalaryManagement from "@/components/admin/SalaryManagement";
 import ReportsGeneration from "@/components/admin/ReportsGeneration";
 import HRManagerManagement from "@/components/admin/HRManagerManagement";
 import SuspensionManagement from "@/components/admin/SuspensionManagement";
+import DocumentVerification from "@/components/admin/DocumentVerification";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -89,6 +90,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           </TabsTrigger>
           <TabsTrigger value="suspensions" className="flex items-center gap-2">
             Suspensions
+          </TabsTrigger>
+          <TabsTrigger value="verification" className="flex items-center gap-2">
+            <FileCheck className="h-4 w-4" />
+            Document Verification
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -179,6 +184,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="suspensions" className="space-y-8">
           <SuspensionManagement userRole="super_admin" currentUserId={user.id} />
+        </TabsContent>
+
+        <TabsContent value="verification" className="space-y-8">
+          <DocumentVerification />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-8">

@@ -5,12 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, FileCheck } from "lucide-react";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
 import SalaryManagement from "@/components/admin/SalaryManagement";
 import ReportsGeneration from "@/components/admin/ReportsGeneration";
 import SuspensionManagement from "@/components/admin/SuspensionManagement";
+import DocumentVerification from "@/components/admin/DocumentVerification";
 
 interface HRManagerDashboardProps {
   user: User;
@@ -83,6 +84,10 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
           </TabsTrigger>
           <TabsTrigger value="suspensions" className="flex items-center gap-2">
             Suspensions
+          </TabsTrigger>
+          <TabsTrigger value="verification" className="flex items-center gap-2">
+            <FileCheck className="h-4 w-4" />
+            Document Verification
           </TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center gap-2">
             Reports
@@ -160,6 +165,10 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
 
         <TabsContent value="suspensions" className="space-y-8">
           <SuspensionManagement userRole="hr_manager" currentUserId={user.id} />
+        </TabsContent>
+
+        <TabsContent value="verification" className="space-y-8">
+          <DocumentVerification />
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-8">
