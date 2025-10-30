@@ -434,15 +434,19 @@ const SystemSettings = () => {
 
             <div className="space-y-2">
               <Label htmlFor="smtpPort">SMTP Port</Label>
-              <Input
+              <select
                 id="smtpPort"
-                type="number"
                 value={smtpPort}
                 onChange={(e) => setSmtpPort(e.target.value)}
-                placeholder="587"
-              />
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="25">25 (Standard SMTP)</option>
+                <option value="465">465 (SMTP over SSL)</option>
+                <option value="587">587 (SMTP with STARTTLS)</option>
+                <option value="2525">2525 (Alternative SMTP)</option>
+              </select>
               <p className="text-sm text-muted-foreground">
-                Use 587 for TLS or 465 for SSL
+                Select the appropriate SMTP port for your email provider
               </p>
             </div>
 
