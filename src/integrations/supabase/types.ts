@@ -326,10 +326,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_suspension_expiry: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      check_suspension_expiry: { Args: never; Returns: undefined }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
