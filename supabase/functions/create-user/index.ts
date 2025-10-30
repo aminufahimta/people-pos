@@ -1,9 +1,22 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const createUserSchema = z.object({
+  email: z.string().email('Invalid email format').max(255, 'Email too long'),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(100, 'Password too long'),
+  full_name: z.string().trim().min(1, 'Full name required').max(100, 'Name too long'),
+  role: z.enum(['super_admin', 'hr_manager', 'project_manager', 'employee']).optional(),
+  department: z.string().max(100, 'Department name too long').optional(),
+  position: z.string().max(100, 'Position name too long').optional(),
+  phone: z.string().max(20, 'Phone number too long').optional(),
+  base_salary: z.number().positive('Salary must be positive').optional(),
+  daily_rate: z.number().positive('Daily rate must be positive').optional()
+})
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -64,15 +77,18 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Get user data from request
-    const { email, password, full_name, role, department, position, phone, base_salary, daily_rate } = await req.json()
+    // Get and validate user data from request
+    const body = await req.json()
+    const validation = createUserSchema.safeParse(body)
     
-    if (!email || !password || !full_name) {
+    if (!validation.success) {
       return new Response(
-        JSON.stringify({ error: 'Email, password, and full name are required' }),
+        JSON.stringify({ error: 'Invalid input', details: validation.error.issues }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    const { email, password, full_name, role, department, position, phone, base_salary, daily_rate } = validation.data
 
     // Validate role permissions
     if (roleData.role === 'hr_manager' && role && role !== 'employee') {
@@ -93,8 +109,9 @@ Deno.serve(async (req) => {
     })
 
     if (createError || !newUser.user) {
+      console.error('User creation error:', createError?.message)
       return new Response(
-        JSON.stringify({ error: createError?.message || 'Failed to create user' }),
+        JSON.stringify({ error: 'Failed to create user' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -164,9 +181,9 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    console.error('Error creating user:', error)
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: 'Failed to create user' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

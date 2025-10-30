@@ -1,9 +1,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const updateEmailSchema = z.object({
+  userId: z.string().uuid('Invalid user ID format'),
+  newEmail: z.string().email('Invalid email format').max(255, 'Email too long')
+})
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -64,15 +70,18 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Get parameters from request
-    const { userId, newEmail } = await req.json()
+    // Get and validate parameters from request
+    const body = await req.json()
+    const validation = updateEmailSchema.safeParse(body)
     
-    if (!userId || !newEmail) {
+    if (!validation.success) {
       return new Response(
-        JSON.stringify({ error: 'User ID and new email are required' }),
+        JSON.stringify({ error: 'Invalid input', details: validation.error.issues }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    const { userId, newEmail } = validation.data
 
     // Update the auth user's email
     const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
@@ -81,8 +90,9 @@ Deno.serve(async (req) => {
     )
 
     if (updateError) {
+      console.error('Email update error:', updateError.message)
       return new Response(
-        JSON.stringify({ error: updateError.message }),
+        JSON.stringify({ error: 'Failed to update email' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -92,9 +102,9 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    console.error('Error updating email:', error)
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: 'Failed to update email' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

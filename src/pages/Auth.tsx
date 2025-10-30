@@ -74,39 +74,6 @@ const Auth = () => {
     }
   };
 
-  const handleFixEmail = async () => {
-    setIsLoading(true);
-    try {
-      // First login with the old email to get access
-      const { error: loginError } = await supabase.auth.signInWithPassword({
-        email: "aminufahimta@gmail.com",
-        password: "Mskid1m$",
-      });
-
-      if (loginError) {
-        toast.error("Please login with aminufahimta@gmail.com first");
-        return;
-      }
-
-      // Call the edge function to update auth email
-      const { data, error } = await supabase.functions.invoke('update-auth-email', {
-        body: {
-          userId: '307168b0-3267-47ba-9f02-a1846a8c3760',
-          newEmail: 'aminu@skypro.ng',
-        },
-      });
-
-      if (error) throw error;
-
-      toast.success("Email updated! Please login with aminu@skypro.ng");
-      await supabase.auth.signOut();
-      setFormData({ email: "aminu@skypro.ng", password: "" });
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update email");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleFileChange = (documentType: keyof typeof documents, file: File | null) => {
     if (file && file.size > 5 * 1024 * 1024) {

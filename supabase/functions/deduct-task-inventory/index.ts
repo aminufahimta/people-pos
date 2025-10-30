@@ -1,9 +1,14 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const requestSchema = z.object({
+  taskId: z.string().uuid('Invalid task ID format')
+})
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,6 +16,60 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: authHeader }
+        },
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+
+    // Verify user authentication
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication failed' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check user role
+    const { data: userRole, error: roleError } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single()
+
+    if (roleError || !userRole) {
+      return new Response(
+        JSON.stringify({ error: 'Unable to verify user role' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Only super_admin and project_manager can deduct inventory
+    if (userRole.role !== 'super_admin' && userRole.role !== 'project_manager') {
+      return new Response(
+        JSON.stringify({ error: 'Insufficient permissions' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -22,16 +81,20 @@ Deno.serve(async (req) => {
       }
     )
 
-    const { taskId } = await req.json()
-
-    if (!taskId) {
+    const body = await req.json()
+    
+    // Validate input
+    const validation = requestSchema.safeParse(body)
+    if (!validation.success) {
       return new Response(
-        JSON.stringify({ error: 'Task ID is required' }),
+        JSON.stringify({ error: 'Invalid request data', details: validation.error.issues }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('Processing inventory deduction for task:', taskId)
+    const { taskId } = validation.data
+
+    console.log(`User ${user.id} (${userRole.role}) processing inventory deduction for task:`, taskId)
 
     // Get task details
     const { data: task, error: taskError } = await supabaseAdmin
@@ -41,7 +104,7 @@ Deno.serve(async (req) => {
       .single()
 
     if (taskError || !task) {
-      console.error('Task fetch error:', taskError)
+      console.error('Task fetch error:', taskError?.message)
       return new Response(
         JSON.stringify({ error: 'Task not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -72,7 +135,7 @@ Deno.serve(async (req) => {
       .in('item_type', ['router', 'poe_adapter', 'pole', 'anchor'])
 
     if (inventoryError) {
-      console.error('Inventory fetch error:', inventoryError)
+      console.error('Inventory fetch error:', inventoryError?.message)
       return new Response(
         JSON.stringify({ error: 'Failed to fetch inventory' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -126,7 +189,7 @@ Deno.serve(async (req) => {
         .eq('id', deduction.id)
 
       if (updateError) {
-        console.error(`Failed to update ${deduction.type}:`, updateError)
+        console.error(`Failed to update ${deduction.type}:`, updateError?.message)
       } else {
         console.log(`Updated ${deduction.type}: ${deduction.used} items deducted`)
       }
@@ -139,7 +202,7 @@ Deno.serve(async (req) => {
       .eq('id', taskId)
 
     if (markError) {
-      console.error('Failed to mark inventory as deducted:', markError)
+      console.error('Failed to mark inventory as deducted:', markError?.message)
     }
 
     return new Response(
@@ -151,10 +214,9 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    console.error('Error processing inventory deduction:', error)
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: 'Failed to process inventory deduction' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
