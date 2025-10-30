@@ -88,11 +88,14 @@ Deno.serve(async (req) => {
     }
 
     // Configure SMTP client
+    const port = parseInt(config.smtp_port || '587')
+    const useSSL = config.smtp_encryption === 'ssl' || port === 465
+    
     const client = new SMTPClient({
       connection: {
         hostname: config.smtp_host,
-        port: parseInt(config.smtp_port || '587'),
-        tls: config.smtp_encryption === 'ssl',
+        port: port,
+        tls: useSSL,
         auth: {
           username: config.smtp_username,
           password: config.smtp_password,
