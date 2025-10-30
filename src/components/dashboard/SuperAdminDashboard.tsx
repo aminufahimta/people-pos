@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package } from "lucide-react";
 import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
@@ -15,6 +15,7 @@ import ReportsGeneration from "@/components/admin/ReportsGeneration";
 import HRManagerManagement from "@/components/admin/HRManagerManagement";
 import SuspensionManagement from "@/components/admin/SuspensionManagement";
 import DocumentVerification from "@/components/admin/DocumentVerification";
+import { InventoryManagement } from "@/components/admin/InventoryManagement";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -94,6 +95,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           <TabsTrigger value="verification" className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
             Document Verification
+          </TabsTrigger>
+          <TabsTrigger value="inventory" className="flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            Inventory
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -188,6 +193,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="verification" className="space-y-8">
           <DocumentVerification />
+        </TabsContent>
+
+        <TabsContent value="inventory" className="space-y-8">
+          <InventoryManagement />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-8">

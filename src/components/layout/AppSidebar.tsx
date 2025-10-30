@@ -1,4 +1,4 @@
-import { Shield, LayoutDashboard, Users, UserCog, Settings, UsersRound, CalendarCheck, DollarSign, FileText } from "lucide-react";
+import { Shield, LayoutDashboard, Users, UserCog, Settings, UsersRound, CalendarCheck, DollarSign, FileText, Package, ClipboardList } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -25,6 +25,7 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
     { title: "System Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
     { title: "All Users", url: "/dashboard?tab=users", icon: Users },
     { title: "HR Managers", url: "/dashboard?tab=managers", icon: UserCog },
+    { title: "Inventory", url: "/dashboard?tab=inventory", icon: Package },
     { title: "System Settings", url: "/dashboard?tab=settings", icon: Settings },
   ];
 
@@ -33,6 +34,11 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
     { title: "Attendance", url: "/dashboard?tab=attendance", icon: CalendarCheck },
     { title: "Salaries", url: "/dashboard?tab=salaries", icon: DollarSign },
     { title: "Reports", url: "/dashboard?tab=reports", icon: FileText },
+  ];
+
+  const projectManagerMenu = [
+    { title: "Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
+    { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
   ];
 
   const isCollapsed = state === "collapsed";
@@ -58,6 +64,11 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
           {!isCollapsed && userRole === "hr_manager" && (
             <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-accent text-accent-foreground rounded">
               HR Manager
+            </span>
+          )}
+          {!isCollapsed && userRole === "project_manager" && (
+            <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-secondary text-secondary-foreground rounded">
+              Project Manager
             </span>
           )}
         </div>
@@ -117,6 +128,26 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {hrOperations.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={currentPath === item.url}>
+                      <NavLink to={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {userRole === "project_manager" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Project Management</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {projectManagerMenu.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={currentPath === item.url}>
                       <NavLink to={item.url}>

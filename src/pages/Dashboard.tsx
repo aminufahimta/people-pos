@@ -5,6 +5,7 @@ import { User } from "@supabase/supabase-js";
 import SuperAdminDashboard from "@/components/dashboard/SuperAdminDashboard";
 import HRManagerDashboard from "@/components/dashboard/HRManagerDashboard";
 import EmployeeDashboard from "@/components/dashboard/EmployeeDashboard";
+import { ProjectManagerDashboard } from "@/components/dashboard/ProjectManagerDashboard";
 import { Loader2, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -121,6 +122,8 @@ const Dashboard = () => {
       return <SuperAdminDashboard user={user} />;
     case "hr_manager":
       return <HRManagerDashboard user={user} />;
+    case "project_manager":
+      return <ProjectManagerDashboard user={user} />;
     case "employee":
       return <EmployeeDashboard user={user} />;
     default:
