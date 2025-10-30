@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Settings as SettingsIcon, Building2, Palette, DollarSign, Clock } from "lucide-react";
+import { Settings as SettingsIcon, Building2, Palette, DollarSign, Clock, Mail } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CronJobsManagement from "./CronJobsManagement";
 
@@ -21,6 +21,14 @@ const SystemSettings = () => {
   const [signupPageTitle, setSignupPageTitle] = useState<string>("");
   const [signupPageSubtitle, setSignupPageSubtitle] = useState<string>("");
   const [positionOptions, setPositionOptions] = useState<string>("Software Engineer,Technical Support,Field Technician,Customer Service");
+  const [smtpHost, setSmtpHost] = useState<string>("");
+  const [smtpPort, setSmtpPort] = useState<string>("587");
+  const [smtpUsername, setSmtpUsername] = useState<string>("");
+  const [smtpPassword, setSmtpPassword] = useState<string>("");
+  const [smtpFromEmail, setSmtpFromEmail] = useState<string>("");
+  const [smtpFromName, setSmtpFromName] = useState<string>("HR Management System");
+  const [smtpEncryption, setSmtpEncryption] = useState<string>("tls");
+  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -43,7 +51,15 @@ const SystemSettings = () => {
           "home_page_description",
           "signup_page_title",
           "signup_page_subtitle",
-          "position_options"
+          "position_options",
+          "smtp_host",
+          "smtp_port",
+          "smtp_username",
+          "smtp_password",
+          "smtp_from_email",
+          "smtp_from_name",
+          "smtp_encryption",
+          "email_notifications_enabled"
         ]);
 
       if (error) throw error;
@@ -72,6 +88,22 @@ const SystemSettings = () => {
             setSignupPageSubtitle(setting.setting_value);
           } else if (setting.setting_key === "position_options") {
             setPositionOptions(setting.setting_value);
+          } else if (setting.setting_key === "smtp_host") {
+            setSmtpHost(setting.setting_value);
+          } else if (setting.setting_key === "smtp_port") {
+            setSmtpPort(setting.setting_value);
+          } else if (setting.setting_key === "smtp_username") {
+            setSmtpUsername(setting.setting_value);
+          } else if (setting.setting_key === "smtp_password") {
+            setSmtpPassword(setting.setting_value);
+          } else if (setting.setting_key === "smtp_from_email") {
+            setSmtpFromEmail(setting.setting_value);
+          } else if (setting.setting_key === "smtp_from_name") {
+            setSmtpFromName(setting.setting_value);
+          } else if (setting.setting_key === "smtp_encryption") {
+            setSmtpEncryption(setting.setting_value);
+          } else if (setting.setting_key === "email_notifications_enabled") {
+            setEmailNotificationsEnabled(setting.setting_value === "true");
           }
         });
       }
@@ -174,7 +206,7 @@ const SystemSettings = () => {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="general" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               General
@@ -186,6 +218,10 @@ const SystemSettings = () => {
             <TabsTrigger value="signup" className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
               Signup Page
+            </TabsTrigger>
+            <TabsTrigger value="email" className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              Email
             </TabsTrigger>
             <TabsTrigger value="payroll" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
@@ -321,6 +357,146 @@ const SystemSettings = () => {
             </div>
             <Button onClick={handleSave} disabled={loading} className="w-full">
               {loading ? "Saving..." : "Save Settings"}
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="email" className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">Email & SMTP Settings</h3>
+              <p className="text-sm text-muted-foreground">Configure SMTP server for sending email notifications</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="emailNotifications" className="flex items-center gap-2">
+                <input
+                  id="emailNotifications"
+                  type="checkbox"
+                  checked={emailNotificationsEnabled}
+                  onChange={(e) => setEmailNotificationsEnabled(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                Enable Email Notifications
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Turn on/off all email notifications system-wide
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smtpHost">SMTP Host</Label>
+              <Input
+                id="smtpHost"
+                value={smtpHost}
+                onChange={(e) => setSmtpHost(e.target.value)}
+                placeholder="e.g., smtp.gmail.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smtpPort">SMTP Port</Label>
+              <Input
+                id="smtpPort"
+                type="number"
+                value={smtpPort}
+                onChange={(e) => setSmtpPort(e.target.value)}
+                placeholder="587"
+              />
+              <p className="text-sm text-muted-foreground">
+                Use 587 for TLS or 465 for SSL
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smtpEncryption">Encryption Type</Label>
+              <select
+                id="smtpEncryption"
+                value={smtpEncryption}
+                onChange={(e) => setSmtpEncryption(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="tls">TLS (Port 587)</option>
+                <option value="ssl">SSL (Port 465)</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smtpUsername">SMTP Username</Label>
+              <Input
+                id="smtpUsername"
+                value={smtpUsername}
+                onChange={(e) => setSmtpUsername(e.target.value)}
+                placeholder="your-email@example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smtpPassword">SMTP Password</Label>
+              <Input
+                id="smtpPassword"
+                type="password"
+                value={smtpPassword}
+                onChange={(e) => setSmtpPassword(e.target.value)}
+                placeholder="Your SMTP password or app password"
+              />
+              <p className="text-sm text-muted-foreground">
+                For Gmail, use an App Password instead of your regular password
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smtpFromEmail">From Email Address</Label>
+              <Input
+                id="smtpFromEmail"
+                type="email"
+                value={smtpFromEmail}
+                onChange={(e) => setSmtpFromEmail(e.target.value)}
+                placeholder="noreply@yourcompany.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smtpFromName">From Name</Label>
+              <Input
+                id="smtpFromName"
+                value={smtpFromName}
+                onChange={(e) => setSmtpFromName(e.target.value)}
+                placeholder="HR Management System"
+              />
+            </div>
+
+            <Button 
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  const updates = [
+                    { setting_key: "smtp_host", setting_value: smtpHost },
+                    { setting_key: "smtp_port", setting_value: smtpPort },
+                    { setting_key: "smtp_username", setting_value: smtpUsername },
+                    { setting_key: "smtp_password", setting_value: smtpPassword },
+                    { setting_key: "smtp_from_email", setting_value: smtpFromEmail },
+                    { setting_key: "smtp_from_name", setting_value: smtpFromName },
+                    { setting_key: "smtp_encryption", setting_value: smtpEncryption },
+                    { setting_key: "email_notifications_enabled", setting_value: emailNotificationsEnabled ? "true" : "false" },
+                  ];
+
+                  for (const update of updates) {
+                    const { error } = await supabase
+                      .from("system_settings")
+                      .upsert(update, { onConflict: 'setting_key' });
+                    if (error) throw error;
+                  }
+
+                  toast.success("Email settings saved successfully");
+                } catch (error: any) {
+                  toast.error(error.message || "Failed to save email settings");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading} 
+              className="w-full"
+            >
+              {loading ? "Saving..." : "Save Email Settings"}
             </Button>
           </TabsContent>
 

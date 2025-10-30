@@ -3,5 +3,29 @@ project_id = "zvjhorkuoxejjvmmmhwd"
 [functions.bootstrap-admin]
 verify_jwt = false
 
+[functions.check-suspension-expiry]
+verify_jwt = false
+
+[functions.create-user]
+verify_jwt = true
+
+[functions.deduct-task-inventory]
+verify_jwt = true
+
+[functions.delete-user]
+verify_jwt = true
+
+[functions.process-daily-attendance]
+verify_jwt = false
+
+[functions.recalculate-deductions]
+verify_jwt = false
+
 [functions.reset-monthly-salary]
 verify_jwt = false
+
+[functions.send-email]
+verify_jwt = true
+
+[functions.update-auth-email]
+verify_jwt = true
