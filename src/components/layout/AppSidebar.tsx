@@ -32,6 +32,7 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
   const hrOperations = [
     { title: "Employees", url: "/dashboard?tab=employees", icon: UsersRound },
     { title: "Attendance", url: "/dashboard?tab=attendance", icon: CalendarCheck },
+    { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
     { title: "Salaries", url: "/dashboard?tab=salaries", icon: DollarSign },
     { title: "Reports", url: "/dashboard?tab=reports", icon: FileText },
   ];

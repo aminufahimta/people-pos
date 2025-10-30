@@ -49,6 +49,16 @@ export const MyTasks = ({ userId }: { userId: string }) => {
         .update(updateData)
         .eq("id", id);
       if (error) throw error;
+
+      // Deduct inventory if task is completed
+      if (status === "completed") {
+        const { error: deductError } = await supabase.functions.invoke('deduct-task-inventory', {
+          body: { taskId: id },
+        });
+        if (deductError) {
+          console.error('Failed to deduct inventory:', deductError);
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-tasks", userId] });

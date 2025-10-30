@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
@@ -16,6 +16,7 @@ import HRManagerManagement from "@/components/admin/HRManagerManagement";
 import SuspensionManagement from "@/components/admin/SuspensionManagement";
 import DocumentVerification from "@/components/admin/DocumentVerification";
 import { InventoryManagement } from "@/components/admin/InventoryManagement";
+import { TaskManagement } from "@/components/project-manager/TaskManagement";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -81,6 +82,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           <TabsTrigger value="attendance" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Attendance
+          </TabsTrigger>
+          <TabsTrigger value="tasks" className="flex items-center gap-2">
+            <ClipboardList className="h-4 w-4" />
+            Tasks
           </TabsTrigger>
           <TabsTrigger value="salaries" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
@@ -177,6 +182,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="attendance" className="space-y-8">
           <AttendanceOverview />
+        </TabsContent>
+
+        <TabsContent value="tasks" className="space-y-8">
+          <TaskManagement userId={user.id} />
         </TabsContent>
 
         <TabsContent value="salaries" className="space-y-8">

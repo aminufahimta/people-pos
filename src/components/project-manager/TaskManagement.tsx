@@ -51,6 +51,10 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
     installation_address: "",
     customer_name: "",
     customer_phone: "",
+    routers_used: 0,
+    poe_adapters_used: 0,
+    poles_used: 0,
+    anchors_used: 0,
   });
   
   const queryClient = useQueryClient();
@@ -117,6 +121,16 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
         .update(updateData)
         .eq("id", id);
       if (error) throw error;
+
+      // Deduct inventory if task is completed
+      if (status === "completed") {
+        const { error: deductError } = await supabase.functions.invoke('deduct-task-inventory', {
+          body: { taskId: id },
+        });
+        if (deductError) {
+          console.error('Failed to deduct inventory:', deductError);
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
@@ -138,6 +152,10 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
       installation_address: "",
       customer_name: "",
       customer_phone: "",
+      routers_used: 0,
+      poe_adapters_used: 0,
+      poles_used: 0,
+      anchors_used: 0,
     });
   };
 
@@ -278,6 +296,53 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                   rows={2}
                 />
               </div>
+              
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold mb-3">Inventory Items Required</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="routers_used">Routers</Label>
+                    <Input
+                      id="routers_used"
+                      type="number"
+                      min="0"
+                      value={formData.routers_used}
+                      onChange={(e) => setFormData({ ...formData, routers_used: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="poe_adapters_used">POE Adapters</Label>
+                    <Input
+                      id="poe_adapters_used"
+                      type="number"
+                      min="0"
+                      value={formData.poe_adapters_used}
+                      onChange={(e) => setFormData({ ...formData, poe_adapters_used: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="poles_used">Poles</Label>
+                    <Input
+                      id="poles_used"
+                      type="number"
+                      min="0"
+                      value={formData.poles_used}
+                      onChange={(e) => setFormData({ ...formData, poles_used: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="anchors_used">Anchors</Label>
+                    <Input
+                      id="anchors_used"
+                      type="number"
+                      min="0"
+                      value={formData.anchors_used}
+                      onChange={(e) => setFormData({ ...formData, anchors_used: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </div>
+
               <Button type="submit" className="w-full" disabled={createMutation.isPending}>
                 Create Task
               </Button>

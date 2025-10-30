@@ -330,6 +330,7 @@ export type Database = {
       }
       tasks: {
         Row: {
+          anchors_used: number | null
           assigned_to: string | null
           completed_at: string | null
           created_at: string | null
@@ -340,12 +341,17 @@ export type Database = {
           due_date: string | null
           id: string
           installation_address: string | null
+          inventory_deducted: boolean | null
+          poe_adapters_used: number | null
+          poles_used: number | null
           priority: string
+          routers_used: number | null
           status: string
           title: string
           updated_at: string | null
         }
         Insert: {
+          anchors_used?: number | null
           assigned_to?: string | null
           completed_at?: string | null
           created_at?: string | null
@@ -356,12 +362,17 @@ export type Database = {
           due_date?: string | null
           id?: string
           installation_address?: string | null
+          inventory_deducted?: boolean | null
+          poe_adapters_used?: number | null
+          poles_used?: number | null
           priority?: string
+          routers_used?: number | null
           status?: string
           title: string
           updated_at?: string | null
         }
         Update: {
+          anchors_used?: number | null
           assigned_to?: string | null
           completed_at?: string | null
           created_at?: string | null
@@ -372,7 +383,11 @@ export type Database = {
           due_date?: string | null
           id?: string
           installation_address?: string | null
+          inventory_deducted?: boolean | null
+          poe_adapters_used?: number | null
+          poles_used?: number | null
           priority?: string
+          routers_used?: number | null
           status?: string
           title?: string
           updated_at?: string | null
