@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Settings as SettingsIcon, Building2, Palette, DollarSign, Clock, Mail } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CronJobsManagement from "./CronJobsManagement";
+import { sendEmail } from "@/utils/emailNotifications";
 
 const SystemSettings = () => {
   const [deductionPercentage, setDeductionPercentage] = useState<number>(100);
@@ -188,6 +189,45 @@ const SystemSettings = () => {
       toast.success("Settings updated successfully");
     } catch (error: any) {
       toast.error(error.message || "Failed to update settings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTestEmail = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user?.email) {
+        toast.error("No user email found");
+        return;
+      }
+
+      const result = await sendEmail({
+        to: user.email,
+        subject: "Test Email - SMTP Configuration",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563eb;">Email Test Successful! ✓</h2>
+            <p>Your SMTP configuration is working correctly.</p>
+            <p>This test email was sent from your HR Management System.</p>
+            <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
+              <p><strong>SMTP Host:</strong> ${smtpHost}</p>
+              <p><strong>From:</strong> ${smtpFromName} &lt;${smtpFromEmail}&gt;</p>
+            </div>
+          </div>
+        `,
+        text: `Email Test Successful! Your SMTP configuration is working correctly.`
+      });
+
+      if (result.success) {
+        toast.success("Test email sent successfully! Check your inbox.");
+      } else {
+        toast.error(result.error || "Failed to send test email");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send test email");
     } finally {
       setLoading(false);
     }
@@ -464,40 +504,50 @@ const SystemSettings = () => {
               />
             </div>
 
-            <Button 
-              onClick={async () => {
-                setLoading(true);
-                try {
-                  const updates = [
-                    { setting_key: "smtp_host", setting_value: smtpHost },
-                    { setting_key: "smtp_port", setting_value: smtpPort },
-                    { setting_key: "smtp_username", setting_value: smtpUsername },
-                    { setting_key: "smtp_password", setting_value: smtpPassword },
-                    { setting_key: "smtp_from_email", setting_value: smtpFromEmail },
-                    { setting_key: "smtp_from_name", setting_value: smtpFromName },
-                    { setting_key: "smtp_encryption", setting_value: smtpEncryption },
-                    { setting_key: "email_notifications_enabled", setting_value: emailNotificationsEnabled ? "true" : "false" },
-                  ];
+            <div className="flex gap-3">
+              <Button 
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const updates = [
+                      { setting_key: "smtp_host", setting_value: smtpHost },
+                      { setting_key: "smtp_port", setting_value: smtpPort },
+                      { setting_key: "smtp_username", setting_value: smtpUsername },
+                      { setting_key: "smtp_password", setting_value: smtpPassword },
+                      { setting_key: "smtp_from_email", setting_value: smtpFromEmail },
+                      { setting_key: "smtp_from_name", setting_value: smtpFromName },
+                      { setting_key: "smtp_encryption", setting_value: smtpEncryption },
+                      { setting_key: "email_notifications_enabled", setting_value: emailNotificationsEnabled ? "true" : "false" },
+                    ];
 
-                  for (const update of updates) {
-                    const { error } = await supabase
-                      .from("system_settings")
-                      .upsert(update, { onConflict: 'setting_key' });
-                    if (error) throw error;
+                    for (const update of updates) {
+                      const { error } = await supabase
+                        .from("system_settings")
+                        .upsert(update, { onConflict: 'setting_key' });
+                      if (error) throw error;
+                    }
+
+                    toast.success("Email settings saved successfully");
+                  } catch (error: any) {
+                    toast.error(error.message || "Failed to save email settings");
+                  } finally {
+                    setLoading(false);
                   }
-
-                  toast.success("Email settings saved successfully");
-                } catch (error: any) {
-                  toast.error(error.message || "Failed to save email settings");
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              disabled={loading} 
-              className="w-full"
-            >
-              {loading ? "Saving..." : "Save Email Settings"}
-            </Button>
+                }}
+                disabled={loading} 
+                className="flex-1"
+              >
+                {loading ? "Saving..." : "Save Email Settings"}
+              </Button>
+              <Button 
+                onClick={handleTestEmail}
+                disabled={loading}
+                variant="outline"
+                className="flex-1"
+              >
+                Test Email
+              </Button>
+            </div>
           </TabsContent>
 
           <TabsContent value="payroll" className="space-y-4">
