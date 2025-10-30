@@ -87,15 +87,29 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Configure SMTP client
-    const port = parseInt(config.smtp_port || '587')
-    const useSSL = config.smtp_encryption === 'ssl' || port === 465
+    // Configure and normalize SMTP connection
+    let port = parseInt(config.smtp_port || '587')
+    let encryption = (config.smtp_encryption || 'tls').toLowerCase()
+
+    // Normalize invalid combinations
+    if (encryption === 'ssl' && port !== 465) {
+      console.warn(`SMTP config mismatch: encryption=ssl but port=${port}. Forcing port=465`)
+      port = 465
+    }
+    if (encryption !== 'ssl' && ![25, 587, 2525].includes(port)) {
+      console.warn(`Unsupported SMTP port ${port} for STARTTLS/plain. Falling back to 587`)
+      port = 587
+      encryption = 'tls'
+    }
+
+    const useSSL = port === 465
+    console.log(`Using SMTP config host=${config.smtp_host}, port=${port}, useSSL=${useSSL}, user=${config.smtp_username}`)
     
     const client = new SMTPClient({
       connection: {
         hostname: config.smtp_host,
-        port: port,
-        tls: useSSL,
+        port,
+        tls: useSSL, // implicit TLS only for 465
         auth: {
           username: config.smtp_username,
           password: config.smtp_password,
@@ -122,8 +136,9 @@ Deno.serve(async (req) => {
     )
   } catch (error) {
     console.error('Error sending email:', error)
+    const message = (error && (error as any).message) ? (error as any).message : 'Failed to send email'
     return new Response(
-      JSON.stringify({ error: 'Failed to send email' }),
+      JSON.stringify({ error: 'Failed to send email', details: message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
