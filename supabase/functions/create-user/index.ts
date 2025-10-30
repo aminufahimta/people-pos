@@ -115,6 +115,22 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Auto-approve accounts created by super admins
+    if (roleData.role === 'super_admin') {
+      const { error: approveError } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          is_approved: true,
+          approved_by: user.id,
+          approved_at: new Date().toISOString(),
+        })
+        .eq('id', newUser.user.id)
+
+      if (approveError) {
+        console.error('Auto-approve error:', approveError)
+      }
+    }
+
     // Set user role
     if (role && role !== 'employee') {
       const { error: roleError } = await supabaseAdmin
