@@ -46,7 +46,7 @@ const Dashboard = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", session.user.id)
-        .single();
+        .maybeSingle();
 
       console.log("Role data:", roleData, "Error:", roleError);
 
@@ -86,8 +86,28 @@ const Dashboard = () => {
     );
   }
 
-  if (!user || !role) {
-    return null;
+  if (!user || role === null) {
+    const handleSignOut = async () => {
+      await supabase.auth.signOut();
+      navigate("/auth");
+    };
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Role Not Assigned</CardTitle>
+            <CardDescription>
+              Your account is missing a role. Please contact a Super Admin to assign one.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleSignOut} className="w-full" variant="outline">
+              Sign Out
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   // Check if user is awaiting approval
