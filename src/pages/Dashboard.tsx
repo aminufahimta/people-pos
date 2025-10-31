@@ -27,30 +27,37 @@ const Dashboard = () => {
       }
 
       setUser(session.user);
+      console.log("User session:", session.user.id);
 
       // Check user profile for approval status
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("is_approved")
         .eq("id", session.user.id)
         .single();
 
+      console.log("Profile data:", profileData, "Error:", profileError);
+
       if (profileData) {
         setIsApproved(profileData.is_approved ?? true);
       }
 
-      const { data: roleData } = await supabase
+      const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", session.user.id)
         .single();
 
+      console.log("Role data:", roleData, "Error:", roleError);
+
       if (roleData) {
         setRole(roleData.role);
-        // Super admins bypass approval check
-        if (roleData.role === 'super_admin') {
+        // Super admins and HR managers bypass approval check
+        if (roleData.role === 'super_admin' || roleData.role === 'hr_manager') {
           setIsApproved(true);
         }
+      } else {
+        console.error("No role found for user");
       }
       
       setLoading(false);
