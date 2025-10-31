@@ -88,16 +88,18 @@ const HRManagerManagement = ({ onUpdate }: HRManagerManagementProps) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
+      const payload: any = {
+        email: newManagerForm.email,
+        password: newManagerForm.password,
+        full_name: newManagerForm.full_name,
+        role: 'hr_manager',
+      };
+      if (newManagerForm.department.trim()) payload.department = newManagerForm.department;
+      if (newManagerForm.position.trim()) payload.position = newManagerForm.position;
+      if (newManagerForm.phone.trim()) payload.phone = newManagerForm.phone;
+
       const { data, error } = await supabase.functions.invoke('create-user', {
-        body: {
-          email: newManagerForm.email,
-          password: newManagerForm.password,
-          full_name: newManagerForm.full_name,
-          role: 'hr_manager',
-          department: newManagerForm.department || null,
-          position: newManagerForm.position || null,
-          phone: newManagerForm.phone || null,
-        },
+        body: payload,
       });
 
       if (error) {

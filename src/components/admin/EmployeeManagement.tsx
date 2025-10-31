@@ -143,10 +143,10 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
         password: newEmployeeForm.password,
         full_name: newEmployeeForm.full_name,
         role: newEmployeeForm.role,
-        department: newEmployeeForm.department || null,
-        position: newEmployeeForm.position || null,
-        phone: newEmployeeForm.phone || null,
       };
+      if (newEmployeeForm.department.trim()) payload.department = newEmployeeForm.department;
+      if (newEmployeeForm.position.trim()) payload.position = newEmployeeForm.position;
+      if (newEmployeeForm.phone.trim()) payload.phone = newEmployeeForm.phone;
       if (newEmployeeForm.base_salary > 0) payload.base_salary = Number(newEmployeeForm.base_salary);
       if (newEmployeeForm.daily_rate > 0) payload.daily_rate = Number(newEmployeeForm.daily_rate);
 
