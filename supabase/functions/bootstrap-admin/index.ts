@@ -77,14 +77,29 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Set role to super_admin
-    const { error: roleError } = await supabaseAdmin
-      .from('user_roles')
-      .update({ role: 'super_admin' })
-      .eq('user_id', newUser.user.id)
+    // Ensure profile exists for the new admin
+    const { error: profileUpsertError } = await supabaseAdmin
+      .from('profiles')
+      .upsert({
+        id: newUser.user.id,
+        full_name: full_name || 'Super Admin',
+        email,
+        is_approved: true,
+        approved_by: newUser.user.id,
+        approved_at: new Date().toISOString(),
+      }, { onConflict: 'id' })
 
-    if (roleError) {
-      console.error('Role update error:', roleError)
+    if (profileUpsertError) {
+      console.error('Admin profile upsert error:', profileUpsertError)
+    }
+
+    // Insert super_admin role for the new user
+    const { error: roleInsertError } = await supabaseAdmin
+      .from('user_roles')
+      .insert({ user_id: newUser.user.id, role: 'super_admin' })
+
+    if (roleInsertError) {
+      console.error('Role insert error:', roleInsertError)
     }
 
     return new Response(

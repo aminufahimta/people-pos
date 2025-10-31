@@ -116,20 +116,20 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Update profile with additional fields
-    if (department || position || phone) {
-      const { error: profileError } = await supabaseAdmin
-        .from('profiles')
-        .update({
-          department: department || null,
-          position: position || null,
-          phone: phone || null,
-        })
-        .eq('id', newUser.user.id)
+    // Create or update profile (ensure row exists even without triggers)
+    const { error: profileUpsertError } = await supabaseAdmin
+      .from('profiles')
+      .upsert({
+        id: newUser.user.id,
+        full_name,
+        email,
+        department: department || null,
+        position: position || null,
+        phone: phone || null,
+      }, { onConflict: 'id' })
 
-      if (profileError) {
-        console.error('Profile update error:', profileError)
-      }
+    if (profileUpsertError) {
+      console.error('Profile upsert error:', profileUpsertError)
     }
 
     // Auto-approve accounts created by super admins
@@ -148,16 +148,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Set user role
-    if (role && role !== 'employee') {
-      const { error: roleError } = await supabaseAdmin
-        .from('user_roles')
-        .update({ role })
-        .eq('user_id', newUser.user.id)
+    // Set user role (default to 'employee' if not provided). Insert to ensure it exists.
+    const finalRole = role || 'employee'
+    const { error: roleInsertError } = await supabaseAdmin
+      .from('user_roles')
+      .insert({ user_id: newUser.user.id, role: finalRole })
 
-      if (roleError) {
-        console.error('Role update error:', roleError)
-      }
+    if (roleInsertError) {
+      console.error('Role insert error:', roleInsertError)
     }
 
     // Create salary info if provided
