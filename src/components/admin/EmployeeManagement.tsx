@@ -138,21 +138,29 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
 
     setIsCreatingEmployee(true);
     try {
+      const payload: any = {
+        email: newEmployeeForm.email,
+        password: newEmployeeForm.password,
+        full_name: newEmployeeForm.full_name,
+        role: newEmployeeForm.role,
+        department: newEmployeeForm.department || null,
+        position: newEmployeeForm.position || null,
+        phone: newEmployeeForm.phone || null,
+      };
+      if (newEmployeeForm.base_salary > 0) payload.base_salary = Number(newEmployeeForm.base_salary);
+      if (newEmployeeForm.daily_rate > 0) payload.daily_rate = Number(newEmployeeForm.daily_rate);
+
       const { data, error } = await supabase.functions.invoke('create-user', {
-        body: {
-          email: newEmployeeForm.email,
-          password: newEmployeeForm.password,
-          full_name: newEmployeeForm.full_name,
-          role: newEmployeeForm.role,
-          department: newEmployeeForm.department || null,
-          position: newEmployeeForm.position || null,
-          phone: newEmployeeForm.phone || null,
-          base_salary: newEmployeeForm.base_salary || 0,
-          daily_rate: newEmployeeForm.daily_rate || 0,
-        },
+        body: payload,
       });
 
-      if (error) throw new Error(error.message || "Failed to create employee");
+      if (error) {
+        const details = (data as any)?.details;
+        const joined = Array.isArray(details) ? details.map((d: any) => d?.message).filter(Boolean).join('; ') : undefined;
+        const serverMessage = (data as any)?.error || joined;
+        console.error('create-user error:', { error, data });
+        throw new Error(serverMessage || error.message || "Failed to create employee");
+      }
 
       toast.success("Employee created successfully");
       setNewEmployeeForm({
