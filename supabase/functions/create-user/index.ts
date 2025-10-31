@@ -148,14 +148,29 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Set user role (default to 'employee' if not provided). Insert to ensure it exists.
+    // Set user role (default to 'employee' if not provided). Ensure role is assigned.
     const finalRole = role || 'employee'
+
+    // Remove any pre-existing role rows for safety, then insert exactly one
+    const { error: roleDeleteError } = await supabaseAdmin
+      .from('user_roles')
+      .delete()
+      .eq('user_id', newUser.user.id)
+
+    if (roleDeleteError) {
+      console.error('Role delete error:', roleDeleteError)
+    }
+
     const { error: roleInsertError } = await supabaseAdmin
       .from('user_roles')
       .insert({ user_id: newUser.user.id, role: finalRole })
 
     if (roleInsertError) {
       console.error('Role insert error:', roleInsertError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to assign role', details: roleInsertError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Create salary info if provided
