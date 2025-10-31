@@ -100,7 +100,11 @@ const HRManagerManagement = ({ onUpdate }: HRManagerManagementProps) => {
         },
       });
 
-      if (error) throw new Error(error.message || "Failed to create HR Manager");
+      if (error) {
+        const serverMessage = (data as any)?.error || (data as any)?.details || error.message
+        console.error('create-user error:', { error, data })
+        throw new Error(serverMessage || "Failed to create HR Manager")
+      }
 
       toast.success("HR Manager created successfully");
       setNewManagerForm({
