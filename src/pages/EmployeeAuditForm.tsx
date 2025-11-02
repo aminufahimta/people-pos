@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,6 +43,30 @@ type FormValues = z.infer<typeof formSchema>;
 export default function EmployeeAuditForm() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check authentication on mount
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Please log in to access this form");
+        navigate("/auth");
+        return;
+      }
+      
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Auth check error:", error);
+      toast.error("Authentication error. Please log in again.");
+      navigate("/auth");
+    }
+  };
 
   // Dynamic sections state
   const [employmentHistory, setEmploymentHistory] = useState<any[]>([]);
@@ -233,6 +257,17 @@ export default function EmployeeAuditForm() {
     updated[index][field] = value;
     setSkillsCompetency(updated);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 py-8 px-4">
