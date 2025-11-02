@@ -12,6 +12,7 @@ import SalaryManagement from "@/components/admin/SalaryManagement";
 import ReportsGeneration from "@/components/admin/ReportsGeneration";
 import SuspensionManagement from "@/components/admin/SuspensionManagement";
 import DocumentVerification from "@/components/admin/DocumentVerification";
+import EmployeeAuditList from "@/components/admin/EmployeeAuditList";
 
 interface HRManagerDashboardProps {
   user: User;
@@ -88,6 +89,9 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
           <TabsTrigger value="verification" className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
             Document Verification
+          </TabsTrigger>
+          <TabsTrigger value="audits" className="flex items-center gap-2">
+            Employee Audit
           </TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center gap-2">
             Reports
@@ -169,6 +173,10 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
 
         <TabsContent value="verification" className="space-y-8">
           <DocumentVerification />
+        </TabsContent>
+
+        <TabsContent value="audits" className="space-y-8">
+          <EmployeeAuditList />
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-8">

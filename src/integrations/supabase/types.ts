@@ -55,6 +55,120 @@ export type Database = {
           },
         ]
       }
+      employee_audits: {
+        Row: {
+          audit_comments: string | null
+          competency_rating: string | null
+          created_at: string | null
+          current_job_title: string
+          declaration_date: string | null
+          department: string | null
+          education: Json | null
+          employment_history: Json | null
+          engagement_status: string | null
+          file_record_status: string | null
+          final_consultant_comments: string | null
+          final_rating: string | null
+          grade: string | null
+          home_address: string | null
+          home_telephone: string | null
+          id: string
+          job_description: string | null
+          job_description_attached: boolean | null
+          management_experience: string | null
+          manages_staff: boolean | null
+          name: string
+          number_of_employees: number | null
+          other_financial_benefit: string | null
+          people_supervised: string | null
+          performance_scores: string | null
+          professional_membership: Json | null
+          salary: number | null
+          signature: string | null
+          skills_competency: Json | null
+          status: string | null
+          submitted_at: string | null
+          training: Json | null
+          unpaid_roles: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          audit_comments?: string | null
+          competency_rating?: string | null
+          created_at?: string | null
+          current_job_title: string
+          declaration_date?: string | null
+          department?: string | null
+          education?: Json | null
+          employment_history?: Json | null
+          engagement_status?: string | null
+          file_record_status?: string | null
+          final_consultant_comments?: string | null
+          final_rating?: string | null
+          grade?: string | null
+          home_address?: string | null
+          home_telephone?: string | null
+          id?: string
+          job_description?: string | null
+          job_description_attached?: boolean | null
+          management_experience?: string | null
+          manages_staff?: boolean | null
+          name: string
+          number_of_employees?: number | null
+          other_financial_benefit?: string | null
+          people_supervised?: string | null
+          performance_scores?: string | null
+          professional_membership?: Json | null
+          salary?: number | null
+          signature?: string | null
+          skills_competency?: Json | null
+          status?: string | null
+          submitted_at?: string | null
+          training?: Json | null
+          unpaid_roles?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          audit_comments?: string | null
+          competency_rating?: string | null
+          created_at?: string | null
+          current_job_title?: string
+          declaration_date?: string | null
+          department?: string | null
+          education?: Json | null
+          employment_history?: Json | null
+          engagement_status?: string | null
+          file_record_status?: string | null
+          final_consultant_comments?: string | null
+          final_rating?: string | null
+          grade?: string | null
+          home_address?: string | null
+          home_telephone?: string | null
+          id?: string
+          job_description?: string | null
+          job_description_attached?: boolean | null
+          management_experience?: string | null
+          manages_staff?: boolean | null
+          name?: string
+          number_of_employees?: number | null
+          other_financial_benefit?: string | null
+          people_supervised?: string | null
+          performance_scores?: string | null
+          professional_membership?: Json | null
+          salary?: number | null
+          signature?: string | null
+          skills_competency?: Json | null
+          status?: string | null
+          submitted_at?: string | null
+          training?: Json | null
+          unpaid_roles?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       employee_documents: {
         Row: {
           document_type: string
