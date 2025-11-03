@@ -173,7 +173,8 @@ const Auth = () => {
       if (error) throw error;
 
       toast.success("Welcome back!");
-      navigate("/dashboard");
+      const redirect = searchParams.get("redirect") || "/dashboard";
+      navigate(redirect);
     } catch (error: any) {
       toast.error(error.message || "Login failed");
     } finally {

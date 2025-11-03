@@ -56,7 +56,7 @@ export default function EmployeeAuditForm() {
       
       if (!user) {
         toast.error("Please log in to access this form");
-        navigate("/auth");
+        navigate("/auth?redirect=/employee-audit-form");
         return;
       }
       
