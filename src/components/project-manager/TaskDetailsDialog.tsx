@@ -348,42 +348,46 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
           {/* Chat Section */}
           <div className="flex flex-col">
             <h3 className="font-semibold mb-2">Messages</h3>
-            <ScrollArea className="flex-1 h-96 border rounded-lg p-4 mb-4">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`mb-4 flex ${msg.sender_id === currentUserId ? "justify-end" : "justify-start"}`}
-                >
-                  <div className={`max-w-[80%] ${msg.sender_id === currentUserId ? "order-2" : "order-1"}`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      {msg.sender_id !== currentUserId && (
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="text-xs">
-                            {(msg.sender_profile?.full_name?.[0] ?? "?")}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        {msg.sender_profile?.full_name || "Unknown"}
-                      </span>
-                    </div>
+            <div className="flex-1 mb-4 border rounded-lg">
+              <ScrollArea className="h-96">
+                <div className="p-4 pb-8">
+                  {messages.map((msg) => (
                     <div
-                      className={`rounded-lg p-3 ${
-                        msg.sender_id === currentUserId
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      }`}
+                      key={msg.id}
+                      className={`mb-4 flex ${msg.sender_id === currentUserId ? "justify-end" : "justify-start"}`}
                     >
-                      <p className="text-sm">{msg.message}</p>
-                      <span className="text-xs opacity-70">
-                        {format(new Date(msg.created_at), "h:mm a")}
-                      </span>
+                      <div className={`max-w-[80%] ${msg.sender_id === currentUserId ? "order-2" : "order-1"}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          {msg.sender_id !== currentUserId && (
+                            <Avatar className="h-6 w-6">
+                              <AvatarFallback className="text-xs">
+                                {(msg.sender_profile?.full_name?.[0] ?? "?")}
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {msg.sender_profile?.full_name || "Unknown"}
+                          </span>
+                        </div>
+                        <div
+                          className={`rounded-lg p-3 ${
+                            msg.sender_id === currentUserId
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
+                          }`}
+                        >
+                          <p className="text-sm">{msg.message}</p>
+                          <span className="text-xs opacity-70">
+                            {format(new Date(msg.created_at), "h:mm a")}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
+                  <div ref={messagesEndRef} />
                 </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </ScrollArea>
+              </ScrollArea>
+            </div>
             
             <form onSubmit={handleSendMessage} className="flex gap-2">
               <Input
