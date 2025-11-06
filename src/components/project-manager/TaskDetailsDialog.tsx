@@ -79,8 +79,14 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
     if (error) throw error;
 
     const messages = (raw || []) as any[];
-    const senderIds = Array.from(new Set(messages.map((m) => m.sender_id)));
-    if (senderIds.length === 0) return [] as Message[];
+    const senderIds = Array.from(new Set(messages.map((m) => m.sender_id).filter(Boolean)));
+
+    if (senderIds.length === 0) {
+      return messages.map((msg: any) => ({
+        ...msg,
+        sender_profile: { full_name: "Unknown" }
+      })) as Message[];
+    }
 
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
@@ -331,7 +337,7 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
                           <X className="h-3 w-3" />
                         </Button>
                       )}
-                      <p className="text-xs mt-1 truncate">{attachment.uploader_profile.full_name}</p>
+                      <p className="text-xs mt-1 truncate">{attachment.uploader_profile?.full_name || "Unknown"}</p>
                     </div>
                   ))}
                 </div>
@@ -353,12 +359,12 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
                       {msg.sender_id !== currentUserId && (
                         <Avatar className="h-6 w-6">
                           <AvatarFallback className="text-xs">
-                            {msg.sender_profile.full_name[0]}
+                            {(msg.sender_profile?.full_name?.[0] ?? "?")}
                           </AvatarFallback>
                         </Avatar>
                       )}
                       <span className="text-xs text-muted-foreground">
-                        {msg.sender_profile.full_name}
+                        {msg.sender_profile?.full_name || "Unknown"}
                       </span>
                     </div>
                     <div
