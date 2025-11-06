@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Send, Upload, Image as ImageIcon, MessageSquare } from "lucide-react";
+import { Send, Upload, Image as ImageIcon, MessageSquare, X } from "lucide-react";
 import { format } from "date-fns";
 
 interface MyTasksDetailProps {
   taskId: string;
   currentUserId: string;
+  onClose?: () => void;
 }
 
 interface Message {
@@ -31,7 +32,7 @@ interface Attachment {
   created_at: string;
 }
 
-export const MyTasksDetail = ({ taskId, currentUserId }: MyTasksDetailProps) => {
+export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailProps) => {
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -167,11 +168,16 @@ export const MyTasksDetail = ({ taskId, currentUserId }: MyTasksDetailProps) => 
     <div className="grid grid-cols-2 gap-4 mt-4">
       {/* Chat Section */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
             Messages
           </CardTitle>
+          {onClose && (
+            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close chat">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[400px] mb-4">
@@ -204,12 +210,13 @@ export const MyTasksDetail = ({ taskId, currentUserId }: MyTasksDetailProps) => 
 
           <div className="flex gap-2">
             <Input
+              className="h-9 text-sm"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Type a message..."
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
             />
-            <Button onClick={handleSendMessage} size="icon">
+            <Button onClick={handleSendMessage} size="icon" className="h-9 w-9">
               <Send className="h-4 w-4" />
             </Button>
           </div>

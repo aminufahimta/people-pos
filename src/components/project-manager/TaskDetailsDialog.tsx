@@ -374,12 +374,13 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
             
             <form onSubmit={handleSendMessage} className="flex gap-2">
               <Input
+                className="h-9 text-sm"
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Type a message..."
                 disabled={sendMessageMutation.isPending}
               />
-              <Button type="submit" size="icon" disabled={sendMessageMutation.isPending || !messageText.trim()}>
+              <Button type="submit" size="icon" className="h-9 w-9" disabled={sendMessageMutation.isPending || !messageText.trim()}>
                 <Send className="h-4 w-4" />
               </Button>
             </form>

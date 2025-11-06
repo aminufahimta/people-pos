@@ -202,7 +202,7 @@ export const MyTasks = ({ userId }: { userId: string }) => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setSelectedTaskId(task.id)}
+                      onClick={() => setSelectedTaskId(prev => prev === task.id ? null : task.id)}
                     >
                       <MessageSquare className="h-4 w-4" />
                     </Button>
@@ -214,7 +214,11 @@ export const MyTasks = ({ userId }: { userId: string }) => {
         )}
         
         {selectedTaskId && (
-          <MyTasksDetail taskId={selectedTaskId} currentUserId={userId} />
+          <MyTasksDetail
+            taskId={selectedTaskId}
+            currentUserId={userId}
+            onClose={() => setSelectedTaskId(null)}
+          />
         )}
       </CardContent>
     </Card>
