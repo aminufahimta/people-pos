@@ -29,6 +29,7 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
     phone: "",
     base_salary: 0,
     daily_rate: 0,
+    role: "employee" as "employee" | "hr_manager" | "super_admin" | "project_manager",
   });
   const [newEmployeeForm, setNewEmployeeForm] = useState({
     email: "",
@@ -94,6 +95,25 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
         .eq("id", editingEmployee.id);
 
       if (profileError) throw profileError;
+
+      // Update role if user is super admin
+      if (userRole === "super_admin") {
+        // Delete existing role
+        await supabase
+          .from("user_roles")
+          .delete()
+          .eq("user_id", editingEmployee.id);
+
+        // Insert new role
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .insert({
+            user_id: editingEmployee.id,
+            role: editForm.role,
+          });
+
+        if (roleError) throw roleError;
+      }
 
       // Update salary info
       const salaryData = editingEmployee.salary_info?.[0];
@@ -424,6 +444,7 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
                                   phone: employee.phone || "",
                                   base_salary: employee.salary_info?.[0]?.base_salary || 0,
                                   daily_rate: employee.salary_info?.[0]?.daily_rate || 0,
+                                  role: employee.user_roles?.[0]?.role || "employee",
                                 });
                               }}
                             >
@@ -456,6 +477,27 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
                                   }
                                 />
                               </div>
+                              {userRole === "super_admin" && (
+                                <div className="space-y-2">
+                                  <Label htmlFor="edit_role">Role</Label>
+                                  <Select
+                                    value={editForm.role}
+                                    onValueChange={(value: any) =>
+                                      setEditForm({ ...editForm, role: value })
+                                    }
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="employee">Employee</SelectItem>
+                                      <SelectItem value="project_manager">Project Manager</SelectItem>
+                                      <SelectItem value="hr_manager">HR Manager</SelectItem>
+                                      <SelectItem value="super_admin">Super Admin</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
                               <div className="space-y-2">
                                 <Label htmlFor="edit_department">Department</Label>
                                 <Input
