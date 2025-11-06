@@ -69,54 +69,61 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
 
   const { data: messages = [] } = useQuery({
     queryKey: ["task-messages", task?.id],
-    queryFn: async () => {
-      if (!task?.id) return [];
-      const { data, error } = await supabase
-        .from("task_messages")
-        .select(`
-          id,
-          task_id,
-          sender_id,
-          message,
-          created_at,
-          sender:profiles(full_name)
-        `)
-        .eq("task_id", task.id)
-        .order("created_at", { ascending: true });
-      
-      if (error) throw error;
-      return (data || []).map((msg: any) => ({
-        ...msg,
-        sender_profile: { full_name: msg.sender?.full_name || "Unknown" }
-      })) as Message[];
-    },
+  queryFn: async () => {
+    if (!task?.id) return [];
+    const { data: raw, error } = await supabase
+      .from("task_messages")
+      .select("*")
+      .eq("task_id", task.id)
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+
+    const messages = (raw || []) as any[];
+    const senderIds = Array.from(new Set(messages.map((m) => m.sender_id)));
+    if (senderIds.length === 0) return [] as Message[];
+
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", senderIds);
+    if (profilesError) throw profilesError;
+
+    const nameMap = new Map((profiles || []).map((p: any) => [p.id, p.full_name]));
+    return messages.map((msg: any) => ({
+      ...msg,
+      sender_profile: { full_name: nameMap.get(msg.sender_id) || "Unknown" }
+    })) as Message[];
+  },
     enabled: !!task?.id,
   });
 
   const { data: attachments = [] } = useQuery({
     queryKey: ["task-attachments", task?.id],
-    queryFn: async () => {
-      if (!task?.id) return [];
-      const { data, error } = await supabase
-        .from("task_attachments")
-        .select(`
-          id,
-          task_id,
-          uploaded_by,
-          file_path,
-          file_name,
-          created_at,
-          uploader:profiles(full_name)
-        `)
-        .eq("task_id", task.id)
-        .order("created_at", { ascending: false });
-      
-      if (error) throw error;
-      return (data || []).map((att: any) => ({
-        ...att,
-        uploader_profile: { full_name: att.uploader?.full_name || "Unknown" }
-      })) as Attachment[];
-    },
+  queryFn: async () => {
+    if (!task?.id) return [];
+    const { data: raw, error } = await supabase
+      .from("task_attachments")
+      .select("*")
+      .eq("task_id", task.id)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+
+    const attachments = (raw || []) as any[];
+    const uploaderIds = Array.from(new Set(attachments.map((a) => a.uploaded_by)));
+    if (uploaderIds.length === 0) return attachments as Attachment[];
+
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", uploaderIds);
+    if (profilesError) throw profilesError;
+
+    const nameMap = new Map((profiles || []).map((p: any) => [p.id, p.full_name]));
+    return attachments.map((att: any) => ({
+      ...att,
+      uploader_profile: { full_name: nameMap.get(att.uploaded_by) || "Unknown" }
+    })) as Attachment[];
+  },
     enabled: !!task?.id,
   });
 

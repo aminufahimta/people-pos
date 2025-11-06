@@ -40,19 +40,27 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
 
   const { data: messages = [] } = useQuery({
     queryKey: ["task-messages", taskId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("task_messages")
-        .select(`
-          *,
-          sender:profiles(full_name)
-        `)
-        .eq("task_id", taskId)
-        .order("created_at", { ascending: true });
-      
-      if (error) throw error;
-      return data as any[];
-    },
+  queryFn: async () => {
+    const { data: raw, error } = await supabase
+      .from("task_messages")
+      .select("*")
+      .eq("task_id", taskId)
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+
+    const messages = (raw || []) as any[];
+    const senderIds = Array.from(new Set(messages.map((m) => m.sender_id)));
+    if (senderIds.length === 0) return messages;
+
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", senderIds);
+    if (profilesError) throw profilesError;
+
+    const nameMap = new Map((profiles || []).map((p: any) => [p.id, p.full_name]));
+    return messages.map((m) => ({ ...m, sender: { full_name: nameMap.get(m.sender_id) || "Unknown" } }));
+  },
   });
 
   const { data: attachments = [] } = useQuery({
