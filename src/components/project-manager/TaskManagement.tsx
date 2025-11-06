@@ -80,8 +80,14 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, email")
+        .select(`
+          id, 
+          full_name, 
+          email,
+          user_roles!inner(role)
+        `)
         .eq("is_approved", true)
+        .eq("user_roles.role", "employee")
         .order("full_name");
       
       if (error) throw error;
