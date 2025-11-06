@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, ClipboardList } from "lucide-react";
+import { Plus, ClipboardList, Pencil } from "lucide-react";
 import { format } from "date-fns";
 
 interface Task {
@@ -41,6 +41,7 @@ interface Profile {
 
 export const TaskManagement = ({ userId }: { userId: string }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -110,6 +111,30 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          ...data,
+          assigned_to: data.assigned_to || null,
+          due_date: data.due_date || null,
+        })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast.success("Task updated successfully");
+      setIsDialogOpen(false);
+      resetForm();
+      setEditingTask(null);
+    },
+    onError: (error) => {
+      toast.error(`Failed to update task: ${error.message}`);
+    },
+  });
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const updateData: any = { status };
@@ -161,7 +186,31 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate(formData);
+    if (editingTask) {
+      updateMutation.mutate({ id: editingTask.id, data: formData });
+    } else {
+      createMutation.mutate(formData);
+    }
+  };
+
+  const handleEdit = (task: Task) => {
+    setEditingTask(task);
+    setFormData({
+      title: task.title,
+      description: task.description || "",
+      status: task.status,
+      priority: task.priority,
+      assigned_to: task.assigned_to || "",
+      due_date: task.due_date ? new Date(task.due_date).toISOString().slice(0, 16) : "",
+      installation_address: task.installation_address || "",
+      customer_name: task.customer_name || "",
+      customer_phone: task.customer_phone || "",
+      routers_used: 0,
+      poe_adapters_used: 0,
+      poles_used: 0,
+      anchors_used: 0,
+    });
+    setIsDialogOpen(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -200,7 +249,10 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
-          if (!open) resetForm();
+          if (!open) {
+            resetForm();
+            setEditingTask(null);
+          }
         }}>
           <DialogTrigger asChild>
             <Button>
@@ -210,7 +262,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Task</DialogTitle>
+              <DialogTitle>{editingTask ? "Edit Task" : "Create New Task"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -343,8 +395,8 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-                Create Task
+              <Button type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>
+                {editingTask ? "Update Task" : "Create Task"}
               </Button>
             </form>
           </DialogContent>
@@ -389,7 +441,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                 <TableHead>Status</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -436,8 +488,14 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(task.status)}>{task.status}</Badge>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(task)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
