@@ -56,7 +56,13 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
       .from("profiles")
       .select("id, full_name")
       .in("id", senderIds);
-    if (profilesError) throw profilesError;
+    
+    console.log("Fetched profiles for employee task chat:", { senderIds, profiles, error: profilesError });
+    
+    if (profilesError) {
+      console.error("Failed to fetch profiles:", profilesError);
+      return messages.map((m) => ({ ...m, sender: { full_name: "Unknown" } }));
+    }
 
     const nameMap = new Map((profiles || []).map((p: any) => [p.id, p.full_name]));
     return messages.map((m) => ({ ...m, sender: { full_name: nameMap.get(m.sender_id) || "Unknown" } }));
