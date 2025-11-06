@@ -62,14 +62,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Only super_admin and project_manager can deduct inventory
-    if (userRole.role !== 'super_admin' && userRole.role !== 'project_manager') {
-      return new Response(
-        JSON.stringify({ error: 'Insufficient permissions' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -108,6 +100,17 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Task not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check permissions: super_admin, project_manager, or assigned employee
+    const isAdmin = userRole.role === 'super_admin' || userRole.role === 'project_manager'
+    const isAssignedEmployee = task.assigned_to === user.id
+
+    if (!isAdmin && !isAssignedEmployee) {
+      return new Response(
+        JSON.stringify({ error: 'Insufficient permissions - not assigned to this task' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
