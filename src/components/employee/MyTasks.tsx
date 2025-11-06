@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
+import { MyTasksDetail } from "./MyTasksDetail";
 
 interface Task {
   id: string;
@@ -22,6 +25,7 @@ interface Task {
 }
 
 export const MyTasks = ({ userId }: { userId: string }) => {
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: tasks = [], isLoading } = useQuery({
@@ -146,6 +150,7 @@ export const MyTasks = ({ userId }: { userId: string }) => {
                 <TableHead>Priority</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -193,10 +198,23 @@ export const MyTasks = ({ userId }: { userId: string }) => {
                       </SelectContent>
                     </Select>
                   </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedTaskId(task.id)}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+        )}
+        
+        {selectedTaskId && (
+          <MyTasksDetail taskId={selectedTaskId} currentUserId={userId} />
         )}
       </CardContent>
     </Card>
