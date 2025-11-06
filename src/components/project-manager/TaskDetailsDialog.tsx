@@ -79,7 +79,7 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
           sender_id,
           message,
           created_at,
-          profiles!sender_id(full_name)
+          sender:profiles(full_name)
         `)
         .eq("task_id", task.id)
         .order("created_at", { ascending: true });
@@ -87,7 +87,7 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
       if (error) throw error;
       return (data || []).map((msg: any) => ({
         ...msg,
-        sender_profile: { full_name: msg.profiles?.full_name || "Unknown" }
+        sender_profile: { full_name: msg.sender?.full_name || "Unknown" }
       })) as Message[];
     },
     enabled: !!task?.id,
@@ -106,7 +106,7 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
           file_path,
           file_name,
           created_at,
-          profiles!uploaded_by(full_name)
+          uploader:profiles(full_name)
         `)
         .eq("task_id", task.id)
         .order("created_at", { ascending: false });
@@ -114,7 +114,7 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
       if (error) throw error;
       return (data || []).map((att: any) => ({
         ...att,
-        uploader_profile: { full_name: att.profiles?.full_name || "Unknown" }
+        uploader_profile: { full_name: att.uploader?.full_name || "Unknown" }
       })) as Attachment[];
     },
     enabled: !!task?.id,

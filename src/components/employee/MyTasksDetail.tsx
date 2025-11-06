@@ -19,7 +19,7 @@ interface Message {
   message: string;
   sender_id: string;
   created_at: string;
-  profiles?: {
+  sender?: {
     full_name: string;
   };
 }
@@ -44,7 +44,7 @@ export const MyTasksDetail = ({ taskId, currentUserId }: MyTasksDetailProps) => 
         .from("task_messages")
         .select(`
           *,
-          profiles!task_messages_sender_id_fkey(full_name)
+          sender:profiles(full_name)
         `)
         .eq("task_id", taskId)
         .order("created_at", { ascending: true });
@@ -190,7 +190,7 @@ export const MyTasksDetail = ({ taskId, currentUserId }: MyTasksDetailProps) => 
                   }`}
                 >
                   <p className="text-sm font-medium mb-1">
-                    {msg.profiles?.full_name || "Unknown"}
+                    {msg.sender?.full_name || "Unknown"}
                   </p>
                   <p>{msg.message}</p>
                   <p className="text-xs opacity-70 mt-1">
