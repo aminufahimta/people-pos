@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, ClipboardList, Pencil } from "lucide-react";
+import { Plus, ClipboardList, Pencil, MessageSquare } from "lucide-react";
+import { TaskDetailsDialog } from "./TaskDetailsDialog";
 import { format } from "date-fns";
 
 interface Task {
@@ -42,6 +43,8 @@ interface Profile {
 export const TaskManagement = ({ userId }: { userId: string }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -211,6 +214,11 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
       anchors_used: 0,
     });
     setIsDialogOpen(true);
+  };
+
+  const handleViewDetails = (task: Task) => {
+    setSelectedTask(task);
+    setIsDetailsOpen(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -489,13 +497,22 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(task)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewDetails(task)}
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(task)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -503,6 +520,16 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
           </Table>
         )}
       </CardContent>
+      
+      <TaskDetailsDialog
+        task={selectedTask}
+        isOpen={isDetailsOpen}
+        onClose={() => {
+          setIsDetailsOpen(false);
+          setSelectedTask(null);
+        }}
+        currentUserId={userId}
+      />
     </Card>
   );
 };
