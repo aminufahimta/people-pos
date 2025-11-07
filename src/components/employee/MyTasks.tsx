@@ -22,6 +22,10 @@ interface Task {
   customer_name: string | null;
   customer_phone: string | null;
   created_at: string;
+  project?: {
+    customer_name: string;
+    project_status: string;
+  };
 }
 
 export const MyTasks = ({ userId }: { userId: string }) => {
@@ -33,7 +37,10 @@ export const MyTasks = ({ userId }: { userId: string }) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tasks")
-        .select("*")
+        .select(`
+          *,
+          project:projects(customer_name, project_status)
+        `)
         .eq("assigned_to", userId)
         .order("created_at", { ascending: false });
       
@@ -145,7 +152,7 @@ export const MyTasks = ({ userId }: { userId: string }) => {
             <TableHeader>
               <TableRow>
                 <TableHead>Task</TableHead>
-                <TableHead>Customer</TableHead>
+                <TableHead>Project / Customer</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Due Date</TableHead>
@@ -165,13 +172,22 @@ export const MyTasks = ({ userId }: { userId: string }) => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {task.customer_name && (
+                    {task.project ? (
+                      <div>
+                        <p className="text-sm font-medium">{task.project.customer_name}</p>
+                        <Badge variant="outline" className="mt-1 text-xs">
+                          {task.project.project_status}
+                        </Badge>
+                      </div>
+                    ) : task.customer_name ? (
                       <div>
                         <p className="text-sm">{task.customer_name}</p>
                         {task.customer_phone && (
                           <p className="text-xs text-muted-foreground">{task.customer_phone}</p>
                         )}
                       </div>
+                    ) : (
+                      <span className="text-muted-foreground">N/A</span>
                     )}
                   </TableCell>
                   <TableCell>

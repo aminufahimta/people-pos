@@ -304,6 +304,45 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          created_at: string
+          created_by: string
+          customer_address: string | null
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string | null
+          id: string
+          notes: string | null
+          project_status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          id?: string
+          notes?: string | null
+          project_status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          notes?: string | null
+          project_status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       salary_info: {
         Row: {
           base_salary: number
@@ -526,6 +565,7 @@ export type Database = {
           poe_adapters_used: number | null
           poles_used: number | null
           priority: string
+          project_id: string | null
           routers_used: number | null
           status: string
           title: string
@@ -547,6 +587,7 @@ export type Database = {
           poe_adapters_used?: number | null
           poles_used?: number | null
           priority?: string
+          project_id?: string | null
           routers_used?: number | null
           status?: string
           title: string
@@ -568,6 +609,7 @@ export type Database = {
           poe_adapters_used?: number | null
           poles_used?: number | null
           priority?: string
+          project_id?: string | null
           routers_used?: number | null
           status?: string
           title?: string
@@ -586,6 +628,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
