@@ -339,6 +339,20 @@ const queryClient = useQueryClient();
     };
   };
 
+  const allTasks = Object.values(tasksByProject).flat();
+  const overallStats = {
+    total: allTasks.length,
+    pending: allTasks.filter(t => t.status === "pending").length,
+    inProgress: allTasks.filter(t => t.status === "in_progress").length,
+    completed: allTasks.filter(t => t.status === "completed").length,
+  };
+
+  const projectStats = {
+    total: projects.length,
+    active: projects.filter(p => p.project_status === "active").length,
+    completed: projects.filter(p => p.project_status === "completed").length,
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -425,6 +439,61 @@ const queryClient = useQueryClient();
             <p className="text-muted-foreground text-center py-8">No projects yet. Create one to get started!</p>
           ) : (
             <div className="space-y-4">
+              {/* Project Stats */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-3">Project Overview</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                  <Card className="bg-muted/50">
+                    <CardContent className="pt-4 sm:pt-6 pb-4">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">Total Projects</p>
+                      <p className="text-xl sm:text-2xl font-bold text-foreground">{projectStats.total}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-muted/50">
+                    <CardContent className="pt-4 sm:pt-6 pb-4">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">Active</p>
+                      <p className="text-xl sm:text-2xl font-bold text-blue-600">{projectStats.active}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-muted/50">
+                    <CardContent className="pt-4 sm:pt-6 pb-4">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">Completed</p>
+                      <p className="text-xl sm:text-2xl font-bold text-emerald-600">{projectStats.completed}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Task Stats */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-3">Task Overview</h3>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  <Card className="bg-muted/50">
+                    <CardContent className="pt-4 sm:pt-6 pb-4">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">Total Tasks</p>
+                      <p className="text-xl sm:text-2xl font-bold text-foreground">{overallStats.total}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-muted/50">
+                    <CardContent className="pt-4 sm:pt-6 pb-4">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">Pending</p>
+                      <p className="text-xl sm:text-2xl font-bold text-amber-600">{overallStats.pending}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-muted/50">
+                    <CardContent className="pt-4 sm:pt-6 pb-4">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">In Progress</p>
+                      <p className="text-xl sm:text-2xl font-bold text-blue-600">{overallStats.inProgress}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-muted/50">
+                    <CardContent className="pt-4 sm:pt-6 pb-4">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">Completed</p>
+                      <p className="text-xl sm:text-2xl font-bold text-emerald-600">{overallStats.completed}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
               {projects.map((project) => {
                 const stats = getProjectStats(project.id);
                 const isExpanded = expandedProjects.has(project.id);
