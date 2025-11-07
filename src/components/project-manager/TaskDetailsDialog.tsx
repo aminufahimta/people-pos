@@ -279,12 +279,12 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{task.title}</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">{task.title}</DialogTitle>
         </DialogHeader>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Task Details Section */}
           <div className="space-y-4">
             <div>
@@ -310,15 +310,16 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
             {/* Attachments Section */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">Attachments</h3>
+                <h3 className="font-semibold text-sm sm:text-base">Attachments</h3>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingFile}
+                  className="h-8 text-xs sm:text-sm"
                 >
-                  <Image className="h-4 w-4 mr-2" />
-                  Upload
+                  <Image className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="hidden xs:inline">Upload</span>
                 </Button>
                 <input
                   ref={fileInputRef}
@@ -328,8 +329,8 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
                   className="hidden"
                 />
               </div>
-              <ScrollArea className="h-48">
-                <div className="grid grid-cols-2 gap-2">
+              <ScrollArea className="h-40 sm:h-48">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2">
                   {attachments.map((attachment) => (
                     <div key={attachment.id} className="relative group">
                       <img
@@ -357,9 +358,9 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
 
           {/* Chat Section */}
           <div className="flex flex-col">
-            <h3 className="font-semibold mb-2">Messages</h3>
+            <h3 className="font-semibold mb-2 text-sm sm:text-base">Messages</h3>
             <div className="flex-1 mb-4 border rounded-lg">
-              <ScrollArea className="h-96">
+              <ScrollArea className="h-64 sm:h-80 lg:h-96">
                 <div className="p-4 pb-8">
                   {messages.map((msg) => (
                     <div

@@ -338,7 +338,7 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <FolderOpen className="h-5 w-5" />
             <CardTitle>Project Management</CardTitle>
@@ -351,12 +351,12 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
             }
           }}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Project
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingProject ? "Edit Project" : "Create New Project"}</DialogTitle>
               </DialogHeader>
@@ -370,7 +370,7 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
                     required
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="customer_phone">Customer Phone</Label>
                     <Input
@@ -429,22 +429,22 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
                   <Collapsible key={project.id} open={isExpanded} onOpenChange={() => toggleProject(project.id)}>
                     <Card>
                       <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
+                        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                          <div className="flex-1 w-full">
                             <div className="flex items-center gap-2">
                               <CollapsibleTrigger asChild>
                                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                                   {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                                 </Button>
                               </CollapsibleTrigger>
-                              <div>
-                                <h3 className="font-semibold text-lg">{project.customer_name}</h3>
-                                <div className="flex items-center gap-2 mt-1">
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-base sm:text-lg">{project.customer_name}</h3>
+                                <div className="flex flex-wrap items-center gap-2 mt-1">
                                   <Select
                                     value={project.project_status}
                                     onValueChange={(value) => updateProjectStatusMutation.mutate({ id: project.id, status: value })}
                                   >
-                                    <SelectTrigger className="w-32 h-7">
+                                    <SelectTrigger className="w-28 sm:w-32 h-7 text-xs sm:text-sm">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -454,24 +454,25 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
                                       <SelectItem value="cancelled">Cancelled</SelectItem>
                                     </SelectContent>
                                   </Select>
-                                  <span className="text-sm text-muted-foreground">
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
                                     {stats.total} task{stats.total !== 1 ? 's' : ''}
                                   </span>
                                 </div>
                               </div>
                             </div>
                             {project.customer_phone && (
-                              <p className="text-sm text-muted-foreground mt-2">📞 {project.customer_phone}</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground mt-2 break-all">📞 {project.customer_phone}</p>
                             )}
                             {project.customer_email && (
-                              <p className="text-sm text-muted-foreground">📧 {project.customer_email}</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground break-all">📧 {project.customer_email}</p>
                             )}
                           </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => handleEditProject(project)}>
+                          <div className="flex gap-2 w-full sm:w-auto">
+                            <Button variant="outline" size="sm" onClick={() => handleEditProject(project)} className="flex-1 sm:flex-none">
                               <Pencil className="h-4 w-4" />
+                              <span className="ml-1 sm:hidden">Edit</span>
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => handleAddTask(project.id)}>
+                            <Button variant="outline" size="sm" onClick={() => handleAddTask(project.id)} className="flex-1 sm:flex-none">
                               <Plus className="h-4 w-4 mr-1" />
                               Add Task
                             </Button>
@@ -481,7 +482,7 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
                       <CollapsibleContent>
                         <CardContent className="pt-0">
                           {stats.total > 0 && (
-                            <div className="grid grid-cols-4 gap-2 mb-4 p-3 bg-muted rounded-lg">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 p-3 bg-muted rounded-lg">
                               <div>
                                 <p className="text-xs text-muted-foreground">Pending</p>
                                 <p className="text-sm font-semibold text-yellow-600">{stats.pending}</p>
@@ -504,25 +505,25 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
                           {tasksByProject[project.id] && tasksByProject[project.id].length > 0 ? (
                             <div className="space-y-2">
                               {tasksByProject[project.id].map((task) => (
-                                <div key={task.id} className="border rounded-lg p-3 hover:bg-muted/50 transition-colors">
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2">
-                                        <h4 className="font-medium">{task.title}</h4>
+                              <div key={task.id} className="border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                                  <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+                                    <div className="flex-1 w-full">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <h4 className="font-medium text-sm sm:text-base">{task.title}</h4>
                                         <Badge className={getPriorityColor(task.priority)} variant="secondary">
                                           {task.priority}
                                         </Badge>
                                       </div>
                                       {task.description && (
-                                        <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
+                                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">{task.description}</p>
                                       )}
-                                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                                        <span>👤 {task.assigned_profile?.full_name || "Unassigned"}</span>
+                                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-2 text-xs sm:text-sm text-muted-foreground">
+                                        <span className="truncate">👤 {task.assigned_profile?.full_name || "Unassigned"}</span>
                                         {task.installation_address && (
-                                          <span>📍 {task.installation_address}</span>
+                                          <span className="truncate">📍 {task.installation_address}</span>
                                         )}
                                         {task.due_date && (
-                                          <span>📅 Due: {format(new Date(task.due_date), "MMM d, yyyy")}</span>
+                                          <span className="whitespace-nowrap">📅 Due: {format(new Date(task.due_date), "MMM d, yyyy")}</span>
                                         )}
                                       </div>
                                     </div>
@@ -530,7 +531,7 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
                                       value={task.status}
                                       onValueChange={(value) => updateTaskStatusMutation.mutate({ id: task.id, status: value })}
                                     >
-                                      <SelectTrigger className="w-32">
+                                      <SelectTrigger className="w-full sm:w-32 h-8 sm:h-10">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -590,7 +591,7 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
                 rows={3}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="priority">Priority</Label>
                 <Select value={taskFormData.priority} onValueChange={(value) => setTaskFormData({ ...taskFormData, priority: value })}>
