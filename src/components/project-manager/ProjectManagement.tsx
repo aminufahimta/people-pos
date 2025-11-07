@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, FolderOpen, Pencil, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, FolderOpen, Pencil, ChevronDown, ChevronRight, MessageSquare } from "lucide-react";
+import { TaskDetailsDialog } from "@/components/project-manager/TaskDetailsDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { format } from "date-fns";
@@ -73,7 +74,10 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
     anchors_used: 0,
   });
 
-  const queryClient = useQueryClient();
+const [selectedTaskForChat, setSelectedTaskForChat] = useState<Task | null>(null);
+const [isChatOpen, setIsChatOpen] = useState(false);
+
+const queryClient = useQueryClient();
 
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ["projects"],
@@ -527,20 +531,34 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
                                         )}
                                       </div>
                                     </div>
-                                    <Select
-                                      value={task.status}
-                                      onValueChange={(value) => updateTaskStatusMutation.mutate({ id: task.id, status: value })}
-                                    >
-                                      <SelectTrigger className="w-full sm:w-32 h-8 sm:h-10">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="in_progress">In Progress</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
-                                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                                      <Select
+                                        value={task.status}
+                                        onValueChange={(value) => updateTaskStatusMutation.mutate({ id: task.id, status: value })}
+                                      >
+                                        <SelectTrigger className="w-full sm:w-32 h-8 sm:h-10">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="pending">Pending</SelectItem>
+                                          <SelectItem value="in_progress">In Progress</SelectItem>
+                                          <SelectItem value="completed">Completed</SelectItem>
+                                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full sm:w-auto"
+                                        onClick={() => {
+                                          setSelectedTaskForChat(task);
+                                          setIsChatOpen(true);
+                                        }}
+                                      >
+                                        <MessageSquare className="h-4 w-4 mr-1" />
+                                        <span className="hidden sm:inline">Message</span>
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
                               ))}
@@ -693,6 +711,15 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {selectedTaskForChat && (
+        <TaskDetailsDialog
+          task={selectedTaskForChat as any}
+          isOpen={isChatOpen}
+          onClose={() => { setIsChatOpen(false); setSelectedTaskForChat(null); }}
+          currentUserId={userId}
+        />
+      )}
     </div>
   );
 };

@@ -179,7 +179,7 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4 mt-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
       {/* Chat Section */}
       <Card>
         <CardHeader className="flex items-center justify-between">
