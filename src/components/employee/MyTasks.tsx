@@ -2,12 +2,11 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ClipboardList, MessageSquare } from "lucide-react";
+import { ClipboardList, MessageSquare, Calendar, MapPin, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { MyTasksDetail } from "./MyTasksDetail";
 
@@ -108,135 +107,144 @@ export const MyTasks = ({ userId }: { userId: string }) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5" />
-          <CardTitle>My Assigned Tasks</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold">{stats.total}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-2xl font-bold text-yellow-500">{stats.pending}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">In Progress</p>
-              <p className="text-2xl font-bold text-blue-500">{stats.inProgress}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-green-500">{stats.completed}</p>
-            </CardContent>
-          </Card>
-        </div>
+    <div className="space-y-4 sm:space-y-6">
+      <Card>
+        <CardHeader className="pb-3 sm:pb-6">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="h-5 w-5" />
+            <CardTitle className="text-xl sm:text-2xl">My Assigned Tasks</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <Card className="bg-muted/50">
+              <CardContent className="pt-4 sm:pt-6 pb-4">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-1">Total</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.total}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-muted/50">
+              <CardContent className="pt-4 sm:pt-6 pb-4">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-1">Pending</p>
+                <p className="text-xl sm:text-2xl font-bold text-amber-600">{stats.pending}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-muted/50">
+              <CardContent className="pt-4 sm:pt-6 pb-4">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-1">In Progress</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.inProgress}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-muted/50">
+              <CardContent className="pt-4 sm:pt-6 pb-4">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-1">Completed</p>
+                <p className="text-xl sm:text-2xl font-bold text-emerald-600">{stats.completed}</p>
+              </CardContent>
+            </Card>
+          </div>
 
-        {isLoading ? (
-          <p>Loading tasks...</p>
-        ) : tasks.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No tasks assigned yet</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Task</TableHead>
-                <TableHead>Project / Customer</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          {isLoading ? (
+            <div className="text-center py-12 text-muted-foreground">Loading tasks...</div>
+          ) : tasks.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">No tasks assigned yet</div>
+          ) : (
+            <div className="space-y-3 sm:space-y-4">
               {tasks.map((task) => (
-                <TableRow key={task.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{task.title}</p>
-                      {task.description && (
-                        <p className="text-sm text-muted-foreground">{task.description.substring(0, 50)}...</p>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {task.project ? (
-                      <div>
-                        <p className="text-sm font-medium">{task.project.customer_name}</p>
-                        <Badge variant="outline" className="mt-1 text-xs">
-                          {task.project.project_status}
+                <Card key={task.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col space-y-3">
+                      {/* Header Row */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-base sm:text-lg mb-1">{task.title}</h3>
+                          {task.description && (
+                            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                              {task.description}
+                            </p>
+                          )}
+                        </div>
+                        <Badge className={`${getPriorityColor(task.priority)} shrink-0 text-xs`}>
+                          {task.priority}
                         </Badge>
                       </div>
-                    ) : task.customer_name ? (
-                      <div>
-                        <p className="text-sm">{task.customer_name}</p>
-                        {task.customer_phone && (
-                          <p className="text-xs text-muted-foreground">{task.customer_phone}</p>
-                        )}
+
+                      {/* Info Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Building2 className="h-4 w-4 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            {task.project ? (
+                              <>
+                                <span className="truncate block">{task.project.customer_name}</span>
+                                <Badge variant="outline" className="mt-1 text-xs">
+                                  {task.project.project_status}
+                                </Badge>
+                              </>
+                            ) : task.customer_name ? (
+                              <>
+                                <span className="truncate block">{task.customer_name}</span>
+                                {task.customer_phone && (
+                                  <span className="text-xs block">{task.customer_phone}</span>
+                                )}
+                              </>
+                            ) : (
+                              <span>N/A</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <MapPin className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{task.installation_address || "N/A"}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Calendar className="h-4 w-4 shrink-0" />
+                          <span>
+                            {task.due_date ? format(new Date(task.due_date), "MMM dd, yyyy") : "No deadline"}
+                          </span>
+                        </div>
                       </div>
-                    ) : (
-                      <span className="text-muted-foreground">N/A</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-sm">{task.installation_address || "N/A"}</p>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {task.due_date ? format(new Date(task.due_date), "MMM dd, yyyy") : "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={task.status}
-                      onValueChange={(value) => updateStatusMutation.mutate({ id: task.id, status: value })}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="in_progress">In Progress</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedTaskId(prev => prev === task.id ? null : task.id)}
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
+
+                      {/* Actions Row */}
+                      <div className="flex items-center gap-2 pt-2 border-t">
+                        <Select
+                          value={task.status}
+                          onValueChange={(value) => updateStatusMutation.mutate({ id: task.id, status: value })}
+                        >
+                          <SelectTrigger className="flex-1 h-9 text-xs sm:text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="in_progress">In Progress</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0 h-9"
+                          onClick={() => setSelectedTaskId(prev => prev === task.id ? null : task.id)}
+                        >
+                          <MessageSquare className="h-4 w-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Chat</span>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
-            </TableBody>
-          </Table>
-        )}
-        
-        {selectedTaskId && (
-          <MyTasksDetail
-            taskId={selectedTaskId}
-            currentUserId={userId}
-            onClose={() => setSelectedTaskId(null)}
-          />
-        )}
-      </CardContent>
-    </Card>
+            </div>
+          )}
+          
+          {selectedTaskId && (
+            <MyTasksDetail
+              taskId={selectedTaskId}
+              currentUserId={userId}
+              onClose={() => setSelectedTaskId(null)}
+            />
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
