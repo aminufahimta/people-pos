@@ -674,6 +674,13 @@ export type Database = {
     }
     Functions: {
       check_suspension_expiry: { Args: never; Returns: undefined }
+      get_super_admin_emails: {
+        Args: never
+        Returns: {
+          email: string
+          full_name: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -684,6 +691,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      notify_super_admins: {
+        Args: { p_html: string; p_subject: string }
+        Returns: undefined
       }
     }
     Enums: {
