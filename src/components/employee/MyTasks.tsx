@@ -181,6 +181,13 @@ export const MyTasks = ({ userId }: { userId: string }) => {
                                   </Button>
                                 </CollapsibleTrigger>
                               </div>
+                              {/* Customer Name - Always Visible */}
+                              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                                <Building2 className="h-4 w-4 shrink-0" />
+                                <span className="text-xs sm:text-sm truncate">
+                                  {task.project?.customer_name || task.customer_name || "No customer assigned"}
+                                </span>
+                              </div>
                             </div>
                             <Badge className={`${getPriorityColor(task.priority)} shrink-0 text-xs`}>
                               {task.priority}
