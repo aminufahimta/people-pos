@@ -53,6 +53,7 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [selectedProjectForTask, setSelectedProjectForTask] = useState<string | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [projectFormData, setProjectFormData] = useState({
     customer_name: "",
@@ -74,8 +75,8 @@ export const ProjectManagement = ({ userId }: { userId: string }) => {
     anchors_used: 0,
   });
 
-const [selectedTaskForChat, setSelectedTaskForChat] = useState<Task | null>(null);
-const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedTaskForChat, setSelectedTaskForChat] = useState<Task | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
 const queryClient = useQueryClient();
 
@@ -211,6 +212,38 @@ const queryClient = useQueryClient();
     },
   });
 
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<typeof taskFormData> }) => {
+      const updateData: any = {
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
+        assigned_to: data.assigned_to || null,
+        due_date: data.due_date || null,
+        routers_used: data.routers_used ?? 0,
+        poe_adapters_used: data.poe_adapters_used ?? 0,
+        poles_used: data.poles_used ?? 0,
+        anchors_used: data.anchors_used ?? 0,
+      };
+      const { error } = await supabase
+        .from("tasks")
+        .update(updateData)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks-by-project"] });
+      toast.success("Task updated successfully");
+      setIsTaskDialogOpen(false);
+      resetTaskForm();
+      setSelectedProjectForTask(null);
+      setEditingTask(null);
+    },
+    onError: (error) => {
+      toast.error(`Failed to update task: ${error.message}`);
+    },
+  });
+
   const updateTaskStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const updateData: any = { status };
@@ -277,6 +310,10 @@ const queryClient = useQueryClient();
 
   const handleTaskSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (editingTask) {
+      updateTaskMutation.mutate({ id: editingTask.id, data: taskFormData });
+      return;
+    }
     if (selectedProjectForTask) {
       createTaskMutation.mutate({ ...taskFormData, project_id: selectedProjectForTask });
     }
@@ -295,7 +332,25 @@ const queryClient = useQueryClient();
   };
 
   const handleAddTask = (projectId: string) => {
+    setEditingTask(null);
     setSelectedProjectForTask(projectId);
+    setIsTaskDialogOpen(true);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setTaskFormData({
+      title: task.title,
+      description: task.description || "",
+      priority: task.priority,
+      assigned_to: task.assigned_to || "",
+      due_date: task.due_date ? task.due_date.slice(0,16) : "",
+      installation_address: "",
+      routers_used: (task as any).routers_used ?? 0,
+      poe_adapters_used: (task as any).poe_adapters_used ?? 0,
+      poles_used: (task as any).poles_used ?? 0,
+      anchors_used: (task as any).anchors_used ?? 0,
+    });
     setIsTaskDialogOpen(true);
   };
 
@@ -619,6 +674,15 @@ const queryClient = useQueryClient();
                                         variant="outline"
                                         size="sm"
                                         className="w-full sm:w-auto"
+                                        onClick={() => handleEditTask(task)}
+                                      >
+                                        <Pencil className="h-4 w-4 mr-1" />
+                                        <span className="hidden sm:inline">Edit</span>
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full sm:w-auto"
                                         onClick={() => {
                                           setSelectedTaskForChat(task);
                                           setIsChatOpen(true);
@@ -653,12 +717,13 @@ const queryClient = useQueryClient();
         if (!open) {
           resetTaskForm();
           setSelectedProjectForTask(null);
+          setEditingTask(null);
         }
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create New Task</DialogTitle>
-          </DialogHeader>
+            <DialogHeader>
+              <DialogTitle>{editingTask ? "Edit Task" : "Create New Task"}</DialogTitle>
+            </DialogHeader>
           <form onSubmit={handleTaskSubmit} className="space-y-4">
             <div>
               <Label htmlFor="title">Task Title *</Label>
@@ -718,15 +783,6 @@ const queryClient = useQueryClient();
                 onChange={(e) => setTaskFormData({ ...taskFormData, due_date: e.target.value })}
               />
             </div>
-            <div>
-              <Label htmlFor="installation_address">Installation Address</Label>
-              <Textarea
-                id="installation_address"
-                value={taskFormData.installation_address}
-                onChange={(e) => setTaskFormData({ ...taskFormData, installation_address: e.target.value })}
-                rows={2}
-              />
-            </div>
             
             <div className="border-t pt-4">
               <h3 className="text-sm font-semibold mb-3">Inventory Items Required</h3>
@@ -774,8 +830,8 @@ const queryClient = useQueryClient();
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={createTaskMutation.isPending}>
-              Create Task
+            <Button type="submit" className="w-full" disabled={editingTask ? updateTaskMutation.isPending : createTaskMutation.isPending}>
+              {editingTask ? "Update Task" : "Create Task"}
             </Button>
           </form>
         </DialogContent>
