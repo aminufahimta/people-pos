@@ -89,7 +89,15 @@ const queryClient = useQueryClient();
         .order("created_at", { ascending: false });
       
       if (error) throw error;
-      return data as Project[];
+      
+      // Sort: completed projects at bottom, others at top
+      const sorted = (data as Project[]).sort((a, b) => {
+        if (a.project_status === 'completed' && b.project_status !== 'completed') return 1;
+        if (a.project_status !== 'completed' && b.project_status === 'completed') return -1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+      
+      return sorted;
     },
   });
 
