@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import EmployeeAuditForm from "./pages/EmployeeAuditForm";
 import Customers from "./pages/Customers";
 import CustomerDetails from "./pages/CustomerDetails";
+import Emails from "./pages/Emails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/employee-audit-form" element={<EmployeeAuditForm />} />
             <Route path="/customers" element={<Customers />} />
             <Route path="/customers/:id" element={<CustomerDetails />} />
+            <Route path="/emails" element={<Emails />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

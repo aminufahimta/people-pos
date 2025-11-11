@@ -1,4 +1,4 @@
-import { Shield, LayoutDashboard, Users, UserCog, Settings, UsersRound, CalendarCheck, DollarSign, FileText, Package, ClipboardList, Building2 } from "lucide-react";
+import { Shield, LayoutDashboard, Users, UserCog, Settings, UsersRound, CalendarCheck, DollarSign, FileText, Package, ClipboardList, Building2, Mail } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -41,6 +41,7 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
     { title: "Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
     { title: "Customers/Projects", url: "/customers", icon: Building2 },
     { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
+    { title: "Email", url: "/emails", icon: Mail },
   ];
 
   const isCollapsed = state === "collapsed";
