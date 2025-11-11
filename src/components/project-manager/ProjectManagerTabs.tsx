@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskManagement } from "./TaskManagement";
 import { TaskBin } from "./TaskBin";
 import { CompletedTasks } from "./CompletedTasks";
-import AttendanceHistory from "@/components/employee/AttendanceHistory";
+import AttendanceMarking from "./AttendanceMarking";
 import { ClipboardList, Trash2, CheckCircle2, Calendar } from "lucide-react";
 
 interface ProjectManagerTabsProps {
@@ -58,7 +58,7 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
       </TabsContent>
 
       <TabsContent value="attendance" className="space-y-4">
-        <AttendanceHistory userId={userId} />
+        <AttendanceMarking userId={userId} />
       </TabsContent>
 
       <TabsContent value="bin" className="space-y-4">
