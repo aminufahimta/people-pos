@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, ScrollText } from "lucide-react";
 import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
@@ -18,6 +18,7 @@ import DocumentVerification from "@/components/admin/DocumentVerification";
 import { InventoryManagement } from "@/components/admin/InventoryManagement";
 import { TaskManagement } from "@/components/project-manager/TaskManagement";
 import { NotificationSettings } from "@/components/admin/NotificationSettings";
+import { ActivityLogs } from "@/components/admin/ActivityLogs";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -113,6 +114,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
             Notifications
+          </TabsTrigger>
+          <TabsTrigger value="logs" className="flex items-center gap-2">
+            <ScrollText className="h-4 w-4" />
+            Activity Logs
           </TabsTrigger>
         </TabsList>
 
@@ -219,6 +224,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="notifications" className="space-y-8">
           <NotificationSettings />
+        </TabsContent>
+
+        <TabsContent value="logs" className="space-y-8">
+          <ActivityLogs />
         </TabsContent>
       </Tabs>
     </DashboardLayout>
