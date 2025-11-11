@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Send, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
 
 const Emails = () => {
   const { toast } = useToast();
@@ -19,8 +20,8 @@ const Emails = () => {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
 
-  // Check authentication
-  useQuery({
+  // Check authentication and get user role
+  const { data: session } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -29,6 +30,21 @@ const Emails = () => {
         return null;
       }
       return session;
+    },
+  });
+
+  const { data: userRole } = useQuery({
+    queryKey: ["user-role", session?.user?.id],
+    enabled: !!session?.user?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session?.user?.id)
+        .single();
+
+      if (error) throw error;
+      return data.role;
     },
   });
 
@@ -112,16 +128,12 @@ const Emails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <Mail className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Send Email to Customer</h1>
-            <p className="text-muted-foreground">Communicate with your customers about project updates</p>
-          </div>
-        </div>
-
+    <DashboardLayout
+      title="Send Email to Customer"
+      subtitle="Communicate with your customers about project updates"
+      userRole={userRole}
+    >
+      <div className="max-w-4xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Compose Email</CardTitle>
@@ -195,7 +207,7 @@ const Emails = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
