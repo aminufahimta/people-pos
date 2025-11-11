@@ -46,7 +46,10 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tasks")
-        .select("*")
+        .select(`
+          *,
+          project:projects(customer_name, customer_phone, customer_address)
+        `)
         .eq("id", taskId)
         .maybeSingle();
       
@@ -248,37 +251,37 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
 
               <Separator className="md:hidden" />
 
-              {/* Customer Information */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm">Customer Information</h4>
-                {task.customer_name && (
-                  <div className="flex items-start gap-2">
-                    <User className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Customer Name</p>
-                      <p className="text-sm font-medium">{task.customer_name}</p>
+                {/* Customer Information */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm">Customer Information</h4>
+                  {(task.customer_name || (task as any).project?.customer_name) && (
+                    <div className="flex items-start gap-2">
+                      <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Customer Name</p>
+                        <p className="text-sm font-medium">{task.customer_name || (task as any).project?.customer_name}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-                {task.customer_phone && (
-                  <div className="flex items-start gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Phone Number</p>
-                      <p className="text-sm font-medium">{task.customer_phone}</p>
+                  )}
+                  {(task.customer_phone || (task as any).project?.customer_phone) && (
+                    <div className="flex items-start gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Phone Number</p>
+                        <p className="text-sm font-medium">{task.customer_phone || (task as any).project?.customer_phone}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-                {task.installation_address && (
-                  <div className="flex items-start gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Installation Address</p>
-                      <p className="text-sm font-medium">{task.installation_address}</p>
+                  )}
+                  {(task.installation_address || (task as any).project?.customer_address) && (
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Installation Address</p>
+                        <p className="text-sm font-medium">{task.installation_address || (task as any).project?.customer_address}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
             </div>
           </CardContent>
         </Card>

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ClipboardList, MessageSquare, Calendar, MapPin, Building2, ChevronDown, ChevronUp } from "lucide-react";
+import { ClipboardList, MessageSquare, Calendar, MapPin, Phone, Building2, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import { MyTasksDetail } from "./MyTasksDetail";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -25,6 +25,8 @@ interface Task {
   project?: {
     customer_name: string;
     project_status: string;
+    customer_phone?: string | null;
+    customer_address?: string | null;
   };
 }
 
@@ -52,7 +54,7 @@ export const MyTasks = ({ userId }: { userId: string }) => {
         .from("tasks")
         .select(`
           *,
-          project:projects(customer_name, project_status)
+          project:projects(customer_name, project_status, customer_phone, customer_address)
         `)
         .eq("assigned_to", userId)
         .neq("status", "completed")
@@ -219,9 +221,6 @@ export const MyTasks = ({ userId }: { userId: string }) => {
                                   ) : task.customer_name ? (
                                     <>
                                       <span className="truncate block">{task.customer_name}</span>
-                                      {task.customer_phone && (
-                                        <span className="text-xs block">{task.customer_phone}</span>
-                                      )}
                                     </>
                                   ) : (
                                     <span>N/A</span>
@@ -229,8 +228,12 @@ export const MyTasks = ({ userId }: { userId: string }) => {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 text-muted-foreground">
+                                <Phone className="h-4 w-4 shrink-0" />
+                                <span className="truncate">{task.customer_phone || task.project?.customer_phone || "N/A"}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
                                 <MapPin className="h-4 w-4 shrink-0" />
-                                <span className="truncate">{task.installation_address || "N/A"}</span>
+                                <span className="truncate">{task.installation_address || task.project?.customer_address || "N/A"}</span>
                               </div>
                               <div className="flex items-center gap-2 text-muted-foreground">
                                 <Calendar className="h-4 w-4 shrink-0" />
