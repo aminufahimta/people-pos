@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Loader2, Eye, FolderOpen, ChevronDown, ChevronRight } from "lucide-react";
-import { format } from "date-fns";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CheckCircle2, Loader2, Eye, FolderOpen, ChevronDown, ChevronRight, Search, Filter, CalendarIcon, X } from "lucide-react";
+import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { TaskDetailsDialog } from "./TaskDetailsDialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 
 interface Project {
   id: string;
@@ -57,6 +62,12 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
   const { data: completedProjects, isLoading: projectsLoading } = useQuery({
     queryKey: ["completed-projects", userId, userRole],
@@ -107,16 +118,71 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
     setExpandedProjects(newExpanded);
   };
 
+  // Filter function
+  const filterTasks = (tasks: Task[]) => {
+    return tasks.filter(task => {
+      // Search by customer name or task title
+      const matchesSearch = searchQuery === "" || 
+        task.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.project?.customer_name?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Filter by priority
+      const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
+      
+      // Filter by date range
+      let matchesDateRange = true;
+      if (task.completed_at) {
+        const completedDate = new Date(task.completed_at);
+        if (dateFrom && dateTo) {
+          matchesDateRange = isWithinInterval(completedDate, {
+            start: startOfDay(dateFrom),
+            end: endOfDay(dateTo)
+          });
+        } else if (dateFrom) {
+          matchesDateRange = completedDate >= startOfDay(dateFrom);
+        } else if (dateTo) {
+          matchesDateRange = completedDate <= endOfDay(dateTo);
+        }
+      }
+      
+      return matchesSearch && matchesPriority && matchesDateRange;
+    });
+  };
+
+  // Apply filters using useMemo for performance
+  const filteredTasks = useMemo(() => {
+    return filterTasks(completedTasks || []);
+  }, [completedTasks, searchQuery, priorityFilter, dateFrom, dateTo]);
+
+  const filteredProjects = useMemo(() => {
+    if (!completedProjects) return [];
+    return completedProjects.filter(project => {
+      const matchesSearch = searchQuery === "" || 
+        project.customer_name?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    });
+  }, [completedProjects, searchQuery]);
+
   const getProjectTasks = (projectId: string) => {
-    return completedTasks?.filter(task => task.project_id === projectId) || [];
+    return filteredTasks.filter(task => task.project_id === projectId);
   };
 
   // Get all tasks with project_ids (regardless of project completion status)
-  const tasksWithProjects = completedTasks?.filter(task => task.project_id) || [];
+  const tasksWithProjects = filteredTasks.filter(task => task.project_id);
   const uniqueProjectIds = [...new Set(tasksWithProjects.map(task => task.project_id))];
   
   // Get standalone tasks (no project_id)
-  const standaloneCompletedTasks = completedTasks?.filter(task => !task.project_id) || [];
+  const standaloneCompletedTasks = filteredTasks.filter(task => !task.project_id);
+
+  const hasActiveFilters = searchQuery !== "" || priorityFilter !== "all" || dateFrom || dateTo;
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setPriorityFilter("all");
+    setDateFrom(undefined);
+    setDateTo(undefined);
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -146,7 +212,7 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
     );
   }
 
-  const totalCompleted = (completedProjects?.length || 0) + (completedTasks?.length || 0);
+  const totalCompleted = (filteredProjects?.length || 0) + (filteredTasks?.length || 0);
 
   return (
     <>
@@ -163,6 +229,112 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Filters Section */}
+          <div className="mb-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <h3 className="text-sm font-medium">Filters</h3>
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="h-7 text-xs"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear
+                </Button>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Search by Customer/Task */}
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Customer or task name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              {/* Priority Filter */}
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Priority</label>
+                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All priorities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All priorities</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Date From */}
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">From Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dateFrom && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateFrom ? format(dateFrom, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={setDateFrom}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Date To */}
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">To Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dateTo && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateTo ? format(dateTo, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={setDateTo}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
           {totalCompleted === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <CheckCircle2 className="h-16 w-16 mx-auto mb-4 opacity-50" />
@@ -174,24 +346,24 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">
-                    Total: <span className="font-semibold text-foreground">{completedTasks?.length || 0}</span> completed tasks
+                    Showing: <span className="font-semibold text-foreground">{filteredTasks.length}</span> of {completedTasks?.length || 0} completed tasks
                   </p>
-                  {completedProjects && completedProjects.length > 0 && (
+                  {filteredProjects.length > 0 && (
                     <p className="text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">{completedProjects.length}</span> completed projects
+                      <span className="font-semibold text-foreground">{filteredProjects.length}</span> completed projects
                     </p>
                   )}
                 </div>
               </div>
 
               {/* Completed Projects with their tasks */}
-              {completedProjects && completedProjects.length > 0 && (
+              {filteredProjects.length > 0 && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     <FolderOpen className="h-5 w-5" />
                     Completed Projects
                   </h3>
-                  {completedProjects.map((project) => {
+                  {filteredProjects.map((project) => {
                     const projectTasks = getProjectTasks(project.id);
                     const isExpanded = expandedProjects.has(project.id);
 
