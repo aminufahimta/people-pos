@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import AttendanceHistory from "@/components/employee/AttendanceHistory";
 import SuspendedView from "@/components/employee/SuspendedView";
 import WarningBanner from "@/components/employee/WarningBanner";
-import { MyTasks } from "@/components/employee/MyTasks";
+import { EmployeeTaskTabs } from "@/components/employee/EmployeeTaskTabs";
 
 interface EmployeeDashboardProps {
   user: User;
@@ -167,7 +167,7 @@ const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
 
         <AttendanceHistory userId={user.id} />
         
-        <MyTasks userId={user.id} />
+        <EmployeeTaskTabs userId={user.id} />
       </div>
     </DashboardLayout>
   );

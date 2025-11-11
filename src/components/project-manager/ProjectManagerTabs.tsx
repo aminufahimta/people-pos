@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskManagement } from "./TaskManagement";
 import { TaskBin } from "./TaskBin";
+import { CompletedTasks } from "./CompletedTasks";
 import { ProjectManagement } from "./ProjectManagement";
-import { FolderKanban, ClipboardList, Trash2 } from "lucide-react";
+import { FolderKanban, ClipboardList, Trash2, CheckCircle2 } from "lucide-react";
 
 interface ProjectManagerTabsProps {
   userId: string;
@@ -29,7 +30,7 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
 
   return (
     <Tabs defaultValue="projects" className="w-full">
-      <TabsList className="grid w-full max-w-md grid-cols-3">
+      <TabsList className="grid w-full max-w-2xl grid-cols-4">
         <TabsTrigger value="projects" className="flex items-center gap-2">
           <FolderKanban className="h-4 w-4" />
           Projects
@@ -37,6 +38,10 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
         <TabsTrigger value="tasks" className="flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
           Tasks
+        </TabsTrigger>
+        <TabsTrigger value="completed" className="flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4" />
+          Completed
         </TabsTrigger>
         <TabsTrigger value="bin" className="flex items-center gap-2">
           <Trash2 className="h-4 w-4" />
@@ -50,6 +55,10 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
 
       <TabsContent value="tasks" className="space-y-4">
         <TaskManagement userId={userId} />
+      </TabsContent>
+
+      <TabsContent value="completed" className="space-y-4">
+        <CompletedTasks userId={userId} userRole="project_manager" />
       </TabsContent>
 
       <TabsContent value="bin" className="space-y-4">

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity, Trash2 } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity, Trash2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
@@ -18,6 +18,7 @@ import DocumentVerification from "@/components/admin/DocumentVerification";
 import { InventoryManagement } from "@/components/admin/InventoryManagement";
 import { TaskManagement } from "@/components/project-manager/TaskManagement";
 import { TaskBin } from "@/components/project-manager/TaskBin";
+import { CompletedTasks } from "@/components/project-manager/CompletedTasks";
 import { NotificationSettings } from "@/components/admin/NotificationSettings";
 import { ActivityLogs } from "@/components/admin/ActivityLogs";
 
@@ -89,6 +90,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           <TabsTrigger value="tasks" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" />
             Tasks
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            Completed
           </TabsTrigger>
           <TabsTrigger value="bin" className="flex items-center gap-2">
             <Trash2 className="h-4 w-4" />
@@ -201,6 +206,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="tasks" className="space-y-8">
           <TaskManagement userId={user.id} />
+        </TabsContent>
+
+        <TabsContent value="completed" className="space-y-8">
+          <CompletedTasks userId={user.id} userRole="super_admin" />
         </TabsContent>
 
         <TabsContent value="bin" className="space-y-8">

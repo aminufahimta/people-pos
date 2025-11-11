@@ -55,6 +55,8 @@ export const MyTasks = ({ userId }: { userId: string }) => {
           project:projects(customer_name, project_status)
         `)
         .eq("assigned_to", userId)
+        .neq("status", "completed")
+        .eq("is_deleted", false)
         .order("created_at", { ascending: false });
       
       if (error) throw error;

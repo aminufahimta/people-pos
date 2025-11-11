@@ -73,6 +73,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
           assigned_profile:profiles!tasks_assigned_to_fkey(full_name, email)
         `)
         .eq("is_deleted", false)
+        .neq("status", "completed")
         .order("created_at", { ascending: false });
       
       if (error) throw error;
