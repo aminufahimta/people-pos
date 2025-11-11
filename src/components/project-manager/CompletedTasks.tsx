@@ -104,6 +104,11 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
     return completedTasks?.filter(task => task.project_id === projectId) || [];
   };
 
+  // Get all tasks with project_ids (regardless of project completion status)
+  const tasksWithProjects = completedTasks?.filter(task => task.project_id) || [];
+  const uniqueProjectIds = [...new Set(tasksWithProjects.map(task => task.project_id))];
+  
+  // Get standalone tasks (no project_id)
   const standaloneCompletedTasks = completedTasks?.filter(task => !task.project_id) || [];
 
   const getPriorityColor = (priority: string) => {
@@ -134,7 +139,7 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
     );
   }
 
-  const totalCompleted = (completedProjects?.length || 0) + (standaloneCompletedTasks?.length || 0);
+  const totalCompleted = (completedProjects?.length || 0) + (completedTasks?.length || 0);
 
   return (
     <>
@@ -162,15 +167,17 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">
-                    Total: <span className="font-semibold text-foreground">{completedProjects?.length || 0}</span> completed projects
+                    Total: <span className="font-semibold text-foreground">{completedTasks?.length || 0}</span> completed tasks
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">{completedTasks?.length || 0}</span> completed tasks
-                  </p>
+                  {completedProjects && completedProjects.length > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">{completedProjects.length}</span> completed projects
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Completed Projects */}
+              {/* Completed Projects with their tasks */}
               {completedProjects && completedProjects.length > 0 && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -288,12 +295,116 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
                 </div>
               )}
 
+              {/* Tasks by Project (for active projects with completed tasks) */}
+              {uniqueProjectIds.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5" />
+                    Completed Tasks by Project
+                  </h3>
+                  {uniqueProjectIds.map((projectId) => {
+                    const projectTasks = getProjectTasks(projectId!);
+                    const isExpanded = expandedProjects.has(projectId!);
+                    
+                    // Get project info if available
+                    const projectInfo = completedTasks?.find(t => t.project_id === projectId);
+
+                    return (
+                      <Collapsible
+                        key={projectId}
+                        open={isExpanded}
+                        onOpenChange={() => toggleProject(projectId!)}
+                      >
+                        <Card>
+                          <CollapsibleTrigger asChild>
+                            <CardHeader className="cursor-pointer hover:bg-accent/50 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    {isExpanded ? (
+                                      <ChevronDown className="h-5 w-5" />
+                                    ) : (
+                                      <ChevronRight className="h-5 w-5" />
+                                    )}
+                                    <CardTitle className="text-lg">Project Tasks</CardTitle>
+                                    <Badge variant="outline" className="bg-success/10 text-success">
+                                      {projectTasks.length} completed
+                                    </Badge>
+                                  </div>
+                                  <CardDescription className="mt-2 ml-7">
+                                    Project ID: {projectId?.substring(0, 8)}...
+                                  </CardDescription>
+                                </div>
+                              </div>
+                            </CardHeader>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <CardContent>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Task</TableHead>
+                                    <TableHead>Assigned To</TableHead>
+                                    <TableHead>Priority</TableHead>
+                                    <TableHead>Completed Date</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {projectTasks.map((task) => (
+                                    <TableRow key={task.id}>
+                                      <TableCell>
+                                        <div>
+                                          <p className="font-medium">{task.title}</p>
+                                          {task.description && (
+                                            <p className="text-sm text-muted-foreground line-clamp-1">
+                                              {task.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </TableCell>
+                                      <TableCell>
+                                        {task.assigned_profile?.full_name || "Unassigned"}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant={getPriorityColor(task.priority)}>
+                                          {task.priority}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        {task.completed_at
+                                          ? format(new Date(task.completed_at), "MMM dd, yyyy HH:mm")
+                                          : "N/A"}
+                                      </TableCell>
+                                      <TableCell className="text-right">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleViewDetails(task)}
+                                        >
+                                          <Eye className="h-4 w-4 mr-1" />
+                                          View
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </CardContent>
+                          </CollapsibleContent>
+                        </Card>
+                      </Collapsible>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Standalone Completed Tasks */}
               {standaloneCompletedTasks.length > 0 && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5" />
-                    Other Completed Tasks
+                    Standalone Completed Tasks
                   </h3>
                   <Card>
                     <CardContent className="pt-6">
