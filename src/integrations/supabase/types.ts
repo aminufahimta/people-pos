@@ -623,11 +623,14 @@ export type Database = {
           created_by: string
           customer_name: string | null
           customer_phone: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           due_date: string | null
           id: string
           installation_address: string | null
           inventory_deducted: boolean | null
+          is_deleted: boolean | null
           poe_adapters_used: number | null
           poles_used: number | null
           priority: string
@@ -645,11 +648,14 @@ export type Database = {
           created_by: string
           customer_name?: string | null
           customer_phone?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
           installation_address?: string | null
           inventory_deducted?: boolean | null
+          is_deleted?: boolean | null
           poe_adapters_used?: number | null
           poles_used?: number | null
           priority?: string
@@ -667,11 +673,14 @@ export type Database = {
           created_by?: string
           customer_name?: string | null
           customer_phone?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
           installation_address?: string | null
           inventory_deducted?: boolean | null
+          is_deleted?: boolean | null
           poe_adapters_used?: number | null
           poles_used?: number | null
           priority?: string

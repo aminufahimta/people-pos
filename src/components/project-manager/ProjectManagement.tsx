@@ -110,6 +110,7 @@ const queryClient = useQueryClient();
           *,
           assigned_profile:profiles!tasks_assigned_to_fkey(full_name)
         `)
+        .eq("is_deleted", false)
         .order("created_at", { ascending: false });
       
       if (error) throw error;

@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, ClipboardList, Pencil, MessageSquare } from "lucide-react";
+import { Plus, ClipboardList, Pencil, MessageSquare, Trash2 } from "lucide-react";
 import { TaskDetailsDialog } from "./TaskDetailsDialog";
 import { format } from "date-fns";
 
@@ -72,6 +72,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
           *,
           assigned_profile:profiles!tasks_assigned_to_fkey(full_name, email)
         `)
+        .eq("is_deleted", false)
         .order("created_at", { ascending: false });
       
       if (error) throw error;
@@ -135,6 +136,41 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
     },
     onError: (error) => {
       toast.error(`Failed to update task: ${error.message}`);
+    },
+  });
+
+  const softDeleteMutation = useMutation({
+    mutationFn: async (taskId: string) => {
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          is_deleted: true,
+          deleted_at: new Date().toISOString(),
+          deleted_by: userId,
+        })
+        .eq("id", taskId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast.success("Task moved to bin");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to move task to bin: ${error.message}`);
+    },
+  });
+
+  const hardDeleteMutation = useMutation({
+    mutationFn: async (taskId: string) => {
+      const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast.success("Task deleted successfully");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete task: ${error.message}`);
     },
   });
 
@@ -219,6 +255,24 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
   const handleViewDetails = (task: Task) => {
     setSelectedTask(task);
     setIsDetailsOpen(true);
+  };
+
+  const canHardDelete = (task: Task) => {
+    const createdAt = new Date(task.created_at);
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    return createdAt > oneHourAgo;
+  };
+
+  const handleDeleteTask = (task: Task) => {
+    if (canHardDelete(task)) {
+      if (window.confirm("Are you sure you want to permanently delete this task? This action cannot be undone.")) {
+        hardDeleteMutation.mutate(task.id);
+      }
+    } else {
+      if (window.confirm("This task will be moved to the bin. Contact a Super Admin to permanently delete it.")) {
+        softDeleteMutation.mutate(task.id);
+      }
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -508,9 +562,10 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleEdit(task)}
+                        onClick={() => handleDeleteTask(task)}
+                        title={canHardDelete(task) ? "Delete (within 1 hour)" : "Move to bin"}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>

@@ -1,6 +1,6 @@
 import { User } from "@supabase/supabase-js";
 import DashboardLayout from "./DashboardLayout";
-import { ProjectManagement } from "@/components/project-manager/ProjectManagement";
+import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerTabs";
 
 interface ProjectManagerDashboardProps {
   user: User;
@@ -13,7 +13,7 @@ export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) 
       subtitle="Manage customer projects and tasks"
       userRole="project_manager"
     >
-      <ProjectManagement userId={user.id} />
+      <ProjectManagerTabs userId={user.id} />
     </DashboardLayout>
   );
 };
