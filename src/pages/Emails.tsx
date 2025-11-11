@@ -8,8 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Send, Loader2, History } from "lucide-react";
+import { Mail, Send, Loader2, History, Eye } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -21,6 +22,8 @@ const Emails = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [selectedEmail, setSelectedEmail] = useState<any>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   // Check authentication and get user role
   const { data: session } = useQuery({
@@ -278,6 +281,7 @@ const Emails = () => {
                       <TableHead>Customer</TableHead>
                       <TableHead>Subject</TableHead>
                       <TableHead>Recipient</TableHead>
+                      <TableHead className="w-[80px]">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -289,6 +293,18 @@ const Emails = () => {
                         <TableCell>{email.customer_name || "N/A"}</TableCell>
                         <TableCell>{email.subject}</TableCell>
                         <TableCell className="text-muted-foreground">{email.sent_to}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedEmail(email);
+                              setIsViewDialogOpen(true);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -301,6 +317,40 @@ const Emails = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Email View Dialog */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Email Details</DialogTitle>
+              <DialogDescription>
+                Sent on {selectedEmail && format(new Date(selectedEmail.sent_at), "MMMM d, yyyy 'at' h:mm a")}
+              </DialogDescription>
+            </DialogHeader>
+            {selectedEmail && (
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-semibold text-muted-foreground">Customer</Label>
+                  <p className="mt-1">{selectedEmail.customer_name || "N/A"}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold text-muted-foreground">Recipient</Label>
+                  <p className="mt-1">{selectedEmail.sent_to}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold text-muted-foreground">Subject</Label>
+                  <p className="mt-1">{selectedEmail.subject}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold text-muted-foreground">Message</Label>
+                  <div className="mt-1 p-4 bg-muted/50 rounded-md whitespace-pre-wrap">
+                    {selectedEmail.message}
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
