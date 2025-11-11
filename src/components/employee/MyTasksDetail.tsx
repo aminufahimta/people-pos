@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Send, Upload, Image as ImageIcon, MessageSquare, X } from "lucide-react";
+import { Send, Upload, Image as ImageIcon, MessageSquare, X, MapPin, Phone, User, Calendar } from "lucide-react";
 import { format } from "date-fns";
 
 interface MyTasksDetailProps {
@@ -37,6 +39,21 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
+
+  // Fetch task details
+  const { data: task } = useQuery({
+    queryKey: ["task-detail", taskId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("id", taskId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const { data: messages = [] } = useQuery({
     queryKey: ["task-messages", taskId],
@@ -179,9 +196,98 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-      {/* Chat Section */}
-      <Card>
+    <div className="space-y-4 mt-4">
+      {/* Task Information Card */}
+      {task && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Task Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Title</p>
+                  <p className="font-medium">{task.title}</p>
+                </div>
+                {task.description && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Description</p>
+                    <p className="text-sm">{task.description}</p>
+                  </div>
+                )}
+                <div className="flex gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Status</p>
+                    <Badge variant="outline">{task.status}</Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Priority</p>
+                    <Badge 
+                      variant={
+                        task.priority === "urgent" ? "destructive" :
+                        task.priority === "high" ? "default" : "secondary"
+                      }
+                    >
+                      {task.priority}
+                    </Badge>
+                  </div>
+                </div>
+                {task.due_date && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Due Date</p>
+                      <p className="text-sm font-medium">
+                        {format(new Date(task.due_date), "MMMM dd, yyyy")}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Separator className="md:hidden" />
+
+              {/* Customer Information */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm">Customer Information</h4>
+                {task.customer_name && (
+                  <div className="flex items-start gap-2">
+                    <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Customer Name</p>
+                      <p className="text-sm font-medium">{task.customer_name}</p>
+                    </div>
+                  </div>
+                )}
+                {task.customer_phone && (
+                  <div className="flex items-start gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Phone Number</p>
+                      <p className="text-sm font-medium">{task.customer_phone}</p>
+                    </div>
+                  </div>
+                )}
+                {task.installation_address && (
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Installation Address</p>
+                      <p className="text-sm font-medium">{task.installation_address}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Chat and Attachments Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Chat Section */}
+        <Card>
         <CardHeader className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
@@ -287,6 +393,7 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
           </ScrollArea>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
