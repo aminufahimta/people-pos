@@ -8,7 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Send, Loader2 } from "lucide-react";
+import { Mail, Send, Loader2, History } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 
@@ -62,14 +64,53 @@ const Emails = () => {
     },
   });
 
+  // Fetch email history
+  const { data: emailHistory, isLoading: isLoadingHistory } = useQuery({
+    queryKey: ["email-history"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_history")
+        .select("*, projects(customer_name)")
+        .order("sent_at", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Send email mutation
   const sendEmailMutation = useMutation({
-    mutationFn: async (emailData: { to: string; subject: string; html: string }) => {
+    mutationFn: async (emailData: { 
+      to: string; 
+      subject: string; 
+      html: string;
+      message: string;
+      projectId: string;
+      customerName: string;
+    }) => {
       const { data, error } = await supabase.functions.invoke("send-email", {
-        body: emailData,
+        body: { to: emailData.to, subject: emailData.subject, html: emailData.html },
       });
 
       if (error) throw error;
+
+      // Log email to history
+      const { error: historyError } = await supabase
+        .from("email_history")
+        .insert({
+          sent_by: session?.user?.id,
+          sent_to: emailData.to,
+          subject: emailData.subject,
+          message: emailData.message,
+          project_id: emailData.projectId,
+          customer_name: emailData.customerName,
+        });
+
+      if (historyError) {
+        console.error("Failed to log email history:", historyError);
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -81,6 +122,8 @@ const Emails = () => {
       setSelectedCustomerId("");
       setSubject("");
       setMessage("");
+      // Refetch email history
+      queryClient.invalidateQueries({ queryKey: ["email-history"] });
     },
     onError: (error: any) => {
       toast({
@@ -124,6 +167,9 @@ const Emails = () => {
       to: selectedCustomer.customer_email,
       subject: subject,
       html: html,
+      message: message,
+      projectId: selectedCustomerId,
+      customerName: selectedCustomer.customer_name,
     });
   };
 
@@ -204,6 +250,55 @@ const Emails = () => {
                 </>
               )}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Email History Section */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Email History
+            </CardTitle>
+            <CardDescription>
+              View all emails sent to customers
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingHistory ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : emailHistory && emailHistory.length > 0 ? (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Subject</TableHead>
+                      <TableHead>Recipient</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {emailHistory.map((email) => (
+                      <TableRow key={email.id}>
+                        <TableCell className="font-medium">
+                          {format(new Date(email.sent_at), "MMM d, yyyy h:mm a")}
+                        </TableCell>
+                        <TableCell>{email.customer_name || "N/A"}</TableCell>
+                        <TableCell>{email.subject}</TableCell>
+                        <TableCell className="text-muted-foreground">{email.sent_to}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">
+                No emails sent yet
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

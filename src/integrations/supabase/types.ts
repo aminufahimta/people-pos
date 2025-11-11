@@ -91,6 +91,50 @@ export type Database = {
           },
         ]
       }
+      email_history: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          id: string
+          message: string
+          project_id: string | null
+          sent_at: string
+          sent_by: string
+          sent_to: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          message: string
+          project_id?: string | null
+          sent_at?: string
+          sent_by: string
+          sent_to: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          message?: string
+          project_id?: string | null
+          sent_at?: string
+          sent_by?: string
+          sent_to?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_history_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_audits: {
         Row: {
           audit_comments: string | null
