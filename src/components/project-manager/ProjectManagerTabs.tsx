@@ -4,8 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskManagement } from "./TaskManagement";
 import { TaskBin } from "./TaskBin";
 import { CompletedTasks } from "./CompletedTasks";
-import { ProjectManagement } from "./ProjectManagement";
-import { FolderKanban, ClipboardList, Trash2, CheckCircle2 } from "lucide-react";
+import { ClipboardList, Trash2, CheckCircle2 } from "lucide-react";
 
 interface ProjectManagerTabsProps {
   userId: string;
@@ -29,12 +28,8 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
   const isSuperAdmin = userRole === "super_admin";
 
   return (
-    <Tabs defaultValue="projects" className="w-full">
-      <TabsList className="grid w-full max-w-2xl grid-cols-4">
-        <TabsTrigger value="projects" className="flex items-center gap-2">
-          <FolderKanban className="h-4 w-4" />
-          Projects
-        </TabsTrigger>
+    <Tabs defaultValue="tasks" className="w-full">
+      <TabsList className="grid w-full max-w-2xl grid-cols-3">
         <TabsTrigger value="tasks" className="flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
           Tasks
@@ -48,10 +43,6 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
           Bin
         </TabsTrigger>
       </TabsList>
-
-      <TabsContent value="projects" className="space-y-4">
-        <ProjectManagement userId={userId} />
-      </TabsContent>
 
       <TabsContent value="tasks" className="space-y-4">
         <TaskManagement userId={userId} />

@@ -27,10 +27,15 @@ interface Task {
   installation_address: string | null;
   customer_name: string | null;
   customer_phone: string | null;
+  project_id: string | null;
   created_at: string;
   assigned_profile?: {
     full_name: string;
     email: string;
+  };
+  project?: {
+    customer_name: string;
+    customer_phone: string | null;
   };
 }
 
@@ -38,6 +43,14 @@ interface Profile {
   id: string;
   full_name: string;
   email: string;
+}
+
+interface Project {
+  id: string;
+  customer_name: string;
+  customer_phone: string | null;
+  customer_email: string | null;
+  customer_address: string | null;
 }
 
 export const TaskManagement = ({ userId }: { userId: string }) => {
@@ -53,8 +66,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
     assigned_to: "",
     due_date: "",
     installation_address: "",
-    customer_name: "",
-    customer_phone: "",
+    project_id: "",
     routers_used: 0,
     poe_adapters_used: 0,
     poles_used: 0,
@@ -70,7 +82,8 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
         .from("tasks")
         .select(`
           *,
-          assigned_profile:profiles!tasks_assigned_to_fkey(full_name, email)
+          assigned_profile:profiles!tasks_assigned_to_fkey(full_name, email),
+          project:projects(customer_name, customer_phone)
         `)
         .eq("is_deleted", false)
         .neq("status", "completed")
@@ -92,6 +105,20 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
       
       if (error) throw error;
       return data as Profile[];
+    },
+  });
+
+  const { data: projects = [] } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, customer_name, customer_phone, customer_email, customer_address")
+        .eq("project_status", "active")
+        .order("customer_name");
+      
+      if (error) throw error;
+      return data as Project[];
     },
   });
 
@@ -215,8 +242,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
       assigned_to: "",
       due_date: "",
       installation_address: "",
-      customer_name: "",
-      customer_phone: "",
+      project_id: "",
       routers_used: 0,
       poe_adapters_used: 0,
       poles_used: 0,
@@ -243,8 +269,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
       assigned_to: task.assigned_to || "",
       due_date: task.due_date ? new Date(task.due_date).toISOString().slice(0, 16) : "",
       installation_address: task.installation_address || "",
-      customer_name: task.customer_name || "",
-      customer_phone: task.customer_phone || "",
+      project_id: task.project_id || "",
       routers_used: 0,
       poe_adapters_used: 0,
       poles_used: 0,
@@ -387,20 +412,29 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                 />
               </div>
               <div>
-                <Label htmlFor="customer_name">Customer Name</Label>
-                <Input
-                  id="customer_name"
-                  value={formData.customer_name}
-                  onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="customer_phone">Customer Phone</Label>
-                <Input
-                  id="customer_phone"
-                  value={formData.customer_phone}
-                  onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
-                />
+                <Label htmlFor="project_id">Customer/Project *</Label>
+                <Select 
+                  value={formData.project_id} 
+                  onValueChange={(value) => setFormData({ ...formData, project_id: value })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select customer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.customer_name}
+                        {project.customer_phone && ` - ${project.customer_phone}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {projects.length === 0 && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    No customers available. Please create a customer first.
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="installation_address">Installation Address</Label>
@@ -409,6 +443,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                   value={formData.installation_address}
                   onChange={(e) => setFormData({ ...formData, installation_address: e.target.value })}
                   rows={2}
+                  placeholder="Specific installation location (optional)"
                 />
               </div>
               
@@ -542,13 +577,15 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                     {task.due_date ? format(new Date(task.due_date), "MMM dd, yyyy") : "N/A"}
                   </TableCell>
                   <TableCell>
-                    {task.customer_name && (
+                    {task.project ? (
                       <div>
-                        <p className="text-sm">{task.customer_name}</p>
-                        {task.customer_phone && (
-                          <p className="text-xs text-muted-foreground">{task.customer_phone}</p>
+                        <p className="text-sm">{task.project.customer_name}</p>
+                        {task.project.customer_phone && (
+                          <p className="text-xs text-muted-foreground">{task.project.customer_phone}</p>
                         )}
                       </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">No customer</p>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
