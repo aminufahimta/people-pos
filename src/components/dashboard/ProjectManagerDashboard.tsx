@@ -7,11 +7,18 @@ import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerT
 import AttendanceHistory from "@/components/employee/AttendanceHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Calendar } from "lucide-react";
+import { Clock, Calendar, ClipboardList, CheckCircle2, AlertCircle, Building2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ProjectManagerDashboardProps {
   user: User;
+}
+
+interface Statistics {
+  totalTasks: number;
+  completedTasks: number;
+  pendingTasks: number;
+  activeCustomers: number;
 }
 
 export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) => {
@@ -19,10 +26,17 @@ export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) 
   const tab = searchParams.get("tab") || "overview";
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [isClockingIn, setIsClockingIn] = useState(false);
+  const [statistics, setStatistics] = useState<Statistics>({
+    totalTasks: 0,
+    completedTasks: 0,
+    pendingTasks: 0,
+    activeCustomers: 0,
+  });
 
   useEffect(() => {
     if (tab === "overview") {
       fetchAttendance();
+      fetchStatistics();
     }
   }, [user.id, tab]);
 
@@ -37,6 +51,45 @@ export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) 
       .maybeSingle();
 
     setTodayAttendance(todayData);
+  };
+
+  const fetchStatistics = async () => {
+    try {
+      // Fetch total tasks (excluding deleted)
+      const { count: totalTasksCount } = await supabase
+        .from("tasks")
+        .select("*", { count: "exact", head: true })
+        .eq("is_deleted", false);
+
+      // Fetch completed tasks
+      const { count: completedTasksCount } = await supabase
+        .from("tasks")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "completed")
+        .eq("is_deleted", false);
+
+      // Fetch pending tasks
+      const { count: pendingTasksCount } = await supabase
+        .from("tasks")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending")
+        .eq("is_deleted", false);
+
+      // Fetch active customers/projects
+      const { count: activeCustomersCount } = await supabase
+        .from("projects")
+        .select("*", { count: "exact", head: true })
+        .eq("project_status", "active");
+
+      setStatistics({
+        totalTasks: totalTasksCount || 0,
+        completedTasks: completedTasksCount || 0,
+        pendingTasks: pendingTasksCount || 0,
+        activeCustomers: activeCustomersCount || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
+    }
   };
 
   const handleMarkAttendance = async () => {
@@ -83,6 +136,69 @@ export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) 
       userRole="project_manager"
     >
       <div className="space-y-6">
+        {/* Statistics Cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Tasks</CardTitle>
+              <ClipboardList className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                {statistics.totalTasks}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                All active tasks
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Completed Tasks</CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-success" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                {statistics.completedTasks}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Successfully finished
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pending Tasks</CardTitle>
+              <AlertCircle className="h-4 w-4 text-warning" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                {statistics.pendingTasks}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Awaiting action
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Active Customers</CardTitle>
+              <Building2 className="h-4 w-4 text-accent" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                {statistics.activeCustomers}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Current projects
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Attendance Section */}
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
