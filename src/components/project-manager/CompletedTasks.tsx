@@ -40,6 +40,12 @@ interface Task {
     full_name: string;
     email: string;
   };
+  project?: {
+    customer_name: string;
+    customer_phone: string | null;
+    customer_email: string | null;
+    customer_address: string | null;
+  };
 }
 
 interface CompletedTasksProps {
@@ -73,7 +79,8 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
         .from("tasks")
         .select(`
           *,
-          assigned_profile:profiles!tasks_assigned_to_fkey(full_name, email)
+          assigned_profile:profiles!tasks_assigned_to_fkey(full_name, email),
+          project:projects(customer_name, customer_phone, customer_email, customer_address)
         `)
         .eq("status", "completed")
         .eq("is_deleted", false)
@@ -306,8 +313,8 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
                     const projectTasks = getProjectTasks(projectId!);
                     const isExpanded = expandedProjects.has(projectId!);
                     
-                    // Get project info if available
-                    const projectInfo = completedTasks?.find(t => t.project_id === projectId);
+                    // Get project info from the first task with this project_id
+                    const projectInfo = completedTasks?.find(t => t.project_id === projectId)?.project;
 
                     return (
                       <Collapsible
@@ -326,13 +333,23 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
                                     ) : (
                                       <ChevronRight className="h-5 w-5" />
                                     )}
-                                    <CardTitle className="text-lg">Project Tasks</CardTitle>
+                                    <CardTitle className="text-lg">
+                                      {projectInfo?.customer_name || "Project Tasks"}
+                                    </CardTitle>
                                     <Badge variant="outline" className="bg-success/10 text-success">
                                       {projectTasks.length} completed
                                     </Badge>
                                   </div>
                                   <CardDescription className="mt-2 ml-7">
-                                    Project ID: {projectId?.substring(0, 8)}...
+                                    {projectInfo?.customer_phone && (
+                                      <span className="mr-4">📞 {projectInfo.customer_phone}</span>
+                                    )}
+                                    {projectInfo?.customer_email && (
+                                      <span className="mr-4">✉️ {projectInfo.customer_email}</span>
+                                    )}
+                                    {projectInfo?.customer_address && (
+                                      <span>📍 {projectInfo.customer_address}</span>
+                                    )}
                                   </CardDescription>
                                 </div>
                               </div>
