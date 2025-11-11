@@ -39,7 +39,7 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
 
   const projectManagerMenu = [
     { title: "Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
-    { title: "Customers", url: "/customers", icon: Building2 },
+    { title: "Customers/Projects", url: "/customers", icon: Building2 },
     { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
   ];
 
