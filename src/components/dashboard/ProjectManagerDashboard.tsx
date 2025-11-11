@@ -3,6 +3,7 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerTabs";
+import AttendanceHistory from "@/components/employee/AttendanceHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Calendar } from "lucide-react";
@@ -111,6 +112,8 @@ export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) 
             </CardContent>
           </Card>
         </div>
+
+        <AttendanceHistory userId={user.id} />
 
         <ProjectManagerTabs userId={user.id} />
       </div>
