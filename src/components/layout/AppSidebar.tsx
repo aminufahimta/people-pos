@@ -32,9 +32,14 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
   const hrOperations = [
     { title: "Employees", url: "/dashboard?tab=employees", icon: UsersRound },
     { title: "Attendance", url: "/dashboard?tab=attendance", icon: CalendarCheck },
-    { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
     { title: "Salaries", url: "/dashboard?tab=salaries", icon: DollarSign },
     { title: "Reports", url: "/dashboard?tab=reports", icon: FileText },
+  ];
+
+  const projectManagementOperations = [
+    { title: "Customers/Projects", url: "/customers", icon: Building2 },
+    { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
+    { title: "Email", url: "/emails", icon: Mail },
   ];
 
   const projectManagerMenu = [
@@ -102,6 +107,24 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {hrOperations.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={currentPath === item.url}>
+                        <NavLink to={item.url}>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Project Management</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {projectManagementOperations.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={currentPath === item.url}>
                         <NavLink to={item.url}>

@@ -5,11 +5,28 @@ import { User } from "@supabase/supabase-js";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { CustomersManagement } from "@/components/project-manager/CustomersManagement";
 import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const Customers = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { data: userRole } = useQuery({
+    queryKey: ["user-role", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) throw error;
+      return data.role;
+    },
+    enabled: !!user?.id,
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -39,7 +56,7 @@ const Customers = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  if (loading || !user) {
+  if (loading || !user || !userRole) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -51,7 +68,7 @@ const Customers = () => {
     <DashboardLayout 
       title="Customers" 
       subtitle="Manage your customers and their projects"
-      userRole="project_manager"
+      userRole={userRole}
     >
       <CustomersManagement userId={user.id} />
     </DashboardLayout>
