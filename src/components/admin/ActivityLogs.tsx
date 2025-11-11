@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Activity, User, Calendar, Filter } from "lucide-react";
+import { Loader2, Activity, User, Calendar, Filter, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,22 +17,20 @@ interface ActivityLog {
   record_id: string | null;
   description: string;
   metadata: any;
+  ip_address: string | null;
   created_at: string;
-}
-
-interface UserProfile {
-  id: string;
-  full_name: string;
-  email: string;
+  profiles?: {
+    full_name: string;
+    email: string;
+  };
 }
 
 export function ActivityLogs() {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
-  const [userProfiles, setUserProfiles] = useState<Map<string, UserProfile>>(new Map());
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterAction, setFilterAction] = useState<string>("all");
-  const [filterTable, setFilterTable] = useState<string>("all");
+  const [actionFilter, setActionFilter] = useState<string>("all");
+  const [tableFilter, setTableFilter] = useState<string>("all");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -41,29 +39,28 @@ export function ActivityLogs() {
 
   const fetchLogs = async () => {
     try {
-      // Fetch logs
-      const { data: logsData, error: logsError } = await supabase
+      const { data: logsData, error } = await supabase
         .from("activity_logs")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(500);
 
-      if (logsError) throw logsError;
-      setLogs(logsData || []);
+      if (error) throw error;
 
-      // Fetch user profiles for logs that have user_id
-      const userIds = [...new Set(logsData?.map(log => log.user_id).filter(Boolean) || [])];
-      if (userIds.length > 0) {
-        const { data: profilesData, error: profilesError } = await supabase
-          .from("profiles")
-          .select("id, full_name, email")
-          .in("id", userIds);
+      // Fetch user profiles separately
+      const userIds = Array.from(new Set(logsData?.map(log => log.user_id).filter(Boolean) || []));
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", userIds);
 
-        if (!profilesError && profilesData) {
-          const profilesMap = new Map(profilesData.map(p => [p.id, p]));
-          setUserProfiles(profilesMap);
-        }
-      }
+      // Merge profiles with logs
+      const enrichedLogs = logsData?.map(log => ({
+        ...log,
+        profiles: profiles?.find(p => p.id === log.user_id) || undefined
+      })) || [];
+
+      setLogs(enrichedLogs);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -75,37 +72,38 @@ export function ActivityLogs() {
     }
   };
 
-  const getActionBadgeColor = (action: string) => {
+  const getActionColor = (action: string) => {
     const colorMap: Record<string, string> = {
       create: "bg-green-500 hover:bg-green-600",
       update: "bg-blue-500 hover:bg-blue-600",
       delete: "bg-red-500 hover:bg-red-600",
+      login: "bg-purple-500 hover:bg-purple-600",
+      logout: "bg-gray-500 hover:bg-gray-600",
     };
     return colorMap[action] || "bg-gray-500 hover:bg-gray-600";
   };
 
-  const getTableBadgeColor = (table: string | null) => {
-    if (!table) return "bg-gray-500 hover:bg-gray-600";
-    
-    const colorMap: Record<string, string> = {
-      profiles: "bg-purple-500 hover:bg-purple-600",
-      tasks: "bg-orange-500 hover:bg-orange-600",
-      attendance: "bg-cyan-500 hover:bg-cyan-600",
-      suspensions: "bg-red-500 hover:bg-red-600",
-      salary_info: "bg-green-500 hover:bg-green-600",
-    };
-    return colorMap[table] || "bg-gray-500 hover:bg-gray-600";
+  const formatActionType = (action: string) => {
+    return action.charAt(0).toUpperCase() + action.slice(1);
   };
 
-  const filteredLogs = logs.filter((log) => {
-    const userProfile = log.user_id ? userProfiles.get(log.user_id) : null;
-    const matchesSearch = log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      userProfile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      userProfile?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+  const formatTableName = (table: string | null) => {
+    if (!table) return "System";
+    return table
+      .split("_")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  const filteredLogs = logs.filter(log => {
+    const matchesSearch = 
+      log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesAction = filterAction === "all" || log.action_type === filterAction;
-    const matchesTable = filterTable === "all" || log.table_name === filterTable;
-    
+    const matchesAction = actionFilter === "all" || log.action_type === actionFilter;
+    const matchesTable = tableFilter === "all" || log.table_name === tableFilter;
+
     return matchesSearch && matchesAction && matchesTable;
   });
 
@@ -127,129 +125,151 @@ export function ActivityLogs() {
         <h2 className="text-2xl font-bold">Activity Logs</h2>
       </div>
       <p className="text-muted-foreground">
-        Complete audit trail of all system activities
+        Monitor all system activities and user actions
       </p>
 
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
-          </CardTitle>
+          <CardTitle className="text-lg">Filters</CardTitle>
+          <CardDescription>Filter activity logs by search, action type, or table</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Search</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search logs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Action Type</label>
-              <Select value={filterAction} onValueChange={setFilterAction}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All actions" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All actions</SelectItem>
-                  {uniqueActions.map((action) => (
-                    <SelectItem key={action} value={action}>
-                      {action.charAt(0).toUpperCase() + action.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Table</label>
-              <Select value={filterTable} onValueChange={setFilterTable}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All tables" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All tables</SelectItem>
-                  {uniqueTables.map((table) => (
-                    <SelectItem key={table} value={table || ""}>
-                      {table}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={actionFilter} onValueChange={setActionFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by action" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Actions</SelectItem>
+                {uniqueActions.map(action => (
+                  <SelectItem key={action} value={action}>
+                    {formatActionType(action)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={tableFilter} onValueChange={setTableFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by table" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tables</SelectItem>
+                {uniqueTables.map(table => (
+                  <SelectItem key={table} value={table || "system"}>
+                    {formatTableName(table)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
+      {/* Stats */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Total Activities</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{filteredLogs.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Today</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {filteredLogs.filter(log => 
+                format(new Date(log.created_at), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
+              ).length}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Unique Users</CardTitle>
+            <User className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {new Set(filteredLogs.map(log => log.user_id).filter(Boolean)).size}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Tables Modified</CardTitle>
+            <Filter className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {new Set(filteredLogs.map(log => log.table_name).filter(Boolean)).size}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Logs List */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+          <CardTitle>Activity Timeline</CardTitle>
           <CardDescription>
-            Showing {filteredLogs.length} of {logs.length} logs
+            Showing {filteredLogs.length} of {logs.length} activities
           </CardDescription>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[600px] pr-4">
             <div className="space-y-3">
-              {filteredLogs.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No activity logs found
-                </div>
-              ) : (
-                filteredLogs.map((log) => {
-                  const userProfile = log.user_id ? userProfiles.get(log.user_id) : null;
-                  return (
-                    <div
-                      key={log.id}
-                      className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge className={getActionBadgeColor(log.action_type)}>
-                            {log.action_type}
-                          </Badge>
-                          {log.table_name && (
-                            <Badge className={getTableBadgeColor(log.table_name)} variant="outline">
-                              {log.table_name}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm font-medium">{log.description}</p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          {userProfile && (
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              <span>{userProfile.full_name}</span>
-                              <span className="text-muted-foreground/60">
-                                ({userProfile.email})
-                              </span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            <span>
-                              {format(new Date(log.created_at), "PPp")}
-                            </span>
-                          </div>
-                        </div>
-                        {log.metadata && Object.keys(log.metadata).length > 0 && (
-                          <details className="text-xs">
-                            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                              View metadata
-                            </summary>
-                            <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-x-auto">
-                              {JSON.stringify(log.metadata, null, 2)}
-                            </pre>
-                          </details>
-                        )}
-                      </div>
+              {filteredLogs.map((log) => (
+                <div
+                  key={log.id}
+                  className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                >
+                  <div className="flex-shrink-0 mt-1">
+                    <Badge className={getActionColor(log.action_type)}>
+                      {formatActionType(log.action_type)}
+                    </Badge>
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <p className="text-sm font-medium">{log.description}</p>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      {log.profiles && (
+                        <span className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          {log.profiles.full_name} ({log.profiles.email})
+                        </span>
+                      )}
+                      {log.table_name && (
+                        <span className="flex items-center gap-1">
+                          • Table: {formatTableName(log.table_name)}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {format(new Date(log.created_at), "PPp")}
+                      </span>
                     </div>
-                  );
-                })
+                  </div>
+                </div>
+              ))}
+              {filteredLogs.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No activity logs found matching your filters.
+                </div>
               )}
             </div>
           </ScrollArea>

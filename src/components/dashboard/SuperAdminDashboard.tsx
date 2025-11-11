@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, ScrollText } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity } from "lucide-react";
 import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
@@ -116,7 +116,7 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
             Notifications
           </TabsTrigger>
           <TabsTrigger value="logs" className="flex items-center gap-2">
-            <ScrollText className="h-4 w-4" />
+            <Activity className="h-4 w-4" />
             Activity Logs
           </TabsTrigger>
         </TabsList>
