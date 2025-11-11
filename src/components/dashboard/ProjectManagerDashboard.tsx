@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerTabs";
@@ -14,12 +15,16 @@ interface ProjectManagerDashboardProps {
 }
 
 export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) => {
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab") || "overview";
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [isClockingIn, setIsClockingIn] = useState(false);
 
   useEffect(() => {
-    fetchAttendance();
-  }, [user.id]);
+    if (tab === "overview") {
+      fetchAttendance();
+    }
+  }, [user.id, tab]);
 
   const fetchAttendance = async () => {
     const today = new Date().toISOString().split("T")[0];
@@ -57,10 +62,24 @@ export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) 
     }
   };
 
+  // Tasks tab - only show task management
+  if (tab === "tasks") {
+    return (
+      <DashboardLayout 
+        title="Task Management" 
+        subtitle="Manage customer tasks and assignments"
+        userRole="project_manager"
+      >
+        <ProjectManagerTabs userId={user.id} />
+      </DashboardLayout>
+    );
+  }
+
+  // Dashboard/Overview tab - show attendance + overview
   return (
     <DashboardLayout 
       title="Project Manager Dashboard" 
-      subtitle="Manage customer projects and tasks"
+      subtitle="Overview and attendance tracking"
       userRole="project_manager"
     >
       <div className="space-y-6">
@@ -114,8 +133,6 @@ export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) 
         </div>
 
         <AttendanceHistory userId={user.id} />
-
-        <ProjectManagerTabs userId={user.id} />
       </div>
     </DashboardLayout>
   );
