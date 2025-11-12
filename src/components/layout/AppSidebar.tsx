@@ -42,6 +42,10 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
     { title: "Email", url: "/emails", icon: Mail },
   ];
 
+  const networkManagerOperations = [
+    { title: "Network Manager View", url: "/dashboard?tab=network-manager", icon: Network },
+  ];
+
   const projectManagerMenu = [
     { title: "Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
     { title: "Customers/Projects", url: "/customers", icon: Building2 },
@@ -137,6 +141,24 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {projectManagementOperations.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={currentPath === item.url}>
+                        <NavLink to={item.url}>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Network Management</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {networkManagerOperations.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={currentPath === item.url}>
                         <NavLink to={item.url}>
