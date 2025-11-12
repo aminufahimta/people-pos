@@ -982,6 +982,7 @@ export type Database = {
         | "employee"
         | "project_manager"
         | "network_manager"
+        | "sales"
       suspension_status:
         | "pending"
         | "approved"
@@ -1121,6 +1122,7 @@ export const Constants = {
         "employee",
         "project_manager",
         "network_manager",
+        "sales",
       ],
       suspension_status: [
         "pending",
