@@ -57,7 +57,6 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
     { title: "Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
     { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
     { title: "Completed Tasks", url: "/dashboard?tab=completed", icon: ClipboardList },
-    { title: "Task Bin", url: "/dashboard?tab=bin", icon: ClipboardList },
   ];
 
   const isCollapsed = state === "collapsed";
