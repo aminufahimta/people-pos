@@ -7,6 +7,7 @@ import HRManagerDashboard from "@/components/dashboard/HRManagerDashboard";
 import EmployeeDashboard from "@/components/dashboard/EmployeeDashboard";
 import { ProjectManagerDashboard } from "@/components/dashboard/ProjectManagerDashboard";
 import NetworkManagerDashboard from "@/components/dashboard/NetworkManagerDashboard";
+import { SalesDashboard } from "@/components/dashboard/SalesDashboard";
 import { Loader2, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -154,6 +155,8 @@ const Dashboard = () => {
         return <ProjectManagerDashboard user={user} />;
       case "network_manager":
         return <NetworkManagerDashboard user={user} />;
+      case "sales":
+        return <SalesDashboard user={user} />;
       case "employee":
         return <EmployeeDashboard user={user} />;
       default:

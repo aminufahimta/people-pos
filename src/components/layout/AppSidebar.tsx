@@ -60,6 +60,13 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
     { title: "Completed Tasks", url: "/dashboard?tab=completed", icon: ClipboardList },
   ];
 
+  const salesMenu = [
+    { title: "Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
+    { title: "Customers/Projects", url: "/customers", icon: Building2 },
+    { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
+    { title: "Email", url: "/emails", icon: Mail },
+  ];
+
   const isCollapsed = state === "collapsed";
 
   return (
@@ -93,6 +100,11 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
           {!isCollapsed && userRole === "network_manager" && (
             <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-accent text-accent-foreground rounded">
               Network Manager
+            </span>
+          )}
+          {!isCollapsed && userRole === "sales" && (
+            <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-green-600 text-white rounded">
+              Sales
             </span>
           )}
         </div>
@@ -228,6 +240,26 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
             <SidebarGroupContent>
               <SidebarMenu>
                 {networkManagerMenu.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={currentPath === item.url}>
+                      <NavLink to={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {userRole === "sales" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Sales</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {salesMenu.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={currentPath === item.url}>
                       <NavLink to={item.url}>

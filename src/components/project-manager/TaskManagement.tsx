@@ -606,7 +606,7 @@ export const TaskManagement = ({ userId, userRole }: TaskManagementProps) => {
                       >
                         <MessageSquare className="h-4 w-4" />
                       </Button>
-                      {userRole !== "network_manager" && (
+                      {userRole !== "network_manager" && userRole !== "sales" && (
                         <Button
                           variant="ghost"
                           size="sm"
