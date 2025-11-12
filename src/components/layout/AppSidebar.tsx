@@ -1,4 +1,4 @@
-import { Shield, LayoutDashboard, Users, UserCog, Settings, UsersRound, CalendarCheck, DollarSign, FileText, Package, ClipboardList, Building2, Mail } from "lucide-react";
+import { Shield, LayoutDashboard, Users, UserCog, Settings, UsersRound, CalendarCheck, DollarSign, FileText, Package, ClipboardList, Building2, Mail, Network } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -49,6 +49,13 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
     { title: "Email", url: "/emails", icon: Mail },
   ];
 
+  const networkManagerMenu = [
+    { title: "Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
+    { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
+    { title: "Completed Tasks", url: "/dashboard?tab=completed", icon: ClipboardList },
+    { title: "Task Bin", url: "/dashboard?tab=bin", icon: ClipboardList },
+  ];
+
   const isCollapsed = state === "collapsed";
 
   return (
@@ -77,6 +84,11 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
           {!isCollapsed && userRole === "project_manager" && (
             <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-secondary text-secondary-foreground rounded">
               Project Manager
+            </span>
+          )}
+          {!isCollapsed && userRole === "network_manager" && (
+            <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-accent text-accent-foreground rounded">
+              Network Manager
             </span>
           )}
         </div>
@@ -174,6 +186,26 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
             <SidebarGroupContent>
               <SidebarMenu>
                 {projectManagerMenu.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={currentPath === item.url}>
+                      <NavLink to={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {userRole === "network_manager" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Technical Support</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {networkManagerMenu.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={currentPath === item.url}>
                       <NavLink to={item.url}>
