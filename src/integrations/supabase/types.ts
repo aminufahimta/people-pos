@@ -97,10 +97,12 @@ export type Database = {
           candidate_name: string
           certification: string | null
           company_hired_to: string
+          confirmation_date: string | null
           created_at: string | null
           cv_path: string | null
           date_of_birth: string
           education_certificate_path: string | null
+          emergency_contact_details: string | null
           first_guarantor_form_path: string | null
           first_guarantor_id_path: string | null
           first_previous_employer: string
@@ -110,10 +112,14 @@ export type Database = {
           last_employer_contact: string
           last_employer_name_address: string
           marital_status: string
+          medical_conditions: Json | null
+          medications: string | null
           nationality: string | null
           next_of_kin_address: string
           next_of_kin_contact: string
           notes: string | null
+          offer_letter_path: string | null
+          other_medical_conditions: string | null
           passport_photo_path: string | null
           pension_pin: string | null
           pension_provider_name: string | null
@@ -124,19 +130,24 @@ export type Database = {
           second_guarantor_form_path: string | null
           second_guarantor_id_path: string | null
           second_previous_employer: string
+          send_copy_to_email: boolean | null
           state: string
           status: string | null
+          symptoms_conditions: Json | null
           utility_bill_path: string | null
+          workplace_accommodations: string | null
         }
         Insert: {
           birth_certificate_path?: string | null
           candidate_name: string
           certification?: string | null
           company_hired_to: string
+          confirmation_date?: string | null
           created_at?: string | null
           cv_path?: string | null
           date_of_birth: string
           education_certificate_path?: string | null
+          emergency_contact_details?: string | null
           first_guarantor_form_path?: string | null
           first_guarantor_id_path?: string | null
           first_previous_employer: string
@@ -146,10 +157,14 @@ export type Database = {
           last_employer_contact: string
           last_employer_name_address: string
           marital_status: string
+          medical_conditions?: Json | null
+          medications?: string | null
           nationality?: string | null
           next_of_kin_address: string
           next_of_kin_contact: string
           notes?: string | null
+          offer_letter_path?: string | null
+          other_medical_conditions?: string | null
           passport_photo_path?: string | null
           pension_pin?: string | null
           pension_provider_name?: string | null
@@ -160,19 +175,24 @@ export type Database = {
           second_guarantor_form_path?: string | null
           second_guarantor_id_path?: string | null
           second_previous_employer: string
+          send_copy_to_email?: boolean | null
           state: string
           status?: string | null
+          symptoms_conditions?: Json | null
           utility_bill_path?: string | null
+          workplace_accommodations?: string | null
         }
         Update: {
           birth_certificate_path?: string | null
           candidate_name?: string
           certification?: string | null
           company_hired_to?: string
+          confirmation_date?: string | null
           created_at?: string | null
           cv_path?: string | null
           date_of_birth?: string
           education_certificate_path?: string | null
+          emergency_contact_details?: string | null
           first_guarantor_form_path?: string | null
           first_guarantor_id_path?: string | null
           first_previous_employer?: string
@@ -182,10 +202,14 @@ export type Database = {
           last_employer_contact?: string
           last_employer_name_address?: string
           marital_status?: string
+          medical_conditions?: Json | null
+          medications?: string | null
           nationality?: string | null
           next_of_kin_address?: string
           next_of_kin_contact?: string
           notes?: string | null
+          offer_letter_path?: string | null
+          other_medical_conditions?: string | null
           passport_photo_path?: string | null
           pension_pin?: string | null
           pension_provider_name?: string | null
@@ -196,9 +220,12 @@ export type Database = {
           second_guarantor_form_path?: string | null
           second_guarantor_id_path?: string | null
           second_previous_employer?: string
+          send_copy_to_email?: boolean | null
           state?: string
           status?: string | null
+          symptoms_conditions?: Json | null
           utility_bill_path?: string | null
+          workplace_accommodations?: string | null
         }
         Relationships: []
       }

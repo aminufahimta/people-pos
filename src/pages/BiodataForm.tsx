@@ -10,6 +10,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, CheckCircle2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB for most files
 const MAX_ID_SIZE = 100 * 1024 * 1024; // 100MB for ID card
@@ -33,6 +35,14 @@ const biodataSchema = z.object({
   next_of_kin_address: z.string().min(1, "Next of kin address is required"),
   first_previous_employer: z.string().min(1, "First previous employer details are required"),
   second_previous_employer: z.string().min(1, "Second previous employer details are required"),
+  medical_conditions: z.array(z.string()).default([]),
+  symptoms_conditions: z.array(z.string()).default([]),
+  other_medical_conditions: z.string().min(1, "Please specify other medical conditions or write 'None'"),
+  medications: z.string().min(1, "Please specify medications or write 'None'"),
+  workplace_accommodations: z.string().min(1, "Please specify accommodations or write 'None'"),
+  emergency_contact_details: z.string().min(1, "Emergency contact is required"),
+  confirmation_date: z.string().min(1, "Confirmation date is required"),
+  send_copy_to_email: z.boolean().default(false),
 });
 
 type BiodataFormData = z.infer<typeof biodataSchema>;
@@ -41,6 +51,7 @@ export default function BiodataForm() {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const [files, setFiles] = useState<Record<string, File>>({});
 
   const {
@@ -55,6 +66,8 @@ export default function BiodataForm() {
 
   const gender = watch("gender");
   const maritalStatus = watch("marital_status");
+  const medicalConditions = watch("medical_conditions") || [];
+  const symptomsConditions = watch("symptoms_conditions") || [];
 
   const handleFileChange = (fieldName: string, file: File | null) => {
     if (file) {
@@ -86,6 +99,37 @@ export default function BiodataForm() {
     }
 
     return filePath;
+  };
+
+  const handleNextStep = () => {
+    // Validate current step before moving forward
+    const step1Fields = [
+      "company_hired_to", "candidate_name", "phone_number", "date_of_birth",
+      "gender", "residential_address", "state", "marital_status",
+      "last_employer_name_address", "last_employer_contact",
+      "next_of_kin_contact", "next_of_kin_address",
+      "first_previous_employer", "second_previous_employer"
+    ];
+    
+    // Check if required files are uploaded for step 1
+    const requiredFiles = [
+      "utility_bill_path", "education_certificate_path", "passport_photo_path",
+      "id_card_path", "cv_path", "first_guarantor_form_path", "first_guarantor_id_path",
+      "second_guarantor_form_path", "second_guarantor_id_path"
+    ];
+    
+    const missingFiles = requiredFiles.filter(field => !files[field]);
+    if (missingFiles.length > 0) {
+      toast({
+        title: "Missing documents",
+        description: "Please upload all required documents before proceeding",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setCurrentStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const onSubmit = async (data: BiodataFormData) => {
@@ -122,6 +166,14 @@ export default function BiodataForm() {
             next_of_kin_address: data.next_of_kin_address,
             first_previous_employer: data.first_previous_employer,
             second_previous_employer: data.second_previous_employer,
+            medical_conditions: data.medical_conditions,
+            symptoms_conditions: data.symptoms_conditions,
+            other_medical_conditions: data.other_medical_conditions,
+            medications: data.medications,
+            workplace_accommodations: data.workplace_accommodations,
+            emergency_contact_details: data.emergency_contact_details,
+            confirmation_date: data.confirmation_date,
+            send_copy_to_email: data.send_copy_to_email,
             utility_bill_path: uploadedPaths.utility_bill_path || null,
             education_certificate_path: uploadedPaths.education_certificate_path || null,
             birth_certificate_path: uploadedPaths.birth_certificate_path || null,
@@ -132,6 +184,7 @@ export default function BiodataForm() {
             first_guarantor_id_path: uploadedPaths.first_guarantor_id_path || null,
             second_guarantor_form_path: uploadedPaths.second_guarantor_form_path || null,
             second_guarantor_id_path: uploadedPaths.second_guarantor_id_path || null,
+            offer_letter_path: uploadedPaths.offer_letter_path || null,
           },
         ]);
 
@@ -177,17 +230,28 @@ export default function BiodataForm() {
       <div className="max-w-3xl mx-auto">
         <Card>
           <CardHeader className="bg-primary text-primary-foreground">
-            <CardTitle className="text-2xl">Employee Biodata Form</CardTitle>
+            <CardTitle className="text-2xl">Employee Biodata Form - Step {currentStep} of 2</CardTitle>
             <CardDescription className="text-primary-foreground/80">
-              Fill all details and upload ALL Documents
+              {currentStep === 1 
+                ? "Fill all details and upload ALL Documents" 
+                : "Confidential Medical History"}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground mb-6">
-              You would need to have all your documents handy to begin, including your filled guarantors form.
-            </p>
+            {currentStep === 1 && (
+              <p className="text-sm text-muted-foreground mb-6">
+                You would need to have all your documents handy to begin, including your filled guarantors form.
+              </p>
+            )}
+            {currentStep === 2 && (
+              <p className="text-sm text-muted-foreground mb-6">
+                This form is designed to help us understand any medical conditions that may require workplace accommodations. Kindly indicate if you have ever been diagnosed with or suffer from any of the following medical conditions by ticking the box.
+              </p>
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {currentStep === 1 && (
+                <>
               {/* Personal Information */}
               <div className="space-y-4">
                 <div>
@@ -417,11 +481,270 @@ export default function BiodataForm() {
               </div>
 
               <div className="flex justify-end gap-4 pt-4 border-t">
-                <Button type="submit" disabled={submitting} size="lg">
-                  {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Submit Biodata
+                <Button type="button" onClick={handleNextStep} size="lg">
+                  Next
                 </Button>
               </div>
+                </>
+              )}
+
+              {currentStep === 2 && (
+                <>
+                  {/* Medical History */}
+                  <div className="space-y-6">
+                    {/* General Health Conditions */}
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold">
+                        General Health Conditions - Which Medical Condition applies to you? *
+                      </Label>
+                      <div className="grid grid-cols-1 gap-3">
+                        {[
+                          "Hypertension (High Blood Pressure)",
+                          "Diabetes",
+                          "Asthma",
+                          "Epilepsy/Seizures",
+                          "Sickle Cell Disease",
+                          "Anaemia (Chronic Blood Disorders)",
+                          "Heart Disease",
+                          "Kidney Disease",
+                          "Tuberculosis (TB)",
+                          "Hepatitis (A, B, C)",
+                          "HIV/AIDS",
+                          "Cancer",
+                          "Arthritis",
+                          "Stroke or Paralysis",
+                          "Ulcers or Stomach Disorders",
+                          "Mental Health Conditions (Depression, Anxiety, etc.)",
+                          "None of the Above",
+                        ].map((condition) => (
+                          <div key={condition} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`medical-${condition}`}
+                              checked={medicalConditions.includes(condition)}
+                              onChange={(e) => {
+                                const current = medicalConditions || [];
+                                if (e.target.checked) {
+                                  setValue("medical_conditions", [...current, condition]);
+                                } else {
+                                  setValue(
+                                    "medical_conditions",
+                                    current.filter((c) => c !== condition)
+                                  );
+                                }
+                              }}
+                              className="h-4 w-4"
+                            />
+                            <Label htmlFor={`medical-${condition}`} className="font-normal cursor-pointer">
+                              {condition}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Symptoms/Conditions */}
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold">
+                        Do You Experience Any of the Following? Symptom/Condition *
+                      </Label>
+                      <div className="grid grid-cols-1 gap-3">
+                        {[
+                          "Frequent Headaches or Migraines",
+                          "Chronic Back Pain or Joint Issues",
+                          "Frequent Dizziness or Fainting",
+                          "Skin Allergies or Reactions",
+                          "Frequent Hospitalization in the Last 12 Months",
+                          "Any Recent Major Surgery (Specify Below)",
+                        ].map((symptom) => (
+                          <div key={symptom} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`symptom-${symptom}`}
+                              checked={symptomsConditions.includes(symptom)}
+                              onChange={(e) => {
+                                const current = symptomsConditions || [];
+                                if (e.target.checked) {
+                                  setValue("symptoms_conditions", [...current, symptom]);
+                                } else {
+                                  setValue(
+                                    "symptoms_conditions",
+                                    current.filter((s) => s !== symptom)
+                                  );
+                                }
+                              }}
+                              className="h-4 w-4"
+                            />
+                            <Label htmlFor={`symptom-${symptom}`} className="font-normal cursor-pointer">
+                              {symptom}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Other Medical Conditions */}
+                    <div>
+                      <Label htmlFor="other_medical_conditions" className="text-base font-semibold">
+                        Other Medical Conditions (Not Listed Above) *
+                      </Label>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Please specify any other medical conditions, allergies, or health concerns:
+                      </p>
+                      <Textarea
+                        id="other_medical_conditions"
+                        {...register("other_medical_conditions")}
+                        placeholder="Enter details here or write 'None'"
+                        className="min-h-[100px]"
+                      />
+                      {errors.other_medical_conditions && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.other_medical_conditions.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Medications */}
+                    <div>
+                      <Label htmlFor="medications" className="text-base font-semibold">
+                        Medications & Special Requirements *
+                      </Label>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Are you currently on any long-term medication? If Yes, please list them:
+                      </p>
+                      <Textarea
+                        id="medications"
+                        {...register("medications")}
+                        placeholder="Enter medication details or write 'None'"
+                        className="min-h-[100px]"
+                      />
+                      {errors.medications && (
+                        <p className="text-sm text-destructive mt-1">{errors.medications.message}</p>
+                      )}
+                    </div>
+
+                    {/* Workplace Accommodations */}
+                    <div>
+                      <Label htmlFor="workplace_accommodations" className="text-base font-semibold">
+                        Do you have any special medical requirements or workplace accommodations? *
+                      </Label>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        If Yes, please explain:
+                      </p>
+                      <Textarea
+                        id="workplace_accommodations"
+                        {...register("workplace_accommodations")}
+                        placeholder="Enter requirements or write 'None'"
+                        className="min-h-[100px]"
+                      />
+                      {errors.workplace_accommodations && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.workplace_accommodations.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Emergency Contact */}
+                    <div>
+                      <Label htmlFor="emergency_contact_details" className="text-base font-semibold">
+                        Emergency Contact Details *
+                      </Label>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Name, Relationship, Phone Number, Address
+                      </p>
+                      <Textarea
+                        id="emergency_contact_details"
+                        {...register("emergency_contact_details")}
+                        placeholder="Enter emergency contact details"
+                        className="min-h-[100px]"
+                      />
+                      {errors.emergency_contact_details && (
+                        <p className="text-sm text-destructive mt-1">
+                          {errors.emergency_contact_details.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Offer Letter Upload */}
+                    <div>
+                      <Label htmlFor="offer_letter_path">Upload signed offer letter.</Label>
+                      <div className="mt-2">
+                        <Input
+                          id="offer_letter_path"
+                          type="file"
+                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                          onChange={(e) => handleFileChange("offer_letter_path", e.target.files?.[0] || null)}
+                          className="cursor-pointer"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Upload 1 supported file: PDF, document, or image. Max 10 MB.
+                        </p>
+                        {files.offer_letter_path && (
+                          <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                            <Upload className="h-3 w-3" /> {files.offer_letter_path.name}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Confirmation */}
+                    <div className="border-t pt-4 space-y-4">
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-sm">
+                          I hereby confirm that the information provided above is accurate to the best of my
+                          knowledge. I understand that withholding or misrepresenting any details may impact my
+                          employment status and could result in appropriate actions being taken. *
+                        </p>
+                        <div className="mt-4">
+                          <Label htmlFor="confirmation_date">Date *</Label>
+                          <Input
+                            id="confirmation_date"
+                            type="date"
+                            {...register("confirmation_date")}
+                            className="mt-2"
+                          />
+                          {errors.confirmation_date && (
+                            <p className="text-sm text-destructive mt-1">
+                              {errors.confirmation_date.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="send_copy"
+                          checked={watch("send_copy_to_email")}
+                          onChange={(e) => setValue("send_copy_to_email", e.target.checked)}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="send_copy" className="font-normal cursor-pointer">
+                          Send me a copy of my responses.
+                        </Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between gap-4 pt-4 border-t">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setCurrentStep(1);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      size="lg"
+                    >
+                      Back
+                    </Button>
+                    <Button type="submit" disabled={submitting} size="lg">
+                      {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Submit
+                    </Button>
+                  </div>
+                </>
+              )}
             </form>
           </CardContent>
         </Card>

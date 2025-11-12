@@ -283,6 +283,79 @@ export default function BiodataSubmissions() {
                         </Button>
                       )
                     ))}
+                    {selectedSubmission.offer_letter_path && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          downloadDocument(
+                            selectedSubmission.offer_letter_path,
+                            "Offer Letter.pdf"
+                          )
+                        }
+                        className="justify-start"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Offer Letter
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Medical History */}
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-4">Medical History</h4>
+                  <div className="space-y-4">
+                    {selectedSubmission.medical_conditions && selectedSubmission.medical_conditions.length > 0 && (
+                      <div>
+                        <Label className="text-muted-foreground">Medical Conditions</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {selectedSubmission.medical_conditions.map((condition: string) => (
+                            <Badge key={condition} variant="secondary">
+                              {condition}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {selectedSubmission.symptoms_conditions && selectedSubmission.symptoms_conditions.length > 0 && (
+                      <div>
+                        <Label className="text-muted-foreground">Symptoms/Conditions</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {selectedSubmission.symptoms_conditions.map((symptom: string) => (
+                            <Badge key={symptom} variant="secondary">
+                              {symptom}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <Label className="text-muted-foreground">Other Medical Conditions</Label>
+                      <p className="font-medium">{selectedSubmission.other_medical_conditions || "N/A"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Medications</Label>
+                      <p className="font-medium">{selectedSubmission.medications || "N/A"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Workplace Accommodations</Label>
+                      <p className="font-medium">{selectedSubmission.workplace_accommodations || "N/A"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Emergency Contact</Label>
+                      <p className="font-medium whitespace-pre-wrap">
+                        {selectedSubmission.emergency_contact_details || "N/A"}
+                      </p>
+                    </div>
+                    {selectedSubmission.confirmation_date && (
+                      <div>
+                        <Label className="text-muted-foreground">Confirmation Date</Label>
+                        <p className="font-medium">
+                          {new Date(selectedSubmission.confirmation_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
