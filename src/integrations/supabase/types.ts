@@ -931,6 +931,20 @@ export type Database = {
     }
     Functions: {
       check_suspension_expiry: { Args: never; Returns: undefined }
+      get_network_manager_emails: {
+        Args: never
+        Returns: {
+          email: string
+          full_name: string
+        }[]
+      }
+      get_sales_emails: {
+        Args: never
+        Returns: {
+          email: string
+          full_name: string
+        }[]
+      }
       get_super_admin_emails: {
         Args: never
         Returns: {
