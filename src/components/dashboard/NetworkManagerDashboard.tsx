@@ -108,16 +108,16 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
       subtitle="Monitor and support ongoing tasks"
       userRole="network_manager"
     >
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6 p-4 md:p-0">
         {/* Salary Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Current Salary</CardTitle>
-              <DollarSign className="h-4 w-4 text-accent" />
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Current Salary</CardTitle>
+              <DollarSign className="h-4 w-4 text-accent flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+            <CardContent className="pt-2">
+              <div className="text-xl md:text-2xl font-bold text-foreground">
                 ₦{Number(salary?.current_salary || 0).toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -128,11 +128,11 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
 
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Daily Rate</CardTitle>
-              <Calendar className="h-4 w-4 text-primary" />
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Daily Rate</CardTitle>
+              <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+            <CardContent className="pt-2">
+              <div className="text-xl md:text-2xl font-bold text-foreground">
                 ₦{Number(salary?.daily_rate || 0).toLocaleString()}
               </div>
             </CardContent>
@@ -140,11 +140,11 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
 
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Today's Status</CardTitle>
-              <Clock className="h-4 w-4 text-success" />
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Today's Status</CardTitle>
+              <Clock className="h-4 w-4 text-success flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold capitalize text-foreground">
+            <CardContent className="pt-2">
+              <div className="text-xl md:text-2xl font-bold capitalize text-foreground">
                 {todayAttendance?.status || "Not Marked"}
               </div>
               {todayAttendance?.created_at && (
@@ -157,25 +157,25 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
 
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Deductions</CardTitle>
-              <TrendingDown className="h-4 w-4 text-destructive" />
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Total Deductions</CardTitle>
+              <TrendingDown className="h-4 w-4 text-destructive flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+            <CardContent className="pt-2">
+              <div className="text-xl md:text-2xl font-bold text-foreground">
                 ₦{Number(salary?.total_deductions || 0).toLocaleString()}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Task Overview</CardTitle>
-              <ClipboardList className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm md:text-base font-medium">Task Overview</CardTitle>
+              <ClipboardList className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <CardDescription>
+            <CardContent className="pt-2">
+              <CardDescription className="text-xs md:text-sm">
                 View and monitor all tasks, update statuses, and provide technical support
               </CardDescription>
             </CardContent>
@@ -183,11 +183,11 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Communication</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm md:text-base font-medium">Communication</CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <CardDescription>
+            <CardContent className="pt-2">
+              <CardDescription className="text-xs md:text-sm">
                 Comment on tasks and collaborate with technicians and project managers
               </CardDescription>
             </CardContent>
@@ -196,20 +196,20 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
 
         {/* Mark Attendance Section */}
         <Card className="shadow-[var(--shadow-elegant)]">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Mark Attendance</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base md:text-lg">Mark Attendance</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-2">
+          <CardContent className="pb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+              <div className="flex-1 w-full">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
               </div>
               <Button
                 onClick={handleMarkAttendance}
                 disabled={isClockingIn || todayAttendance?.status === "present"}
-                className="min-w-[120px]"
+                className="w-full sm:w-auto sm:min-w-[120px]"
               >
                 {todayAttendance?.status === "present" 
                   ? "Marked" 
