@@ -119,7 +119,7 @@ const UserProfile = ({ user, userRole }: UserProfileProps) => {
               <CardTitle className="text-lg">Personal Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Full Name</Label>
                   {canEdit ? (
@@ -139,7 +139,7 @@ const UserProfile = ({ user, userRole }: UserProfileProps) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Phone</Label>
                   {canEdit ? (
@@ -159,7 +159,7 @@ const UserProfile = ({ user, userRole }: UserProfileProps) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Department</Label>
                   <p className="text-sm font-medium">{profile?.department || "-"}</p>
@@ -184,7 +184,7 @@ const UserProfile = ({ user, userRole }: UserProfileProps) => {
                 <CardTitle className="text-lg">Salary Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Base Salary</Label>
                     <p className="text-sm font-medium">
@@ -198,7 +198,7 @@ const UserProfile = ({ user, userRole }: UserProfileProps) => {
                     </p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Total Deductions</Label>
                     <p className="text-sm font-medium text-destructive">
