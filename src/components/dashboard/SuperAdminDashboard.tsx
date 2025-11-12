@@ -13,6 +13,7 @@ import SystemSettings from "@/components/admin/SystemSettings";
 import SalaryManagement from "@/components/admin/SalaryManagement";
 import ReportsGeneration from "@/components/admin/ReportsGeneration";
 import HRManagerManagement from "@/components/admin/HRManagerManagement";
+import NetworkManagerManagement from "@/components/admin/NetworkManagerManagement";
 import SuspensionManagement from "@/components/admin/SuspensionManagement";
 import DocumentVerification from "@/components/admin/DocumentVerification";
 import { InventoryManagement } from "@/components/admin/InventoryManagement";
@@ -80,7 +81,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
             All Users
           </TabsTrigger>
           <TabsTrigger value="managers" className="flex items-center gap-2">
-            Managers
+            HR Managers
+          </TabsTrigger>
+          <TabsTrigger value="network-managers" className="flex items-center gap-2">
+            Network Managers
           </TabsTrigger>
           <TabsTrigger value="employees" className="flex items-center gap-2">
             Employees
@@ -204,6 +208,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="managers" className="space-y-8">
           <HRManagerManagement onUpdate={fetchStats} />
+        </TabsContent>
+
+        <TabsContent value="network-managers" className="space-y-8">
+          <NetworkManagerManagement onUpdate={fetchStats} />
         </TabsContent>
 
         <TabsContent value="employees" className="space-y-8">
