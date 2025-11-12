@@ -45,11 +45,11 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
       </TabsList>
 
       <TabsContent value="tasks" className="space-y-4">
-        <TaskManagement userId={userId} />
+        <TaskManagement userId={userId} userRole={userRole} />
       </TabsContent>
 
       <TabsContent value="completed" className="space-y-4">
-        <CompletedTasks userId={userId} userRole="project_manager" />
+        <CompletedTasks userId={userId} userRole={userRole} />
       </TabsContent>
 
       <TabsContent value="bin" className="space-y-4">

@@ -53,7 +53,12 @@ interface Project {
   customer_address: string | null;
 }
 
-export const TaskManagement = ({ userId }: { userId: string }) => {
+interface TaskManagementProps {
+  userId: string;
+  userRole?: string;
+}
+
+export const TaskManagement = ({ userId, userRole }: TaskManagementProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -601,14 +606,16 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                       >
                         <MessageSquare className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteTask(task)}
-                        title={canHardDelete(task) ? "Delete (within 1 hour)" : "Move to bin"}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {userRole !== "network_manager" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteTask(task)}
+                          title={canHardDelete(task) ? "Delete (within 1 hour)" : "Move to bin"}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
