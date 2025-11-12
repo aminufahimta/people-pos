@@ -205,6 +205,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const updateData: any = { status };
+      // When project manager approves completion (under_review -> completed)
       if (status === "completed") {
         updateData.completed_at = new Date().toISOString();
       }
@@ -214,7 +215,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
         .eq("id", id);
       if (error) throw error;
 
-      // Deduct inventory if task is completed
+      // Deduct inventory when task is approved as completed
       if (status === "completed") {
         const { error: deductError } = await supabase.functions.invoke('deduct-task-inventory', {
           body: { taskId: id },
@@ -305,6 +306,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
     switch (status) {
       case "pending": return "bg-yellow-500";
       case "in_progress": return "bg-blue-500";
+      case "under_review": return "bg-orange-500";
       case "completed": return "bg-green-500";
       case "cancelled": return "bg-red-500";
       default: return "bg-gray-500";
@@ -325,6 +327,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
     total: tasks.length,
     pending: tasks.filter(t => t.status === "pending").length,
     inProgress: tasks.filter(t => t.status === "in_progress").length,
+    underReview: tasks.filter(t => t.status === "under_review").length,
     completed: tasks.filter(t => t.status === "completed").length,
   };
 
@@ -522,8 +525,8 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-green-500">{stats.completed}</p>
+              <p className="text-sm text-muted-foreground">Under Review</p>
+              <p className="text-2xl font-bold text-orange-500">{stats.underReview}</p>
             </CardContent>
           </Card>
         </div>
@@ -568,6 +571,7 @@ export const TaskManagement = ({ userId }: { userId: string }) => {
                       <SelectContent>
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="under_review">Under Review</SelectItem>
                         <SelectItem value="completed">Completed</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>

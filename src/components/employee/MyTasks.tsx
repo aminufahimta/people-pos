@@ -68,25 +68,15 @@ export const MyTasks = ({ userId }: { userId: string }) => {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const updateData: any = { status };
-      if (status === "completed") {
-        updateData.completed_at = new Date().toISOString();
-      }
+      // When technician marks as completed, set to under_review instead
+      const actualStatus = status === "completed" ? "under_review" : status;
+      const updateData: any = { status: actualStatus };
+      
       const { error } = await supabase
         .from("tasks")
         .update(updateData)
         .eq("id", id);
       if (error) throw error;
-
-      // Deduct inventory if task is completed
-      if (status === "completed") {
-        const { error: deductError } = await supabase.functions.invoke('deduct-task-inventory', {
-          body: { taskId: id },
-        });
-        if (deductError) {
-          console.error('Failed to deduct inventory:', deductError);
-        }
-      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-tasks", userId] });
@@ -101,6 +91,7 @@ export const MyTasks = ({ userId }: { userId: string }) => {
     switch (status) {
       case "pending": return "bg-yellow-500";
       case "in_progress": return "bg-blue-500";
+      case "under_review": return "bg-orange-500";
       case "completed": return "bg-green-500";
       case "cancelled": return "bg-red-500";
       default: return "bg-gray-500";
@@ -121,6 +112,7 @@ export const MyTasks = ({ userId }: { userId: string }) => {
     total: tasks.length,
     pending: tasks.filter(t => t.status === "pending").length,
     inProgress: tasks.filter(t => t.status === "in_progress").length,
+    underReview: tasks.filter(t => t.status === "under_review").length,
     completed: tasks.filter(t => t.status === "completed").length,
   };
 
@@ -151,6 +143,12 @@ export const MyTasks = ({ userId }: { userId: string }) => {
               <CardContent className="pt-4 sm:pt-6 pb-4">
                 <p className="text-xs sm:text-sm text-muted-foreground mb-1">In Progress</p>
                 <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.inProgress}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-muted/50">
+              <CardContent className="pt-4 sm:pt-6 pb-4">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-1">Under Review</p>
+                <p className="text-xl sm:text-2xl font-bold text-orange-600">{stats.underReview}</p>
               </CardContent>
             </Card>
             <Card className="bg-muted/50">
