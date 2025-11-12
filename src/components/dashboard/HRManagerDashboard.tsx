@@ -13,6 +13,7 @@ import ReportsGeneration from "@/components/admin/ReportsGeneration";
 import SuspensionManagement from "@/components/admin/SuspensionManagement";
 import DocumentVerification from "@/components/admin/DocumentVerification";
 import EmployeeAuditList from "@/components/admin/EmployeeAuditList";
+import BiodataSubmissions from "@/components/admin/BiodataSubmissions";
 
 interface HRManagerDashboardProps {
   user: User;
@@ -95,6 +96,10 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
           </TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center gap-2">
             Reports
+          </TabsTrigger>
+          <TabsTrigger value="biodata" className="flex items-center gap-2">
+            <FileCheck className="h-4 w-4" />
+            Biodata Forms
           </TabsTrigger>
         </TabsList>
 
@@ -181,6 +186,10 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
 
         <TabsContent value="reports" className="space-y-8">
           <ReportsGeneration />
+        </TabsContent>
+
+        <TabsContent value="biodata" className="space-y-8">
+          <BiodataSubmissions />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

@@ -21,6 +21,7 @@ import { TaskBin } from "@/components/project-manager/TaskBin";
 import { CompletedTasks } from "@/components/project-manager/CompletedTasks";
 import { NotificationSettings } from "@/components/admin/NotificationSettings";
 import { ActivityLogs } from "@/components/admin/ActivityLogs";
+import BiodataSubmissions from "@/components/admin/BiodataSubmissions";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -128,6 +129,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           <TabsTrigger value="logs" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Activity Logs
+          </TabsTrigger>
+          <TabsTrigger value="biodata" className="flex items-center gap-2">
+            <FileCheck className="h-4 w-4" />
+            Biodata Forms
           </TabsTrigger>
         </TabsList>
 
@@ -246,6 +251,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="logs" className="space-y-8">
           <ActivityLogs />
+        </TabsContent>
+
+        <TabsContent value="biodata" className="space-y-8">
+          <BiodataSubmissions />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

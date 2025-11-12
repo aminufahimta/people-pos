@@ -91,6 +91,117 @@ export type Database = {
           },
         ]
       }
+      biodata_submissions: {
+        Row: {
+          birth_certificate_path: string | null
+          candidate_name: string
+          certification: string | null
+          company_hired_to: string
+          created_at: string | null
+          cv_path: string | null
+          date_of_birth: string
+          education_certificate_path: string | null
+          first_guarantor_form_path: string | null
+          first_guarantor_id_path: string | null
+          first_previous_employer: string
+          gender: string
+          id: string
+          id_card_path: string | null
+          last_employer_contact: string
+          last_employer_name_address: string
+          marital_status: string
+          nationality: string | null
+          next_of_kin_address: string
+          next_of_kin_contact: string
+          notes: string | null
+          passport_photo_path: string | null
+          pension_pin: string | null
+          pension_provider_name: string | null
+          phone_number: string
+          residential_address: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          second_guarantor_form_path: string | null
+          second_guarantor_id_path: string | null
+          second_previous_employer: string
+          state: string
+          status: string | null
+          utility_bill_path: string | null
+        }
+        Insert: {
+          birth_certificate_path?: string | null
+          candidate_name: string
+          certification?: string | null
+          company_hired_to: string
+          created_at?: string | null
+          cv_path?: string | null
+          date_of_birth: string
+          education_certificate_path?: string | null
+          first_guarantor_form_path?: string | null
+          first_guarantor_id_path?: string | null
+          first_previous_employer: string
+          gender: string
+          id?: string
+          id_card_path?: string | null
+          last_employer_contact: string
+          last_employer_name_address: string
+          marital_status: string
+          nationality?: string | null
+          next_of_kin_address: string
+          next_of_kin_contact: string
+          notes?: string | null
+          passport_photo_path?: string | null
+          pension_pin?: string | null
+          pension_provider_name?: string | null
+          phone_number: string
+          residential_address: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          second_guarantor_form_path?: string | null
+          second_guarantor_id_path?: string | null
+          second_previous_employer: string
+          state: string
+          status?: string | null
+          utility_bill_path?: string | null
+        }
+        Update: {
+          birth_certificate_path?: string | null
+          candidate_name?: string
+          certification?: string | null
+          company_hired_to?: string
+          created_at?: string | null
+          cv_path?: string | null
+          date_of_birth?: string
+          education_certificate_path?: string | null
+          first_guarantor_form_path?: string | null
+          first_guarantor_id_path?: string | null
+          first_previous_employer?: string
+          gender?: string
+          id?: string
+          id_card_path?: string | null
+          last_employer_contact?: string
+          last_employer_name_address?: string
+          marital_status?: string
+          nationality?: string | null
+          next_of_kin_address?: string
+          next_of_kin_contact?: string
+          notes?: string | null
+          passport_photo_path?: string | null
+          pension_pin?: string | null
+          pension_provider_name?: string | null
+          phone_number?: string
+          residential_address?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          second_guarantor_form_path?: string | null
+          second_guarantor_id_path?: string | null
+          second_previous_employer?: string
+          state?: string
+          status?: string | null
+          utility_bill_path?: string | null
+        }
+        Relationships: []
+      }
       email_history: {
         Row: {
           created_at: string

@@ -11,6 +11,7 @@ import EmployeeAuditForm from "./pages/EmployeeAuditForm";
 import Customers from "./pages/Customers";
 import CustomerDetails from "./pages/CustomerDetails";
 import Emails from "./pages/Emails";
+import BiodataForm from "./pages/BiodataForm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/customers" element={<Customers />} />
             <Route path="/customers/:id" element={<CustomerDetails />} />
             <Route path="/emails" element={<Emails />} />
+            <Route path="/biodata-form" element={<BiodataForm />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
