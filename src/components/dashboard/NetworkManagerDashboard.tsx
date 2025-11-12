@@ -8,11 +8,27 @@ import { CustomersManagement } from "@/components/project-manager/CustomersManag
 import AttendanceHistory from "@/components/employee/AttendanceHistory";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Calendar, ClipboardList, MessageSquare } from "lucide-react";
+import { Clock, Calendar, ClipboardList, MessageSquare, DollarSign, Users } from "lucide-react";
 import { toast } from "sonner";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface NetworkManagerDashboardProps {
   user: User;
+}
+
+interface SalaryInfo {
+  id: string;
+  user_id: string;
+  base_salary: number;
+  current_salary: number;
+  total_deductions: number;
+  currency: string;
+  profiles: {
+    full_name: string;
+    email: string;
+    department: string | null;
+    position: string | null;
+  };
 }
 
 const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
@@ -20,10 +36,12 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
   const tab = searchParams.get("tab") || "overview";
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [isClockingIn, setIsClockingIn] = useState(false);
+  const [salaryData, setSalaryData] = useState<SalaryInfo[]>([]);
 
   useEffect(() => {
     if (tab === "overview") {
       fetchAttendance();
+      fetchSalaryInfo();
     }
   }, [user.id, tab]);
 
@@ -38,6 +56,29 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
       .maybeSingle();
 
     setTodayAttendance(todayData);
+  };
+
+  const fetchSalaryInfo = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("salary_info")
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email,
+            department,
+            position
+          )
+        `)
+        .order("base_salary", { ascending: false });
+
+      if (error) throw error;
+      setSalaryData(data as unknown as SalaryInfo[] || []);
+    } catch (error: any) {
+      console.error("Error fetching salary info:", error);
+      toast.error("Failed to load salary information");
+    }
   };
 
   const handleMarkAttendance = async () => {
@@ -173,6 +214,70 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
         </div>
 
         <AttendanceHistory userId={user.id} />
+
+        {/* Salary Information Section */}
+        <Card className="shadow-[var(--shadow-elegant)]">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-primary" />
+                  Employee Salary Information
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Overview of employee compensation and deductions
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span>{salaryData.length} Employees</span>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {salaryData.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No salary information available</p>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead className="text-right">Base Salary</TableHead>
+                      <TableHead className="text-right">Deductions</TableHead>
+                      <TableHead className="text-right">Current Salary</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {salaryData.map((salary) => (
+                      <TableRow key={salary.id}>
+                        <TableCell className="font-medium">
+                          <div>
+                            <div>{salary.profiles.full_name}</div>
+                            <div className="text-xs text-muted-foreground">{salary.profiles.email}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{salary.profiles.position || "—"}</TableCell>
+                        <TableCell>{salary.profiles.department || "—"}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          {salary.currency} {salary.base_salary.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right text-destructive">
+                          {salary.currency} {salary.total_deductions.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right font-bold text-primary">
+                          {salary.currency} {salary.current_salary.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <ProjectManagerTabs userId={user.id} />
       </div>
