@@ -8,27 +8,18 @@ import { CustomersManagement } from "@/components/project-manager/CustomersManag
 import AttendanceHistory from "@/components/employee/AttendanceHistory";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Calendar, ClipboardList, MessageSquare, DollarSign, Users } from "lucide-react";
+import { Clock, Calendar, ClipboardList, MessageSquare, DollarSign, Users, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface NetworkManagerDashboardProps {
   user: User;
 }
 
-interface SalaryInfo {
-  id: string;
-  user_id: string;
-  base_salary: number;
-  current_salary: number;
-  total_deductions: number;
-  currency: string;
-  profiles: {
-    full_name: string;
-    email: string;
-    department: string | null;
-    position: string | null;
-  };
+interface SalarySummary {
+  totalBaseSalary: number;
+  totalCurrentSalary: number;
+  totalDeductions: number;
+  employeeCount: number;
 }
 
 const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
@@ -36,12 +27,17 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
   const tab = searchParams.get("tab") || "overview";
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [isClockingIn, setIsClockingIn] = useState(false);
-  const [salaryData, setSalaryData] = useState<SalaryInfo[]>([]);
+  const [salarySummary, setSalarySummary] = useState<SalarySummary>({
+    totalBaseSalary: 0,
+    totalCurrentSalary: 0,
+    totalDeductions: 0,
+    employeeCount: 0,
+  });
 
   useEffect(() => {
     if (tab === "overview") {
       fetchAttendance();
-      fetchSalaryInfo();
+      fetchSalarySummary();
     }
   }, [user.id, tab]);
 
@@ -58,26 +54,28 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
     setTodayAttendance(todayData);
   };
 
-  const fetchSalaryInfo = async () => {
+  const fetchSalarySummary = async () => {
     try {
       const { data, error } = await supabase
         .from("salary_info")
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            email,
-            department,
-            position
-          )
-        `)
-        .order("base_salary", { ascending: false });
+        .select("base_salary, current_salary, total_deductions");
 
       if (error) throw error;
-      setSalaryData(data as unknown as SalaryInfo[] || []);
+
+      if (data && data.length > 0) {
+        const summary = data.reduce(
+          (acc, curr) => ({
+            totalBaseSalary: acc.totalBaseSalary + Number(curr.base_salary),
+            totalCurrentSalary: acc.totalCurrentSalary + Number(curr.current_salary),
+            totalDeductions: acc.totalDeductions + Number(curr.total_deductions),
+            employeeCount: acc.employeeCount + 1,
+          }),
+          { totalBaseSalary: 0, totalCurrentSalary: 0, totalDeductions: 0, employeeCount: 0 }
+        );
+        setSalarySummary(summary);
+      }
     } catch (error: any) {
-      console.error("Error fetching salary info:", error);
-      toast.error("Failed to load salary information");
+      console.error("Error fetching salary summary:", error);
     }
   };
 
@@ -138,6 +136,69 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
       userRole="network_manager"
     >
       <div className="space-y-6">
+        {/* Salary Summary Cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Base Salary</CardTitle>
+              <DollarSign className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                ₦{salarySummary.totalBaseSalary.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {salarySummary.employeeCount} employees
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Current Payroll</CardTitle>
+              <DollarSign className="h-4 w-4 text-success" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                ₦{salarySummary.totalCurrentSalary.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                After deductions
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Deductions</CardTitle>
+              <TrendingDown className="h-4 w-4 text-destructive" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive">
+                ₦{salarySummary.totalDeductions.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Across all employees
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Active Employees</CardTitle>
+              <Users className="h-4 w-4 text-accent" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                {salarySummary.employeeCount}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                With salary info
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -214,70 +275,6 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
         </div>
 
         <AttendanceHistory userId={user.id} />
-
-        {/* Salary Information Section */}
-        <Card className="shadow-[var(--shadow-elegant)]">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-primary" />
-                  Employee Salary Information
-                </CardTitle>
-                <CardDescription className="mt-1">
-                  Overview of employee compensation and deductions
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Users className="h-4 w-4" />
-                <span>{salaryData.length} Employees</span>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {salaryData.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No salary information available</p>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead className="text-right">Base Salary</TableHead>
-                      <TableHead className="text-right">Deductions</TableHead>
-                      <TableHead className="text-right">Current Salary</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {salaryData.map((salary) => (
-                      <TableRow key={salary.id}>
-                        <TableCell className="font-medium">
-                          <div>
-                            <div>{salary.profiles.full_name}</div>
-                            <div className="text-xs text-muted-foreground">{salary.profiles.email}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{salary.profiles.position || "—"}</TableCell>
-                        <TableCell>{salary.profiles.department || "—"}</TableCell>
-                        <TableCell className="text-right font-medium">
-                          {salary.currency} {salary.base_salary.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-right text-destructive">
-                          {salary.currency} {salary.total_deductions.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-right font-bold text-primary">
-                          {salary.currency} {salary.current_salary.toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         <ProjectManagerTabs userId={user.id} />
       </div>
