@@ -30,6 +30,7 @@ const SystemSettings = () => {
   const [smtpFromName, setSmtpFromName] = useState<string>("HR Management System");
   const [smtpEncryption, setSmtpEncryption] = useState<string>("tls");
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState<boolean>(false);
+  const [timezone, setTimezone] = useState<string>("UTC");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -60,7 +61,8 @@ const SystemSettings = () => {
           "smtp_from_email",
           "smtp_from_name",
           "smtp_encryption",
-          "email_notifications_enabled"
+          "email_notifications_enabled",
+          "timezone"
         ]);
 
       if (error) throw error;
@@ -105,6 +107,8 @@ const SystemSettings = () => {
             setSmtpEncryption(setting.setting_value);
           } else if (setting.setting_key === "email_notifications_enabled") {
             setEmailNotificationsEnabled(setting.setting_value === "true");
+          } else if (setting.setting_key === "timezone") {
+            setTimezone(setting.setting_value);
           }
         });
       }
@@ -170,6 +174,10 @@ const SystemSettings = () => {
         {
           setting_key: "position_options",
           setting_value: positionOptions,
+        },
+        {
+          setting_key: "timezone",
+          setting_value: timezone,
         },
       ];
 
@@ -288,6 +296,40 @@ const SystemSettings = () => {
               />
               <p className="text-sm text-muted-foreground">
                 This will be displayed throughout the system
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="timezone">System Timezone</Label>
+              <select
+                id="timezone"
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="UTC">UTC (Coordinated Universal Time)</option>
+                <option value="America/New_York">Eastern Time (ET)</option>
+                <option value="America/Chicago">Central Time (CT)</option>
+                <option value="America/Denver">Mountain Time (MT)</option>
+                <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                <option value="America/Anchorage">Alaska Time (AKT)</option>
+                <option value="Pacific/Honolulu">Hawaii Time (HT)</option>
+                <option value="Europe/London">London (GMT/BST)</option>
+                <option value="Europe/Paris">Paris (CET/CEST)</option>
+                <option value="Europe/Berlin">Berlin (CET/CEST)</option>
+                <option value="Europe/Rome">Rome (CET/CEST)</option>
+                <option value="Europe/Madrid">Madrid (CET/CEST)</option>
+                <option value="Europe/Moscow">Moscow (MSK)</option>
+                <option value="Asia/Dubai">Dubai (GST)</option>
+                <option value="Asia/Kolkata">India (IST)</option>
+                <option value="Asia/Shanghai">China (CST)</option>
+                <option value="Asia/Tokyo">Tokyo (JST)</option>
+                <option value="Asia/Singapore">Singapore (SGT)</option>
+                <option value="Asia/Hong_Kong">Hong Kong (HKT)</option>
+                <option value="Australia/Sydney">Sydney (AEDT/AEST)</option>
+                <option value="Pacific/Auckland">Auckland (NZDT/NZST)</option>
+              </select>
+              <p className="text-sm text-muted-foreground">
+                This timezone will be used for all system timestamps and scheduling
               </p>
             </div>
             <Button onClick={handleSave} disabled={loading} className="w-full">
