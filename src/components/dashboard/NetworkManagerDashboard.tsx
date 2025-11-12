@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerTabs";
+import { CustomersManagement } from "@/components/project-manager/CustomersManagement";
 import AttendanceHistory from "@/components/employee/AttendanceHistory";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,19 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
       setIsClockingIn(false);
     }
   };
+
+  // Customers tab
+  if (tab === "customers") {
+    return (
+      <DashboardLayout 
+        title="Customers" 
+        subtitle="Manage customer projects and information"
+        userRole="network_manager"
+      >
+        <CustomersManagement userId={user.id} />
+      </DashboardLayout>
+    );
+  }
 
   // Tasks tab - only show task management
   if (tab === "tasks") {
