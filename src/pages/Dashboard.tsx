@@ -6,6 +6,7 @@ import SuperAdminDashboard from "@/components/dashboard/SuperAdminDashboard";
 import HRManagerDashboard from "@/components/dashboard/HRManagerDashboard";
 import EmployeeDashboard from "@/components/dashboard/EmployeeDashboard";
 import { ProjectManagerDashboard } from "@/components/dashboard/ProjectManagerDashboard";
+import NetworkManagerDashboard from "@/components/dashboard/NetworkManagerDashboard";
 import { Loader2, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -144,18 +145,20 @@ const Dashboard = () => {
     );
   }
 
-  switch (role) {
-    case "super_admin":
-      return <SuperAdminDashboard user={user} />;
-    case "hr_manager":
-      return <HRManagerDashboard user={user} />;
-    case "project_manager":
-      return <ProjectManagerDashboard user={user} />;
-    case "employee":
-      return <EmployeeDashboard user={user} />;
-    default:
-      return null;
-  }
+    switch (role) {
+      case "super_admin":
+        return <SuperAdminDashboard user={user} />;
+      case "hr_manager":
+        return <HRManagerDashboard user={user} />;
+      case "project_manager":
+        return <ProjectManagerDashboard user={user} />;
+      case "network_manager":
+        return <NetworkManagerDashboard user={user} />;
+      case "employee":
+        return <EmployeeDashboard user={user} />;
+      default:
+        return null;
+    }
 };
 
 export default Dashboard;
