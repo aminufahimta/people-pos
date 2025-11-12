@@ -26,10 +26,11 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
   });
 
   const isSuperAdmin = userRole === "super_admin";
+  const isNetworkManager = userRole === "network_manager";
 
   return (
     <Tabs defaultValue="tasks" className="w-full">
-      <TabsList className="grid w-full max-w-2xl grid-cols-3">
+      <TabsList className={`grid w-full max-w-2xl ${isNetworkManager ? 'grid-cols-2' : 'grid-cols-3'}`}>
         <TabsTrigger value="tasks" className="flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
           Tasks
@@ -38,10 +39,12 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
           <CheckCircle2 className="h-4 w-4" />
           Completed
         </TabsTrigger>
-        <TabsTrigger value="bin" className="flex items-center gap-2">
-          <Trash2 className="h-4 w-4" />
-          Bin
-        </TabsTrigger>
+        {!isNetworkManager && (
+          <TabsTrigger value="bin" className="flex items-center gap-2">
+            <Trash2 className="h-4 w-4" />
+            Bin
+          </TabsTrigger>
+        )}
       </TabsList>
 
       <TabsContent value="tasks" className="space-y-4">
@@ -52,9 +55,11 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
         <CompletedTasks userId={userId} userRole={userRole} />
       </TabsContent>
 
-      <TabsContent value="bin" className="space-y-4">
-        <TaskBin userId={userId} isSuperAdmin={isSuperAdmin} />
-      </TabsContent>
+      {!isNetworkManager && (
+        <TabsContent value="bin" className="space-y-4">
+          <TaskBin userId={userId} isSuperAdmin={isSuperAdmin} />
+        </TabsContent>
+      )}
     </Tabs>
   );
 };
