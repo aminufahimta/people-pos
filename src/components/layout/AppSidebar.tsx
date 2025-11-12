@@ -55,9 +55,9 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
 
   const networkManagerMenu = [
     { title: "Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
+    { title: "Customers", url: "/dashboard?tab=customers", icon: Users },
     { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
     { title: "Completed Tasks", url: "/dashboard?tab=completed", icon: ClipboardList },
-    { title: "Customers", url: "/dashboard?tab=customers", icon: Users },
   ];
 
   const isCollapsed = state === "collapsed";
