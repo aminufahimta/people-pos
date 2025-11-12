@@ -319,6 +319,7 @@ const SystemSettings = () => {
                 <option value="Europe/Rome">Rome (CET/CEST)</option>
                 <option value="Europe/Madrid">Madrid (CET/CEST)</option>
                 <option value="Europe/Moscow">Moscow (MSK)</option>
+                <option value="Africa/Lagos">Nigeria (WAT)</option>
                 <option value="Asia/Dubai">Dubai (GST)</option>
                 <option value="Asia/Kolkata">India (IST)</option>
                 <option value="Asia/Shanghai">China (CST)</option>
