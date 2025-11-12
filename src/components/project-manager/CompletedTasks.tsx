@@ -506,7 +506,7 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
                                       <ChevronRight className="h-5 w-5" />
                                     )}
                                     <CardTitle className="text-lg">
-                                      {projectInfo?.customer_name || "Project Tasks"}
+                                      {projectInfo?.customer_name || "Unknown Project"}
                                     </CardTitle>
                                     <Badge variant="outline" className="bg-success/10 text-success">
                                       {projectTasks.length} completed
