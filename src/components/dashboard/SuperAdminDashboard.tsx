@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity, Trash2, CheckCircle2 } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity, Trash2, CheckCircle2, Network } from "lucide-react";
 import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
@@ -22,6 +22,7 @@ import { CompletedTasks } from "@/components/project-manager/CompletedTasks";
 import { NotificationSettings } from "@/components/admin/NotificationSettings";
 import { ActivityLogs } from "@/components/admin/ActivityLogs";
 import BiodataSubmissions from "@/components/admin/BiodataSubmissions";
+import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerTabs";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -87,6 +88,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           <TabsTrigger value="attendance" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Attendance
+          </TabsTrigger>
+          <TabsTrigger value="network-manager" className="flex items-center gap-2">
+            <Network className="h-4 w-4" />
+            Network Manager
           </TabsTrigger>
           <TabsTrigger value="tasks" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" />
@@ -207,6 +212,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="attendance" className="space-y-8">
           <AttendanceOverview />
+        </TabsContent>
+
+        <TabsContent value="network-manager" className="space-y-8">
+          <ProjectManagerTabs userId={user.id} />
         </TabsContent>
 
         <TabsContent value="tasks" className="space-y-8">
