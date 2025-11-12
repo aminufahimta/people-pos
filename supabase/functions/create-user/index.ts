@@ -10,7 +10,7 @@ const createUserSchema = z.object({
   email: z.string().email('Invalid email format').max(255, 'Email too long'),
   password: z.string().min(6, 'Password must be at least 6 characters').max(100, 'Password too long'),
   full_name: z.string().trim().min(1, 'Full name required').max(100, 'Name too long'),
-  role: z.enum(['super_admin', 'hr_manager', 'project_manager', 'network_manager', 'employee']).optional(),
+  role: z.enum(['super_admin', 'hr_manager', 'project_manager', 'network_manager', 'sales', 'employee']).optional(),
   department: z.string().trim().max(100, 'Department name too long').optional().nullable(),
   position: z.string().trim().max(100, 'Position name too long').optional().nullable(),
   phone: z.string().trim().max(20, 'Phone number too long').optional().nullable(),

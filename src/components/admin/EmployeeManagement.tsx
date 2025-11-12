@@ -29,7 +29,7 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
     phone: "",
     base_salary: 0,
     daily_rate: 0,
-    role: "employee" as "employee" | "hr_manager" | "super_admin" | "project_manager" | "network_manager",
+    role: "employee" as "employee" | "hr_manager" | "super_admin" | "project_manager" | "network_manager" | "sales",
   });
   const [newEmployeeForm, setNewEmployeeForm] = useState({
     email: "",
@@ -38,7 +38,7 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
     department: "",
     position: "",
     phone: "",
-    role: "employee" as "employee" | "hr_manager" | "super_admin" | "project_manager" | "network_manager",
+    role: "employee" as "employee" | "hr_manager" | "super_admin" | "project_manager" | "network_manager" | "sales",
     base_salary: 0,
     daily_rate: 0,
   });
@@ -234,6 +234,8 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
         return <Badge className="bg-blue-600">Project Manager</Badge>;
       case "network_manager":
         return <Badge className="bg-purple-600">Network Manager</Badge>;
+      case "sales":
+        return <Badge className="bg-green-600">Sales</Badge>;
       case "employee":
         return <Badge variant="secondary">Employee</Badge>;
       default:
@@ -335,6 +337,7 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
                     <SelectItem value="employee">Employee</SelectItem>
                     {userRole === "super_admin" && (
                       <>
+                        <SelectItem value="sales">Sales</SelectItem>
                         <SelectItem value="project_manager">Project Manager</SelectItem>
                         <SelectItem value="network_manager">Network Manager</SelectItem>
                         <SelectItem value="hr_manager">HR Manager</SelectItem>
@@ -494,6 +497,7 @@ const EmployeeManagement = ({ onUpdate, userRole }: EmployeeManagementProps) => 
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="employee">Employee</SelectItem>
+                                      <SelectItem value="sales">Sales</SelectItem>
                                       <SelectItem value="project_manager">Project Manager</SelectItem>
                                       <SelectItem value="network_manager">Network Manager</SelectItem>
                                       <SelectItem value="hr_manager">HR Manager</SelectItem>
