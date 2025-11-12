@@ -509,36 +509,37 @@ export const TaskManagement = ({ userId, userRole }: TaskManagementProps) => {
         </Dialog>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
           <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Total Tasks</p>
-              <p className="text-2xl font-bold">{stats.total}</p>
+            <CardContent className="pt-4 md:pt-6">
+              <p className="text-xs md:text-sm text-muted-foreground">Total Tasks</p>
+              <p className="text-xl md:text-2xl font-bold">{stats.total}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-2xl font-bold text-yellow-500">{stats.pending}</p>
+            <CardContent className="pt-4 md:pt-6">
+              <p className="text-xs md:text-sm text-muted-foreground">Pending</p>
+              <p className="text-xl md:text-2xl font-bold text-yellow-500">{stats.pending}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">In Progress</p>
-              <p className="text-2xl font-bold text-blue-500">{stats.inProgress}</p>
+            <CardContent className="pt-4 md:pt-6">
+              <p className="text-xs md:text-sm text-muted-foreground">In Progress</p>
+              <p className="text-xl md:text-2xl font-bold text-blue-500">{stats.inProgress}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Under Review</p>
-              <p className="text-2xl font-bold text-orange-500">{stats.underReview}</p>
+            <CardContent className="pt-4 md:pt-6">
+              <p className="text-xs md:text-sm text-muted-foreground">Under Review</p>
+              <p className="text-xl md:text-2xl font-bold text-orange-500">{stats.underReview}</p>
             </CardContent>
           </Card>
         </div>
         {isLoading ? (
           <p>Loading tasks...</p>
         ) : (
-          <Table>
+          <div className="overflow-x-auto -mx-2 md:mx-0">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Task</TableHead>
@@ -622,6 +623,7 @@ export const TaskManagement = ({ userId, userRole }: TaskManagementProps) => {
               ))}
             </TableBody>
           </Table>
+          </div>
         )}
       </CardContent>
       

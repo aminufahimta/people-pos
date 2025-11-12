@@ -42,37 +42,49 @@ const AttendanceHistory = ({ userId }: AttendanceHistoryProps) => {
   return (
     <Card className="shadow-[var(--shadow-elegant)]">
       <CardHeader>
-        <CardTitle>Attendance History</CardTitle>
+        <CardTitle className="text-base md:text-lg">Attendance History</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Time Marked</TableHead>
-              <TableHead>Deduction</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {attendance.map((record) => (
-              <TableRow key={record.id}>
-                <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
-                <TableCell>{getStatusBadge(record.status)}</TableCell>
-                <TableCell>
-                  {record.created_at
-                    ? new Date(record.created_at).toLocaleTimeString()
-                    : "-"}
-                </TableCell>
-                <TableCell>
-                  {record.deduction_amount > 0
-                    ? `₦${Number(record.deduction_amount).toLocaleString()}`
-                    : "-"}
-                </TableCell>
+      <CardContent className="px-2 md:px-6">
+        <div className="overflow-x-auto -mx-2 md:mx-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-xs md:text-sm">Date</TableHead>
+                <TableHead className="text-xs md:text-sm">Status</TableHead>
+                <TableHead className="text-xs md:text-sm whitespace-nowrap">Time Marked</TableHead>
+                <TableHead className="text-xs md:text-sm">Deduction</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {attendance.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                    No attendance records found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                attendance.map((record) => (
+                  <TableRow key={record.id}>
+                    <TableCell className="text-xs md:text-sm whitespace-nowrap">
+                      {new Date(record.date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-xs md:text-sm">{getStatusBadge(record.status)}</TableCell>
+                    <TableCell className="text-xs md:text-sm whitespace-nowrap">
+                      {record.created_at
+                        ? new Date(record.created_at).toLocaleTimeString()
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="text-xs md:text-sm whitespace-nowrap">
+                      {record.deduction_amount > 0
+                        ? `₦${Number(record.deduction_amount).toLocaleString()}`
+                        : "-"}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

@@ -66,15 +66,15 @@ export const SalesDashboard = ({ user }: SalesDashboardProps) => {
 
   return (
     <DashboardLayout userRole="sales" title="Sales Dashboard" subtitle="Manage tasks and track customer projects">
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="space-y-4 md:space-y-6 p-4 md:p-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Current Salary</CardTitle>
-              <DollarSign className="h-4 w-4 text-accent" />
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Current Salary</CardTitle>
+              <DollarSign className="h-4 w-4 text-accent flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+            <CardContent className="pt-2">
+              <div className="text-xl md:text-2xl font-bold text-foreground">
                 ₦{Number(salary?.current_salary || 0).toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -85,11 +85,11 @@ export const SalesDashboard = ({ user }: SalesDashboardProps) => {
 
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Daily Rate</CardTitle>
-              <Calendar className="h-4 w-4 text-primary" />
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Daily Rate</CardTitle>
+              <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+            <CardContent className="pt-2">
+              <div className="text-xl md:text-2xl font-bold text-foreground">
                 ₦{Number(salary?.daily_rate || 0).toLocaleString()}
               </div>
             </CardContent>
@@ -97,11 +97,11 @@ export const SalesDashboard = ({ user }: SalesDashboardProps) => {
 
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Today's Status</CardTitle>
-              <Clock className="h-4 w-4 text-success" />
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Today's Status</CardTitle>
+              <Clock className="h-4 w-4 text-success flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold capitalize text-foreground">
+            <CardContent className="pt-2">
+              <div className="text-xl md:text-2xl font-bold capitalize text-foreground">
                 {todayAttendance?.status || "Not Marked"}
               </div>
             </CardContent>
@@ -109,11 +109,11 @@ export const SalesDashboard = ({ user }: SalesDashboardProps) => {
 
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Deductions</CardTitle>
-              <TrendingDown className="h-4 w-4 text-destructive" />
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Total Deductions</CardTitle>
+              <TrendingDown className="h-4 w-4 text-destructive flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+            <CardContent className="pt-2">
+              <div className="text-xl md:text-2xl font-bold text-foreground">
                 ₦{Number(salary?.total_deductions || 0).toLocaleString()}
               </div>
             </CardContent>
@@ -121,10 +121,10 @@ export const SalesDashboard = ({ user }: SalesDashboardProps) => {
         </div>
 
         <Card className="shadow-[var(--shadow-elegant)]">
-          <CardHeader>
-            <CardTitle>Mark Attendance</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base md:text-lg">Mark Attendance</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-4">
             <Button
               onClick={handleMarkAttendance}
               disabled={isClockingIn || todayAttendance?.status === "present"}
