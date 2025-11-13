@@ -376,11 +376,24 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
           <ScrollArea className="h-[400px]">
             <div className="grid grid-cols-2 gap-4">
               {attachments.map((attachment) => (
-                <Card key={attachment.id} className="p-2 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedImage(getImageUrl(attachment.file_path))}>
+                <Card 
+                  key={attachment.id} 
+                  className="p-2 cursor-pointer hover:shadow-md transition-shadow active:scale-95" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedImage(getImageUrl(attachment.file_path));
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedImage(getImageUrl(attachment.file_path));
+                  }}
+                >
                   <img
                     src={getImageUrl(attachment.file_path)}
                     alt={attachment.file_name}
-                    className="w-full h-32 object-cover rounded mb-2"
+                    className="w-full h-32 object-cover rounded mb-2 pointer-events-none"
                   />
                   <p className="text-xs truncate">{attachment.file_name}</p>
                   <p className="text-xs text-muted-foreground">
@@ -402,12 +415,13 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
 
       {/* Image Preview Dialog */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl p-2 sm:p-6">
           {selectedImage && (
             <img
               src={selectedImage}
               alt="Full size preview"
-              className="w-full h-auto max-h-[80vh] object-contain"
+              className="w-full h-auto max-h-[85vh] object-contain rounded"
+              onClick={(e) => e.stopPropagation()}
             />
           )}
         </DialogContent>

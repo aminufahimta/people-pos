@@ -333,19 +333,38 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
               <ScrollArea className="h-40 sm:h-48">
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2">
                   {attachments.map((attachment) => (
-                    <div key={attachment.id} className="relative group cursor-pointer" onClick={() => setSelectedImage(getImageUrl(attachment.file_path))}>
+                    <div 
+                      key={attachment.id} 
+                      className="relative group cursor-pointer active:scale-95 transition-transform" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedImage(getImageUrl(attachment.file_path));
+                      }}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedImage(getImageUrl(attachment.file_path));
+                      }}
+                    >
                       <img
                         src={getImageUrl(attachment.file_path)}
                         alt={attachment.file_name}
-                        className="w-full h-24 object-cover rounded hover:opacity-90 transition-opacity"
+                        className="w-full h-24 object-cover rounded hover:opacity-90 transition-opacity pointer-events-none"
                       />
                       {attachment.uploaded_by === currentUserId && (
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 z-10"
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity h-6 w-6 p-0 z-10 pointer-events-auto"
                           onClick={(e) => {
                             e.stopPropagation();
+                            e.preventDefault();
+                            deleteAttachmentMutation.mutate({ id: attachment.id, filePath: attachment.file_path });
+                          }}
+                          onTouchEnd={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
                             deleteAttachmentMutation.mutate({ id: attachment.id, filePath: attachment.file_path });
                           }}
                         >
@@ -422,12 +441,13 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
 
       {/* Image Preview Dialog */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl p-2 sm:p-6">
           {selectedImage && (
             <img
               src={selectedImage}
               alt="Full size preview"
-              className="w-full h-auto max-h-[80vh] object-contain"
+              className="w-full h-auto max-h-[85vh] object-contain rounded"
+              onClick={(e) => e.stopPropagation()}
             />
           )}
         </DialogContent>
