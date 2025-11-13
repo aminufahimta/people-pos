@@ -63,6 +63,7 @@ interface TaskDetailsDialogProps {
 export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: TaskDetailsDialogProps) => {
   const [messageText, setMessageText] = useState("");
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -332,18 +333,21 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
               <ScrollArea className="h-40 sm:h-48">
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2">
                   {attachments.map((attachment) => (
-                    <div key={attachment.id} className="relative group">
+                    <div key={attachment.id} className="relative group cursor-pointer" onClick={() => setSelectedImage(getImageUrl(attachment.file_path))}>
                       <img
                         src={getImageUrl(attachment.file_path)}
                         alt={attachment.file_name}
-                        className="w-full h-24 object-cover rounded"
+                        className="w-full h-24 object-cover rounded hover:opacity-90 transition-opacity"
                       />
                       {attachment.uploaded_by === currentUserId && (
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
-                          onClick={() => deleteAttachmentMutation.mutate({ id: attachment.id, filePath: attachment.file_path })}
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 z-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteAttachmentMutation.mutate({ id: attachment.id, filePath: attachment.file_path });
+                          }}
                         >
                           <X className="h-3 w-3" />
                         </Button>
@@ -415,6 +419,19 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
           </div>
         </div>
       </DialogContent>
+
+      {/* Image Preview Dialog */}
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="max-w-4xl">
+          {selectedImage && (
+            <img
+              src={selectedImage}
+              alt="Full size preview"
+              className="w-full h-auto max-h-[80vh] object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };

@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Send, Upload, Image as ImageIcon, MessageSquare, X, MapPin, Phone, User, Calendar } from "lucide-react";
 import { format } from "date-fns";
@@ -36,6 +37,7 @@ interface Attachment {
 
 export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailProps) => {
   const [message, setMessage] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
@@ -374,7 +376,7 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
           <ScrollArea className="h-[400px]">
             <div className="grid grid-cols-2 gap-4">
               {attachments.map((attachment) => (
-                <Card key={attachment.id} className="p-2">
+                <Card key={attachment.id} className="p-2 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedImage(getImageUrl(attachment.file_path))}>
                   <img
                     src={getImageUrl(attachment.file_path)}
                     alt={attachment.file_name}
@@ -397,6 +399,19 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
         </CardContent>
       </Card>
       </div>
+
+      {/* Image Preview Dialog */}
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="max-w-4xl">
+          {selectedImage && (
+            <img
+              src={selectedImage}
+              alt="Full size preview"
+              className="w-full h-auto max-h-[80vh] object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
