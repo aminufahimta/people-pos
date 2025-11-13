@@ -76,6 +76,8 @@ export function NotificationSettings() {
       super_admin: "Super Admin",
       hr_manager: "HR Manager",
       project_manager: "Project Manager",
+      network_manager: "Network Manager",
+      sales: "Sales",
       employee: "Employee",
     };
     return roleMap[role] || role;
@@ -93,6 +95,8 @@ export function NotificationSettings() {
       super_admin: "bg-red-500 hover:bg-red-600",
       hr_manager: "bg-blue-500 hover:bg-blue-600",
       project_manager: "bg-purple-500 hover:bg-purple-600",
+      network_manager: "bg-orange-500 hover:bg-orange-600",
+      sales: "bg-cyan-500 hover:bg-cyan-600",
       employee: "bg-green-500 hover:bg-green-600",
     };
     return colorMap[role] || "bg-gray-500 hover:bg-gray-600";
