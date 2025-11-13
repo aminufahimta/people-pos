@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Clock, DollarSign, Calendar, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 import AttendanceHistory from "@/components/employee/AttendanceHistory";
+import { GrowthTaskWidget } from "./GrowthTaskWidget";
 
 interface SalesDashboardProps {
   user: User;
@@ -67,6 +68,7 @@ export const SalesDashboard = ({ user }: SalesDashboardProps) => {
   return (
     <DashboardLayout userRole="sales" title="Sales Dashboard" subtitle="Manage tasks and track customer projects">
       <div className="space-y-4 md:space-y-6 p-4 md:p-0">
+        <GrowthTaskWidget userId={user.id} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">

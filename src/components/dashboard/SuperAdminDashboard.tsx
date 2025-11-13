@@ -24,6 +24,7 @@ import { NotificationSettings } from "@/components/admin/NotificationSettings";
 import { ActivityLogs } from "@/components/admin/ActivityLogs";
 import BiodataSubmissions from "@/components/admin/BiodataSubmissions";
 import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerTabs";
+import { GrowthTasksManagement } from "@/components/admin/GrowthTasksManagement";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -142,6 +143,9 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           <TabsTrigger value="biodata" className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
             Biodata Forms
+          </TabsTrigger>
+          <TabsTrigger value="growth-tasks" className="flex items-center gap-2">
+            Growth Tasks
           </TabsTrigger>
         </TabsList>
 
@@ -272,6 +276,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="biodata" className="space-y-8">
           <BiodataSubmissions />
+        </TabsContent>
+
+        <TabsContent value="growth-tasks" className="space-y-8">
+          <GrowthTasksManagement />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

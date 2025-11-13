@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Clock, Calendar, ClipboardList, MessageSquare, DollarSign, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
+import { GrowthTaskWidget } from "./GrowthTaskWidget";
 
 interface NetworkManagerDashboardProps {
   user: User;
@@ -109,6 +110,7 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
       userRole="network_manager"
     >
       <div className="space-y-4 md:space-y-6 p-4 md:p-0">
+        <GrowthTaskWidget userId={user.id} />
         {/* Salary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">

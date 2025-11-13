@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Calendar, ClipboardList, CheckCircle2, AlertCircle, Building2 } from "lucide-react";
 import { toast } from "sonner";
+import { GrowthTaskWidget } from "./GrowthTaskWidget";
 
 interface ProjectManagerDashboardProps {
   user: User;
@@ -136,6 +137,7 @@ export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) 
       userRole="project_manager"
     >
       <div className="space-y-6">
+        <GrowthTaskWidget userId={user.id} />
         {/* Statistics Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="shadow-[var(--shadow-elegant)] hover:shadow-lg transition-shadow">
