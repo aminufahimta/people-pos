@@ -995,6 +995,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_upload_task_attachment: {
+        Args: { _task_id: string; _user_id: string }
+        Returns: boolean
+      }
       check_suspension_expiry: { Args: never; Returns: undefined }
       get_network_manager_emails: {
         Args: never
