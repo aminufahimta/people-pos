@@ -38,13 +38,25 @@ export const GrowthTaskWidget = ({ userId }: { userId: string }) => {
           .eq("user_id", userId),
       ]);
 
-      if (tasksResponse.error) throw tasksResponse.error;
+      console.log("Growth tasks response:", tasksResponse);
+      console.log("Growth tasks data:", tasksResponse.data);
+      console.log("Growth tasks error:", tasksResponse.error);
+
+      if (tasksResponse.error) {
+        console.error("Growth tasks RLS error:", tasksResponse.error);
+        throw tasksResponse.error;
+      }
       if (completionsResponse.error) throw completionsResponse.error;
 
       setTasks(tasksResponse.data || []);
       setCompletions(completionsResponse.data || []);
     } catch (error) {
       console.error("Error fetching growth tasks:", error);
+      toast({
+        title: "Error loading growth tasks",
+        description: error instanceof Error ? error.message : "Please check your permissions",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
