@@ -7,9 +7,10 @@ import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerT
 import AttendanceHistory from "@/components/employee/AttendanceHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Calendar, ClipboardList, CheckCircle2, AlertCircle, Building2 } from "lucide-react";
+import { Clock, Calendar, ClipboardList, CheckCircle2, AlertCircle, Building2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { GrowthTaskWidget } from "./GrowthTaskWidget";
+import { MessagesTab } from "./MessagesTab";
 
 interface ProjectManagerDashboardProps {
   user: User;
@@ -115,6 +116,19 @@ export const ProjectManagerDashboard = ({ user }: ProjectManagerDashboardProps) 
       setIsClockingIn(false);
     }
   };
+
+  // Messages tab
+  if (tab === "messages") {
+    return (
+      <DashboardLayout 
+        title="Messages" 
+        subtitle="Task messages and project updates"
+        userRole="project_manager"
+      >
+        <MessagesTab userId={user.id} />
+      </DashboardLayout>
+    );
+  }
 
   // Tasks tab - only show task management
   if (tab === "tasks") {

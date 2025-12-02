@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Clock, Calendar, ClipboardList, MessageSquare, DollarSign, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 import { GrowthTaskWidget } from "./GrowthTaskWidget";
+import { MessagesTab } from "./MessagesTab";
 
 interface NetworkManagerDashboardProps {
   user: User;
@@ -75,6 +76,19 @@ const NetworkManagerDashboard = ({ user }: NetworkManagerDashboardProps) => {
       setIsClockingIn(false);
     }
   };
+
+  // Messages tab
+  if (tab === "messages") {
+    return (
+      <DashboardLayout 
+        title="Messages" 
+        subtitle="Task messages and project updates"
+        userRole="network_manager"
+      >
+        <MessagesTab userId={user.id} />
+      </DashboardLayout>
+    );
+  }
 
   // Customers tab
   if (tab === "customers") {
