@@ -412,7 +412,7 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
                         >
                           <p className="text-sm">{msg.message}</p>
                           <span className="text-xs opacity-70">
-                            {format(new Date(msg.created_at), "h:mm a")}
+                            {format(new Date(msg.created_at), "MMM dd, yyyy h:mm a")}
                           </span>
                         </div>
                       </div>
