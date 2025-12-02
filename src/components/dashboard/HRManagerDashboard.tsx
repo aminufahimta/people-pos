@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, FileCheck } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, FileCheck, MessageSquare } from "lucide-react";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
 import SalaryManagement from "@/components/admin/SalaryManagement";
@@ -14,6 +14,7 @@ import SuspensionManagement from "@/components/admin/SuspensionManagement";
 import DocumentVerification from "@/components/admin/DocumentVerification";
 import EmployeeAuditList from "@/components/admin/EmployeeAuditList";
 import BiodataSubmissions from "@/components/admin/BiodataSubmissions";
+import { MessagesTab } from "./MessagesTab";
 
 interface HRManagerDashboardProps {
   user: User;
@@ -100,6 +101,10 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
           <TabsTrigger value="biodata" className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
             Biodata Forms
+          </TabsTrigger>
+          <TabsTrigger value="messages" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Messages
           </TabsTrigger>
         </TabsList>
 
@@ -190,6 +195,10 @@ const HRManagerDashboard = ({ user }: HRManagerDashboardProps) => {
 
         <TabsContent value="biodata" className="space-y-8">
           <BiodataSubmissions />
+        </TabsContent>
+
+        <TabsContent value="messages" className="space-y-8">
+          <MessagesTab userId={user.id} />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

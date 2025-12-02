@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity, Trash2, CheckCircle2, Network } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity, Trash2, CheckCircle2, Network, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
@@ -25,6 +25,7 @@ import { ActivityLogs } from "@/components/admin/ActivityLogs";
 import BiodataSubmissions from "@/components/admin/BiodataSubmissions";
 import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerTabs";
 import { GrowthTasksManagement } from "@/components/admin/GrowthTasksManagement";
+import { MessagesTab } from "./MessagesTab";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -146,6 +147,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           </TabsTrigger>
           <TabsTrigger value="growth-tasks" className="flex items-center gap-2">
             Growth Tasks
+          </TabsTrigger>
+          <TabsTrigger value="messages" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Messages
           </TabsTrigger>
         </TabsList>
 
@@ -280,6 +285,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="growth-tasks" className="space-y-8">
           <GrowthTasksManagement />
+        </TabsContent>
+
+        <TabsContent value="messages" className="space-y-8">
+          <MessagesTab userId={user.id} />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

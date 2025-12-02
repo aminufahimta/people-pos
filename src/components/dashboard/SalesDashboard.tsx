@@ -5,16 +5,20 @@ import DashboardLayout from "./DashboardLayout";
 import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerTabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, DollarSign, Calendar, TrendingDown } from "lucide-react";
+import { Clock, DollarSign, Calendar, TrendingDown, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import AttendanceHistory from "@/components/employee/AttendanceHistory";
 import { GrowthTaskWidget } from "./GrowthTaskWidget";
+import { MessagesTab } from "./MessagesTab";
+import { useSearchParams } from "react-router-dom";
 
 interface SalesDashboardProps {
   user: User;
 }
 
 export const SalesDashboard = ({ user }: SalesDashboardProps) => {
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab") || "overview";
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [salary, setSalary] = useState<any>(null);
   const [isClockingIn, setIsClockingIn] = useState(false);
@@ -64,6 +68,15 @@ export const SalesDashboard = ({ user }: SalesDashboardProps) => {
       setIsClockingIn(false);
     }
   };
+
+  // Messages tab
+  if (tab === "messages") {
+    return (
+      <DashboardLayout userRole="sales" title="Messages" subtitle="Task messages and project updates">
+        <MessagesTab userId={user.id} />
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout userRole="sales" title="Sales Dashboard" subtitle="Manage tasks and track customer projects">

@@ -1,4 +1,4 @@
-import { Shield, LayoutDashboard, Users, UserCog, Settings, UsersRound, CalendarCheck, DollarSign, FileText, Package, ClipboardList, Building2, Mail, Network } from "lucide-react";
+import { Shield, LayoutDashboard, Users, UserCog, Settings, UsersRound, CalendarCheck, DollarSign, FileText, Package, ClipboardList, Building2, Mail, Network, MessageSquare } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -50,6 +50,7 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
     { title: "Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
     { title: "Customers/Projects", url: "/customers", icon: Building2 },
     { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
+    { title: "Messages", url: "/dashboard?tab=messages", icon: MessageSquare },
     { title: "Email", url: "/emails", icon: Mail },
   ];
 
@@ -58,12 +59,14 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
     { title: "Customers", url: "/dashboard?tab=customers", icon: Users },
     { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
     { title: "Completed Tasks", url: "/dashboard?tab=completed", icon: ClipboardList },
+    { title: "Messages", url: "/dashboard?tab=messages", icon: MessageSquare },
   ];
 
   const salesMenu = [
     { title: "Dashboard", url: "/dashboard?tab=overview", icon: LayoutDashboard },
     { title: "Customers/Projects", url: "/customers", icon: Building2 },
     { title: "Tasks", url: "/dashboard?tab=tasks", icon: ClipboardList },
+    { title: "Messages", url: "/dashboard?tab=messages", icon: MessageSquare },
     { title: "Email", url: "/emails", icon: Mail },
   ];
 
@@ -269,6 +272,32 @@ const AppSidebar = ({ userRole }: AppSidebarProps) => {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {userRole === "employee" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Employee</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={currentPath === "/dashboard?tab=overview" || currentPath === "/dashboard"}>
+                    <NavLink to="/dashboard?tab=overview">
+                      <LayoutDashboard />
+                      <span>Dashboard</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={currentPath === "/dashboard?tab=messages"}>
+                    <NavLink to="/dashboard?tab=messages">
+                      <MessageSquare />
+                      <span>Messages</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,12 +11,15 @@ import AttendanceHistory from "@/components/employee/AttendanceHistory";
 import SuspendedView from "@/components/employee/SuspendedView";
 import WarningBanner from "@/components/employee/WarningBanner";
 import { EmployeeTaskTabs } from "@/components/employee/EmployeeTaskTabs";
+import { MessagesTab } from "./MessagesTab";
 
 interface EmployeeDashboardProps {
   user: User;
 }
 
 const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab") || "overview";
   const [profile, setProfile] = useState<any>(null);
   const [salary, setSalary] = useState<any>(null);
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
@@ -58,6 +62,19 @@ const EmployeeDashboard = ({ user }: EmployeeDashboardProps) => {
         suspensionEndDate={profile.suspension_end_date}
         strikeCount={profile.strike_count || 0}
       />
+    );
+  }
+
+  // Messages tab
+  if (tab === "messages") {
+    return (
+      <DashboardLayout 
+        title="Messages" 
+        subtitle="Task messages and project updates"
+        userRole="employee"
+      >
+        <MessagesTab userId={user.id} />
+      </DashboardLayout>
     );
   }
 
