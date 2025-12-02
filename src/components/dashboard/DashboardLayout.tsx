@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Sun, Moon, LogOut, Menu } from "lucide-react";
+import { Sun, Moon, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import AppSidebar from "@/components/layout/AppSidebar";
 import UserProfile from "@/components/profile/UserProfile";
+import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 interface DashboardLayoutProps {
@@ -63,6 +64,7 @@ const DashboardLayout = ({ children, title, subtitle, userRole }: DashboardLayou
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                <NotificationDropdown userId={user?.id} />
                 {user && userRole && <UserProfile user={user} userRole={userRole} />}
                 <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 md:h-10 md:w-10">
                   {theme === "dark" ? (
