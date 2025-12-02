@@ -1038,6 +1038,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_notification_enabled: {
+        Args: {
+          p_notification_type: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       log_activity: {
         Args: {
           p_action_type: string
