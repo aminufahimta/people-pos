@@ -325,7 +325,7 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
                   </p>
                   <p>{msg.message}</p>
                   <p className="text-xs opacity-70 mt-1">
-                    {format(new Date(msg.created_at), "MMM dd, HH:mm")}
+                    {format(new Date(msg.created_at), "MMM dd, yyyy h:mm a")}
                   </p>
                 </div>
               </div>
