@@ -9,22 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CheckCircle2, Loader2, Eye, FolderOpen, ChevronDown, ChevronRight, Search, Filter, CalendarIcon, X } from "lucide-react";
-import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { CheckCircle2, Loader2, Eye, ChevronDown, ChevronRight, Search, Filter, CalendarIcon, X } from "lucide-react";
+import { format, isWithinInterval, startOfDay, endOfDay, isToday, isYesterday } from "date-fns";
 import { TaskDetailsDialog } from "./TaskDetailsDialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-
-interface Project {
-  id: string;
-  customer_name: string;
-  customer_phone: string | null;
-  customer_email: string | null;
-  customer_address: string | null;
-  project_status: string;
-  created_at: string;
-  updated_at: string;
-}
 
 interface Task {
   id: string;
@@ -58,30 +47,20 @@ interface CompletedTasksProps {
   userRole?: string;
 }
 
+interface TasksByDate {
+  [date: string]: Task[];
+}
+
 export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
-
-  const { data: completedProjects, isLoading: projectsLoading } = useQuery({
-    queryKey: ["completed-projects", userId, userRole],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("project_status", "completed")
-        .order("updated_at", { ascending: false });
-
-      if (error) throw error;
-      return data as Project[];
-    },
-  });
 
   const { data: completedTasks, isLoading: tasksLoading } = useQuery({
     queryKey: ["completed-tasks", userId, userRole],
@@ -108,14 +87,24 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
     },
   });
 
-  const toggleProject = (projectId: string) => {
-    const newExpanded = new Set(expandedProjects);
-    if (newExpanded.has(projectId)) {
-      newExpanded.delete(projectId);
+  const toggleDate = (dateKey: string) => {
+    const newExpanded = new Set(expandedDates);
+    if (newExpanded.has(dateKey)) {
+      newExpanded.delete(dateKey);
     } else {
-      newExpanded.add(projectId);
+      newExpanded.add(dateKey);
     }
-    setExpandedProjects(newExpanded);
+    setExpandedDates(newExpanded);
+  };
+
+  const expandAll = () => {
+    if (tasksByDate) {
+      setExpandedDates(new Set(Object.keys(tasksByDate)));
+    }
+  };
+
+  const collapseAll = () => {
+    setExpandedDates(new Set());
   };
 
   // Filter function
@@ -155,25 +144,38 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
     return filterTasks(completedTasks || []);
   }, [completedTasks, searchQuery, priorityFilter, dateFrom, dateTo]);
 
-  const filteredProjects = useMemo(() => {
-    if (!completedProjects) return [];
-    return completedProjects.filter(project => {
-      const matchesSearch = searchQuery === "" || 
-        project.customer_name?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesSearch;
+  // Group tasks by completion date
+  const tasksByDate = useMemo((): TasksByDate => {
+    const grouped: TasksByDate = {};
+    
+    filteredTasks.forEach(task => {
+      if (task.completed_at) {
+        const dateKey = format(new Date(task.completed_at), "yyyy-MM-dd");
+        if (!grouped[dateKey]) {
+          grouped[dateKey] = [];
+        }
+        grouped[dateKey].push(task);
+      }
     });
-  }, [completedProjects, searchQuery]);
+    
+    return grouped;
+  }, [filteredTasks]);
 
-  const getProjectTasks = (projectId: string) => {
-    return filteredTasks.filter(task => task.project_id === projectId);
+  // Get sorted date keys (most recent first)
+  const sortedDateKeys = useMemo(() => {
+    return Object.keys(tasksByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  }, [tasksByDate]);
+
+  const getDateLabel = (dateKey: string) => {
+    const date = new Date(dateKey);
+    if (isToday(date)) {
+      return "Today";
+    }
+    if (isYesterday(date)) {
+      return "Yesterday";
+    }
+    return format(date, "EEEE, MMMM dd, yyyy");
   };
-
-  // Get all tasks with project_ids (regardless of project completion status)
-  const tasksWithProjects = filteredTasks.filter(task => task.project_id);
-  const uniqueProjectIds = [...new Set(tasksWithProjects.map(task => task.project_id))];
-  
-  // Get standalone tasks (no project_id)
-  const standaloneCompletedTasks = filteredTasks.filter(task => !task.project_id);
 
   const hasActiveFilters = searchQuery !== "" || priorityFilter !== "all" || dateFrom || dateTo;
 
@@ -202,17 +204,13 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
     setIsDetailsOpen(true);
   };
 
-  const isLoading = projectsLoading || tasksLoading;
-
-  if (isLoading) {
+  if (tasksLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
-
-  const totalCompleted = (filteredProjects?.length || 0) + (filteredTasks?.length || 0);
 
   return (
     <>
@@ -221,9 +219,9 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-success" />
             <div>
-              <CardTitle>Completed Projects & Tasks</CardTitle>
+              <CardTitle>Completed Tasks</CardTitle>
               <CardDescription>
-                View all completed projects and their tasks
+                View all completed tasks organized by completion date
               </CardDescription>
             </div>
           </div>
@@ -335,337 +333,130 @@ export const CompletedTasks = ({ userId, userRole }: CompletedTasksProps) => {
               </div>
             </div>
           </div>
-          {totalCompleted === 0 ? (
+
+          {filteredTasks.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <CheckCircle2 className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">No completed items yet</p>
-              <p className="text-sm mt-2">Completed projects and tasks will appear here</p>
+              <p className="text-lg font-medium">No completed tasks yet</p>
+              <p className="text-sm mt-2">Completed tasks will appear here organized by date</p>
             </div>
           ) : (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">
-                    Showing: <span className="font-semibold text-foreground">{filteredTasks.length}</span> of {completedTasks?.length || 0} completed tasks
-                  </p>
-                  {filteredProjects.length > 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">{filteredProjects.length}</span> completed projects
-                    </p>
-                  )}
+            <div className="space-y-4">
+              {/* Summary and Controls */}
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing <span className="font-semibold text-foreground">{filteredTasks.length}</span> completed tasks across{" "}
+                  <span className="font-semibold text-foreground">{sortedDateKeys.length}</span> days
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={expandAll}>
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    Expand All
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={collapseAll}>
+                    <ChevronRight className="h-4 w-4 mr-1" />
+                    Collapse All
+                  </Button>
                 </div>
               </div>
 
-              {/* Completed Projects with their tasks */}
-              {filteredProjects.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <FolderOpen className="h-5 w-5" />
-                    Completed Projects
-                  </h3>
-                  {filteredProjects.map((project) => {
-                    const projectTasks = getProjectTasks(project.id);
-                    const isExpanded = expandedProjects.has(project.id);
+              {/* Tasks grouped by date */}
+              <div className="space-y-3">
+                {sortedDateKeys.map((dateKey) => {
+                  const dayTasks = tasksByDate[dateKey];
+                  const isExpanded = expandedDates.has(dateKey);
+                  const dateLabel = getDateLabel(dateKey);
 
-                    return (
-                      <Collapsible
-                        key={project.id}
-                        open={isExpanded}
-                        onOpenChange={() => toggleProject(project.id)}
-                      >
-                        <Card>
-                          <CollapsibleTrigger asChild>
-                            <CardHeader className="cursor-pointer hover:bg-accent/50 transition-colors">
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    {isExpanded ? (
-                                      <ChevronDown className="h-5 w-5" />
-                                    ) : (
-                                      <ChevronRight className="h-5 w-5" />
-                                    )}
-                                    <CardTitle className="text-lg">{project.customer_name}</CardTitle>
-                                    <Badge variant="outline" className="bg-success/10 text-success">
-                                      Completed
-                                    </Badge>
-                                  </div>
-                                  <CardDescription className="mt-2 ml-7">
-                                    {project.customer_phone && (
-                                      <span className="mr-4">📞 {project.customer_phone}</span>
-                                    )}
-                                    {project.customer_email && (
-                                      <span className="mr-4">✉️ {project.customer_email}</span>
-                                    )}
-                                    {project.customer_address && (
-                                      <span>📍 {project.customer_address}</span>
-                                    )}
-                                  </CardDescription>
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                  {projectTasks.length} {projectTasks.length === 1 ? 'task' : 'tasks'}
-                                </div>
-                              </div>
-                            </CardHeader>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <CardContent>
-                              {projectTasks.length === 0 ? (
-                                <p className="text-sm text-muted-foreground text-center py-4">
-                                  No tasks in this project
-                                </p>
+                  return (
+                    <Collapsible
+                      key={dateKey}
+                      open={isExpanded}
+                      onOpenChange={() => toggleDate(dateKey)}
+                    >
+                      <Card className="overflow-hidden">
+                        <CollapsibleTrigger asChild>
+                          <div className="cursor-pointer hover:bg-accent/50 transition-colors px-4 py-3 flex items-center justify-between border-b">
+                            <div className="flex items-center gap-3">
+                              {isExpanded ? (
+                                <ChevronDown className="h-5 w-5 text-muted-foreground" />
                               ) : (
-                                <Table>
-                                  <TableHeader>
-                                    <TableRow>
-                                      <TableHead>Task</TableHead>
-                                      <TableHead>Assigned To</TableHead>
-                                      <TableHead>Priority</TableHead>
-                                      <TableHead>Completed Date</TableHead>
-                                      <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                    {projectTasks.map((task) => (
-                                      <TableRow key={task.id}>
-                                        <TableCell>
-                                          <div>
-                                            <p className="font-medium">{task.title}</p>
-                                            {task.description && (
-                                              <p className="text-sm text-muted-foreground line-clamp-1">
-                                                {task.description}
-                                              </p>
-                                            )}
-                                          </div>
-                                        </TableCell>
-                                        <TableCell>
-                                          {task.assigned_profile?.full_name || "Unassigned"}
-                                        </TableCell>
-                                        <TableCell>
-                                          <Badge variant={getPriorityColor(task.priority)}>
-                                            {task.priority}
-                                          </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                          {task.completed_at
-                                            ? format(new Date(task.completed_at), "MMM dd, yyyy HH:mm")
-                                            : "N/A"}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => handleViewDetails(task)}
-                                          >
-                                            <Eye className="h-4 w-4 mr-1" />
-                                            View
-                                          </Button>
-                                        </TableCell>
-                                      </TableRow>
-                                    ))}
-                                  </TableBody>
-                                </Table>
+                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
                               )}
-                            </CardContent>
-                          </CollapsibleContent>
-                        </Card>
-                      </Collapsible>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Tasks by Project (for active projects with completed tasks) */}
-              {uniqueProjectIds.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5" />
-                    Completed Tasks by Project
-                  </h3>
-                  {uniqueProjectIds.map((projectId) => {
-                    const projectTasks = getProjectTasks(projectId!);
-                    const isExpanded = expandedProjects.has(projectId!);
-                    
-                    // Get project info from the first task with this project_id
-                    const projectInfo = completedTasks?.find(t => t.project_id === projectId)?.project;
-
-                    return (
-                      <Collapsible
-                        key={projectId}
-                        open={isExpanded}
-                        onOpenChange={() => toggleProject(projectId!)}
-                      >
-                        <Card>
-                          <CollapsibleTrigger asChild>
-                            <CardHeader className="cursor-pointer hover:bg-accent/50 transition-colors">
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    {isExpanded ? (
-                                      <ChevronDown className="h-5 w-5" />
-                                    ) : (
-                                      <ChevronRight className="h-5 w-5" />
-                                    )}
-                                    <CardTitle className="text-lg">
-                                      {projectInfo?.customer_name || "Unknown Project"}
-                                    </CardTitle>
-                                    <Badge variant="outline" className="bg-success/10 text-success">
-                                      {projectTasks.length} completed
-                                    </Badge>
-                                  </div>
-                                  <CardDescription className="mt-2 ml-7">
-                                    {projectInfo?.customer_phone && (
-                                      <span className="mr-4">📞 {projectInfo.customer_phone}</span>
-                                    )}
-                                    {projectInfo?.customer_email && (
-                                      <span className="mr-4">✉️ {projectInfo.customer_email}</span>
-                                    )}
-                                    {projectInfo?.customer_address && (
-                                      <span>📍 {projectInfo.customer_address}</span>
-                                    )}
-                                  </CardDescription>
-                                </div>
+                              <div className="flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4 text-primary" />
+                                <span className="font-semibold text-lg">{dateLabel}</span>
                               </div>
-                            </CardHeader>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <CardContent>
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead>Task</TableHead>
-                                    <TableHead>Assigned To</TableHead>
-                                    <TableHead>Priority</TableHead>
-                                    <TableHead>Completed Date</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                            </div>
+                            <Badge variant="secondary" className="text-sm">
+                              {dayTasks.length} {dayTasks.length === 1 ? 'task' : 'tasks'}
+                            </Badge>
+                          </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <CardContent className="p-0">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Task</TableHead>
+                                  <TableHead>Customer/Project</TableHead>
+                                  <TableHead>Assigned To</TableHead>
+                                  <TableHead>Priority</TableHead>
+                                  <TableHead>Time</TableHead>
+                                  <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {dayTasks.map((task) => (
+                                  <TableRow key={task.id}>
+                                    <TableCell>
+                                      <div>
+                                        <p className="font-medium">{task.title}</p>
+                                        {task.description && (
+                                          <p className="text-sm text-muted-foreground line-clamp-1">
+                                            {task.description}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      {task.project?.customer_name || task.customer_name || (
+                                        <span className="text-muted-foreground">N/A</span>
+                                      )}
+                                    </TableCell>
+                                    <TableCell>
+                                      {task.assigned_profile?.full_name || "Unassigned"}
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant={getPriorityColor(task.priority)}>
+                                        {task.priority}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      {task.completed_at
+                                        ? format(new Date(task.completed_at), "hh:mm a")
+                                        : "N/A"}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleViewDetails(task)}
+                                      >
+                                        <Eye className="h-4 w-4 mr-1" />
+                                        View
+                                      </Button>
+                                    </TableCell>
                                   </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {projectTasks.map((task) => (
-                                    <TableRow key={task.id}>
-                                      <TableCell>
-                                        <div>
-                                          <p className="font-medium">{task.title}</p>
-                                          {task.description && (
-                                            <p className="text-sm text-muted-foreground line-clamp-1">
-                                              {task.description}
-                                            </p>
-                                          )}
-                                        </div>
-                                      </TableCell>
-                                      <TableCell>
-                                        {task.assigned_profile?.full_name || "Unassigned"}
-                                      </TableCell>
-                                      <TableCell>
-                                        <Badge variant={getPriorityColor(task.priority)}>
-                                          {task.priority}
-                                        </Badge>
-                                      </TableCell>
-                                      <TableCell>
-                                        {task.completed_at
-                                          ? format(new Date(task.completed_at), "MMM dd, yyyy HH:mm")
-                                          : "N/A"}
-                                      </TableCell>
-                                      <TableCell className="text-right">
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => handleViewDetails(task)}
-                                        >
-                                          <Eye className="h-4 w-4 mr-1" />
-                                          View
-                                        </Button>
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </CardContent>
-                          </CollapsibleContent>
-                        </Card>
-                      </Collapsible>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Standalone Completed Tasks */}
-              {standaloneCompletedTasks.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5" />
-                    Standalone Completed Tasks
-                  </h3>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Task</TableHead>
-                            <TableHead>Assigned To</TableHead>
-                            <TableHead>Customer</TableHead>
-                            <TableHead>Priority</TableHead>
-                            <TableHead>Completed Date</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {standaloneCompletedTasks.map((task) => (
-                            <TableRow key={task.id}>
-                              <TableCell>
-                                <div>
-                                  <p className="font-medium">{task.title}</p>
-                                  {task.description && (
-                                    <p className="text-sm text-muted-foreground line-clamp-1">
-                                      {task.description}
-                                    </p>
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {task.assigned_profile?.full_name || "Unassigned"}
-                              </TableCell>
-                              <TableCell>
-                                {task.customer_name ? (
-                                  <div>
-                                    <p className="text-sm">{task.customer_name}</p>
-                                    {task.customer_phone && (
-                                      <p className="text-xs text-muted-foreground">
-                                        {task.customer_phone}
-                                      </p>
-                                    )}
-                                  </div>
-                                ) : (
-                                  "N/A"
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant={getPriorityColor(task.priority)}>
-                                  {task.priority}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                {task.completed_at
-                                  ? format(new Date(task.completed_at), "MMM dd, yyyy HH:mm")
-                                  : "N/A"}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleViewDetails(task)}
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </CardContent>
+                        </CollapsibleContent>
+                      </Card>
+                    </Collapsible>
+                  );
+                })}
+              </div>
             </div>
           )}
         </CardContent>
