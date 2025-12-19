@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Send, Upload, Image as ImageIcon, MessageSquare, X, MapPin, Phone, User, Calendar } from "lucide-react";
+import { Send, Upload, Image as ImageIcon, MessageSquare, X, MapPin, Phone, User, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 
 interface MyTasksDetailProps {
@@ -37,7 +37,7 @@ interface Attachment {
 
 export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailProps) => {
   const [message, setMessage] = useState("");
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
@@ -375,19 +375,19 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
         <CardContent>
           <ScrollArea className="h-[400px]">
             <div className="grid grid-cols-2 gap-4">
-              {attachments.map((attachment) => (
+              {attachments.map((attachment, index) => (
                 <Card 
                   key={attachment.id} 
                   className="p-2 cursor-pointer hover:shadow-md transition-shadow active:scale-95" 
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setSelectedImage(getImageUrl(attachment.file_path));
+                    setSelectedImageIndex(index);
                   }}
                   onTouchEnd={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setSelectedImage(getImageUrl(attachment.file_path));
+                    setSelectedImageIndex(index);
                   }}
                 >
                   <img
@@ -413,16 +413,48 @@ export const MyTasksDetail = ({ taskId, currentUserId, onClose }: MyTasksDetailP
       </Card>
       </div>
 
-      {/* Image Preview Dialog */}
-      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+      {/* Image Preview Dialog with Navigation */}
+      <Dialog open={selectedImageIndex !== null} onOpenChange={() => setSelectedImageIndex(null)}>
         <DialogContent className="max-w-[95vw] sm:max-w-4xl p-2 sm:p-6">
-          {selectedImage && (
-            <img
-              src={selectedImage}
-              alt="Full size preview"
-              className="w-full h-auto max-h-[85vh] object-contain rounded"
-              onClick={(e) => e.stopPropagation()}
-            />
+          {selectedImageIndex !== null && attachments[selectedImageIndex] && (
+            <div className="relative">
+              <img
+                src={getImageUrl(attachments[selectedImageIndex].file_path)}
+                alt="Full size preview"
+                className="w-full h-auto max-h-[85vh] object-contain rounded"
+                onClick={(e) => e.stopPropagation()}
+              />
+              {/* Navigation Controls */}
+              {attachments.length > 1 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImageIndex((prev) => (prev! > 0 ? prev! - 1 : attachments.length - 1));
+                    }}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImageIndex((prev) => (prev! < attachments.length - 1 ? prev! + 1 : 0));
+                    }}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-sm">
+                    {selectedImageIndex + 1} / {attachments.length}
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </DialogContent>
       </Dialog>
