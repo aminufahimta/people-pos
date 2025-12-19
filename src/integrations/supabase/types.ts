@@ -229,6 +229,45 @@ export type Database = {
         }
         Relationships: []
       }
+      email_delivery_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          recipient_email: string
+          recipient_name: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          trigger_context: Json | null
+          triggered_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          recipient_email: string
+          recipient_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          trigger_context?: Json | null
+          triggered_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          recipient_email?: string
+          recipient_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          trigger_context?: Json | null
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
       email_history: {
         Row: {
           created_at: string
