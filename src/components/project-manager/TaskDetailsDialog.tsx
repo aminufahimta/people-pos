@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Send, Image, X } from "lucide-react";
+import { Send, Image, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 
 interface Task {
@@ -63,7 +63,7 @@ interface TaskDetailsDialogProps {
 export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: TaskDetailsDialogProps) => {
   const [messageText, setMessageText] = useState("");
   const [uploadingFile, setUploadingFile] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -332,19 +332,19 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
               </div>
               <ScrollArea className="h-40 sm:h-48">
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2">
-                  {attachments.map((attachment) => (
+                  {attachments.map((attachment, index) => (
                     <div 
                       key={attachment.id} 
                       className="relative group cursor-pointer active:scale-95 transition-transform" 
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setSelectedImage(getImageUrl(attachment.file_path));
+                        setSelectedImageIndex(index);
                       }}
                       onTouchEnd={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setSelectedImage(getImageUrl(attachment.file_path));
+                        setSelectedImageIndex(index);
                       }}
                     >
                       <img
@@ -439,16 +439,48 @@ export const TaskDetailsDialog = ({ task, isOpen, onClose, currentUserId }: Task
         </div>
       </DialogContent>
 
-      {/* Image Preview Dialog */}
-      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+      {/* Image Preview Dialog with Navigation */}
+      <Dialog open={selectedImageIndex !== null} onOpenChange={() => setSelectedImageIndex(null)}>
         <DialogContent className="max-w-[95vw] sm:max-w-4xl p-2 sm:p-6">
-          {selectedImage && (
-            <img
-              src={selectedImage}
-              alt="Full size preview"
-              className="w-full h-auto max-h-[85vh] object-contain rounded"
-              onClick={(e) => e.stopPropagation()}
-            />
+          {selectedImageIndex !== null && attachments[selectedImageIndex] && (
+            <div className="relative">
+              <img
+                src={getImageUrl(attachments[selectedImageIndex].file_path)}
+                alt="Full size preview"
+                className="w-full h-auto max-h-[85vh] object-contain rounded"
+                onClick={(e) => e.stopPropagation()}
+              />
+              {/* Navigation Controls */}
+              {attachments.length > 1 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImageIndex((prev) => (prev! > 0 ? prev! - 1 : attachments.length - 1));
+                    }}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImageIndex((prev) => (prev! < attachments.length - 1 ? prev! + 1 : 0));
+                    }}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-sm">
+                    {selectedImageIndex + 1} / {attachments.length}
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </DialogContent>
       </Dialog>
