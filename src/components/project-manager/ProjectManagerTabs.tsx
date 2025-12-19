@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +13,8 @@ interface ProjectManagerTabsProps {
 }
 
 export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
+  const [activeTab, setActiveTab] = useState("tasks");
+  
   const { data: userRole } = useQuery({
     queryKey: ["user-role", userId],
     queryFn: async () => {
@@ -37,7 +40,7 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
   const tabCount = 2 + (showReview ? 1 : 0) + (showBin ? 1 : 0);
 
   return (
-    <Tabs defaultValue="tasks" className="w-full">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className={`grid w-full max-w-3xl grid-cols-${tabCount}`}>
         <TabsTrigger value="tasks" className="flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
@@ -62,7 +65,11 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
       </TabsList>
 
       <TabsContent value="tasks" className="space-y-4">
-        <TaskManagement userId={userId} userRole={userRole} />
+        <TaskManagement 
+          userId={userId} 
+          userRole={userRole} 
+          onNavigateToReview={() => setActiveTab("review")}
+        />
       </TabsContent>
 
       {showReview && (

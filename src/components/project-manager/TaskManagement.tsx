@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,9 +57,11 @@ interface Project {
 interface TaskManagementProps {
   userId: string;
   userRole?: string;
+  onNavigateToReview?: () => void;
 }
 
-export const TaskManagement = ({ userId, userRole }: TaskManagementProps) => {
+export const TaskManagement = ({ userId, userRole, onNavigateToReview }: TaskManagementProps) => {
+  const [, setSearchParams] = useSearchParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -528,10 +531,25 @@ export const TaskManagement = ({ userId, userRole }: TaskManagementProps) => {
               <p className="text-xl md:text-2xl font-bold text-blue-500">{stats.inProgress}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card 
+            className={`${stats.underReview > 0 ? 'cursor-pointer hover:bg-accent/50 transition-colors ring-2 ring-orange-500/50' : ''}`}
+            onClick={() => {
+              if (stats.underReview > 0) {
+                if (onNavigateToReview) {
+                  onNavigateToReview();
+                } else {
+                  // For super admin dashboard, navigate via URL
+                  setSearchParams({ tab: "review" });
+                }
+              }
+            }}
+          >
             <CardContent className="pt-4 md:pt-6">
               <p className="text-xs md:text-sm text-muted-foreground">Under Review</p>
               <p className="text-xl md:text-2xl font-bold text-orange-500">{stats.underReview}</p>
+              {stats.underReview > 0 && (
+                <p className="text-xs text-orange-500 mt-1">Click to review →</p>
+              )}
             </CardContent>
           </Card>
         </div>
