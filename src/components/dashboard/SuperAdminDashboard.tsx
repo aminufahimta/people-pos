@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity, Trash2, CheckCircle2, Network, MessageSquare, Clock, Mail } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity, Trash2, CheckCircle2, Network, MessageSquare, Clock, Mail, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
@@ -28,6 +28,7 @@ import { GrowthTasksManagement } from "@/components/admin/GrowthTasksManagement"
 import { MessagesTab } from "./MessagesTab";
 import { TaskReview } from "@/components/project-manager/TaskReview";
 import EmailDeliveryLogs from "@/components/admin/EmailDeliveryLogs";
+import { TaskPayments } from "@/components/admin/TaskPayments";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -161,6 +162,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           <TabsTrigger value="email-logs" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
             Email Logs
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            Payments
           </TabsTrigger>
         </TabsList>
 
@@ -307,6 +312,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="email-logs" className="space-y-8">
           <EmailDeliveryLogs />
+        </TabsContent>
+
+        <TabsContent value="payments" className="space-y-8">
+          <TaskPayments />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

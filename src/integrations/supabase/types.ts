@@ -917,6 +917,9 @@ export type Database = {
           installation_address: string | null
           inventory_deducted: boolean | null
           is_deleted: boolean | null
+          is_paid: boolean | null
+          paid_at: string | null
+          paid_by: string | null
           poe_adapters_used: number | null
           poles_used: number | null
           priority: string
@@ -942,6 +945,9 @@ export type Database = {
           installation_address?: string | null
           inventory_deducted?: boolean | null
           is_deleted?: boolean | null
+          is_paid?: boolean | null
+          paid_at?: string | null
+          paid_by?: string | null
           poe_adapters_used?: number | null
           poles_used?: number | null
           priority?: string
@@ -967,6 +973,9 @@ export type Database = {
           installation_address?: string | null
           inventory_deducted?: boolean | null
           is_deleted?: boolean | null
+          is_paid?: boolean | null
+          paid_at?: string | null
+          paid_by?: string | null
           poe_adapters_used?: number | null
           poles_used?: number | null
           priority?: string
@@ -987,6 +996,13 @@ export type Database = {
           {
             foreignKeyName: "tasks_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_paid_by_fkey"
+            columns: ["paid_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
