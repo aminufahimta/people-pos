@@ -1099,10 +1099,21 @@ export type Database = {
         Args: { p_html: string; p_subject: string }
         Returns: undefined
       }
-      send_email_to_user: {
-        Args: { p_email: string; p_html: string; p_subject: string }
-        Returns: undefined
-      }
+      send_email_to_user:
+        | {
+            Args: { p_email: string; p_html: string; p_subject: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_email: string
+              p_html: string
+              p_recipient_name?: string
+              p_subject: string
+              p_triggered_by?: string
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       app_role:
