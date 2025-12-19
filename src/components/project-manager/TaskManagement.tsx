@@ -576,18 +576,6 @@ export const TaskManagement = ({ userId, userRole, onNavigateToReview }: TaskMan
               )}
             </CardContent>
           </Card>
-          <Card 
-            className={`cursor-pointer hover:bg-accent/50 transition-colors ${statusFilter === 'completed' ? 'ring-2 ring-green-500/50' : ''}`}
-            onClick={() => setStatusFilter(statusFilter === 'completed' ? null : 'completed')}
-          >
-            <CardContent className="pt-4 md:pt-6">
-              <p className="text-xs md:text-sm text-muted-foreground">Completed</p>
-              <p className="text-xl md:text-2xl font-bold text-green-500">{stats.completed}</p>
-              {statusFilter === 'completed' && (
-                <p className="text-xs text-green-500 mt-1">Filtered ✓</p>
-              )}
-            </CardContent>
-          </Card>
         </div>
         {isLoading ? (
           <p>Loading tasks...</p>
