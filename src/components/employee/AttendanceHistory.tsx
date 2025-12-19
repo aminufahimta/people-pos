@@ -3,28 +3,48 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface AttendanceHistoryProps {
   userId: string;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 const AttendanceHistory = ({ userId }: AttendanceHistoryProps) => {
   const [attendance, setAttendance] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     fetchAttendance();
-  }, [userId]);
+  }, [userId, currentPage]);
 
   const fetchAttendance = async () => {
+    // Get total count first
+    const { count } = await supabase
+      .from("attendance")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    setTotalCount(count || 0);
+
+    // Fetch paginated data
+    const from = (currentPage - 1) * ITEMS_PER_PAGE;
+    const to = from + ITEMS_PER_PAGE - 1;
+
     const { data } = await supabase
       .from("attendance")
       .select("*")
       .eq("user_id", userId)
       .order("date", { ascending: false })
-      .limit(30);
+      .range(from, to);
 
     setAttendance(data || []);
   };
+
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -85,6 +105,35 @@ const AttendanceHistory = ({ userId }: AttendanceHistoryProps) => {
             </TableBody>
           </Table>
         </div>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <p className="text-xs text-muted-foreground">
+              Page {currentPage} of {totalPages} ({totalCount} records)
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Previous</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <span className="hidden sm:inline mr-1">Next</span>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
