@@ -4,7 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskManagement } from "./TaskManagement";
 import { TaskBin } from "./TaskBin";
 import { CompletedTasks } from "./CompletedTasks";
-import { ClipboardList, Trash2, CheckCircle2 } from "lucide-react";
+import { TaskReview } from "./TaskReview";
+import { ClipboardList, Trash2, CheckCircle2, Clock } from "lucide-react";
 
 interface ProjectManagerTabsProps {
   userId: string;
@@ -26,17 +27,28 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
   });
 
   const isSuperAdmin = userRole === "super_admin";
+  const isProjectManager = userRole === "project_manager";
   const isNetworkManager = userRole === "network_manager";
   const isSales = userRole === "sales";
   const showBin = !isNetworkManager && !isSales;
+  const showReview = isSuperAdmin || isProjectManager;
+
+  // Calculate grid columns based on visible tabs
+  const tabCount = 2 + (showReview ? 1 : 0) + (showBin ? 1 : 0);
 
   return (
     <Tabs defaultValue="tasks" className="w-full">
-      <TabsList className={`grid w-full max-w-2xl ${showBin ? 'grid-cols-3' : 'grid-cols-2'}`}>
+      <TabsList className={`grid w-full max-w-3xl grid-cols-${tabCount}`}>
         <TabsTrigger value="tasks" className="flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
           Tasks
         </TabsTrigger>
+        {showReview && (
+          <TabsTrigger value="review" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Review
+          </TabsTrigger>
+        )}
         <TabsTrigger value="completed" className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4" />
           Completed
@@ -52,6 +64,12 @@ export const ProjectManagerTabs = ({ userId }: ProjectManagerTabsProps) => {
       <TabsContent value="tasks" className="space-y-4">
         <TaskManagement userId={userId} userRole={userRole} />
       </TabsContent>
+
+      {showReview && (
+        <TabsContent value="review" className="space-y-4">
+          <TaskReview userId={userId} userRole={userRole} />
+        </TabsContent>
+      )}
 
       <TabsContent value="completed" className="space-y-4">
         <CompletedTasks userId={userId} userRole={userRole} />
