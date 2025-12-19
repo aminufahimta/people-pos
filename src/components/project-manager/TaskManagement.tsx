@@ -62,6 +62,7 @@ interface TaskManagementProps {
 
 export const TaskManagement = ({ userId, userRole, onNavigateToReview }: TaskManagementProps) => {
   const [, setSearchParams] = useSearchParams();
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -339,6 +340,11 @@ export const TaskManagement = ({ userId, userRole, onNavigateToReview }: TaskMan
     completed: tasks.filter(t => t.status === "completed").length,
   };
 
+  // Filter tasks based on selected status
+  const filteredTasks = statusFilter 
+    ? tasks.filter(t => t.status === statusFilter)
+    : tasks;
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -513,22 +519,40 @@ export const TaskManagement = ({ userId, userRole, onNavigateToReview }: TaskMan
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-          <Card>
+          <Card 
+            className={`cursor-pointer hover:bg-accent/50 transition-colors ${statusFilter === null ? 'ring-2 ring-primary/50' : ''}`}
+            onClick={() => setStatusFilter(null)}
+          >
             <CardContent className="pt-4 md:pt-6">
               <p className="text-xs md:text-sm text-muted-foreground">Total Tasks</p>
               <p className="text-xl md:text-2xl font-bold">{stats.total}</p>
+              {statusFilter === null && (
+                <p className="text-xs text-primary mt-1">Showing all</p>
+              )}
             </CardContent>
           </Card>
-          <Card>
+          <Card 
+            className={`cursor-pointer hover:bg-accent/50 transition-colors ${statusFilter === 'pending' ? 'ring-2 ring-yellow-500/50' : ''}`}
+            onClick={() => setStatusFilter(statusFilter === 'pending' ? null : 'pending')}
+          >
             <CardContent className="pt-4 md:pt-6">
               <p className="text-xs md:text-sm text-muted-foreground">Pending</p>
               <p className="text-xl md:text-2xl font-bold text-yellow-500">{stats.pending}</p>
+              {statusFilter === 'pending' && (
+                <p className="text-xs text-yellow-500 mt-1">Filtered ✓</p>
+              )}
             </CardContent>
           </Card>
-          <Card>
+          <Card 
+            className={`cursor-pointer hover:bg-accent/50 transition-colors ${statusFilter === 'in_progress' ? 'ring-2 ring-blue-500/50' : ''}`}
+            onClick={() => setStatusFilter(statusFilter === 'in_progress' ? null : 'in_progress')}
+          >
             <CardContent className="pt-4 md:pt-6">
               <p className="text-xs md:text-sm text-muted-foreground">In Progress</p>
               <p className="text-xl md:text-2xl font-bold text-blue-500">{stats.inProgress}</p>
+              {statusFilter === 'in_progress' && (
+                <p className="text-xs text-blue-500 mt-1">Filtered ✓</p>
+              )}
             </CardContent>
           </Card>
           <Card 
@@ -557,6 +581,19 @@ export const TaskManagement = ({ userId, userRole, onNavigateToReview }: TaskMan
           <p>Loading tasks...</p>
         ) : (
           <div className="overflow-x-auto -mx-2 md:mx-0">
+            {statusFilter && (
+              <div className="mb-4 flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  Showing {filteredTasks.length} {statusFilter.replace('_', ' ')} task{filteredTasks.length !== 1 ? 's' : ''}
+                </span>
+                <button 
+                  onClick={() => setStatusFilter(null)}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Clear filter
+                </button>
+              </div>
+            )}
             <Table>
             <TableHeader>
               <TableRow>
@@ -570,7 +607,7 @@ export const TaskManagement = ({ userId, userRole, onNavigateToReview }: TaskMan
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tasks.map((task) => (
+              {filteredTasks.map((task) => (
                 <TableRow key={task.id}>
                   <TableCell>
                     <div>
