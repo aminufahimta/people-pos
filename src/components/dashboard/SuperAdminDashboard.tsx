@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "./DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity, Trash2, CheckCircle2, Network, MessageSquare } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingDown, LayoutDashboard, Settings, FileCheck, Package, ClipboardList, Bell, Activity, Trash2, CheckCircle2, Network, MessageSquare, Clock } from "lucide-react";
 import { toast } from "sonner";
 import EmployeeManagement from "@/components/admin/EmployeeManagement";
 import AttendanceOverview from "@/components/admin/AttendanceOverview";
@@ -26,6 +26,7 @@ import BiodataSubmissions from "@/components/admin/BiodataSubmissions";
 import { ProjectManagerTabs } from "@/components/project-manager/ProjectManagerTabs";
 import { GrowthTasksManagement } from "@/components/admin/GrowthTasksManagement";
 import { MessagesTab } from "./MessagesTab";
+import { TaskReview } from "@/components/project-manager/TaskReview";
 
 interface SuperAdminDashboardProps {
   user: User;
@@ -102,6 +103,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
           <TabsTrigger value="tasks" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" />
             Tasks
+          </TabsTrigger>
+          <TabsTrigger value="review" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Review
           </TabsTrigger>
           <TabsTrigger value="completed" className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4" />
@@ -237,6 +242,10 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
 
         <TabsContent value="tasks" className="space-y-8">
           <TaskManagement userId={user.id} />
+        </TabsContent>
+
+        <TabsContent value="review" className="space-y-8">
+          <TaskReview userId={user.id} userRole="super_admin" />
         </TabsContent>
 
         <TabsContent value="completed" className="space-y-8">
