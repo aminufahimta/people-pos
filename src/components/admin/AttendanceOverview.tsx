@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, X, User, CheckCircle, XCircle } from "lucide-react";
+import { CalendarIcon, X, User, CheckCircle, XCircle, Wallet } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -18,6 +18,12 @@ interface Employee {
   full_name: string;
 }
 
+interface SalaryInfo {
+  current_salary: number;
+  base_salary: number;
+  total_deductions: number;
+}
+
 const AttendanceOverview = () => {
   const [attendance, setAttendance] = useState<any[]>([]);
   const [selectedRange, setSelectedRange] = useState("today");
@@ -26,6 +32,7 @@ const AttendanceOverview = () => {
   const [customEndDate, setCustomEndDate] = useState<Date>();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
+  const [salaryInfo, setSalaryInfo] = useState<SalaryInfo | null>(null);
 
   useEffect(() => {
     fetchEmployees();
@@ -35,12 +42,29 @@ const AttendanceOverview = () => {
     fetchAttendance();
   }, [selectedRange, customStartDate, customEndDate, selectedEmployee]);
 
+  useEffect(() => {
+    if (selectedEmployee !== "all") {
+      fetchSalaryInfo();
+    } else {
+      setSalaryInfo(null);
+    }
+  }, [selectedEmployee]);
+
   const fetchEmployees = async () => {
     const { data } = await supabase
       .from("profiles")
       .select("id, full_name")
       .order("full_name");
     setEmployees(data || []);
+  };
+
+  const fetchSalaryInfo = async () => {
+    const { data } = await supabase
+      .from("salary_info")
+      .select("current_salary, base_salary, total_deductions")
+      .eq("user_id", selectedEmployee)
+      .single();
+    setSalaryInfo(data);
   };
 
   const getDateRange = () => {
@@ -248,7 +272,7 @@ const AttendanceOverview = () => {
       <CardContent>
         {/* Employee-specific summary cards */}
         {selectedEmployee !== "all" && (
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-3 gap-4 mb-6">
             <Card className="border-success/30 bg-success/5">
               <CardContent className="pt-6 flex items-center gap-4">
                 <div className="p-3 rounded-full bg-success/20">
@@ -268,6 +292,19 @@ const AttendanceOverview = () => {
                 <div>
                   <div className="text-2xl font-bold text-destructive">{stats.absent}</div>
                   <p className="text-sm text-muted-foreground">Days Absent</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="pt-6 flex items-center gap-4">
+                <div className="p-3 rounded-full bg-primary/20">
+                  <Wallet className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-primary">
+                    ₦{salaryInfo ? Number(salaryInfo.current_salary).toLocaleString() : "0"}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Amount to Pay</p>
                 </div>
               </CardContent>
             </Card>
