@@ -7,11 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon, X, User, CheckCircle, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
+interface Employee {
+  id: string;
+  full_name: string;
+}
 
 const AttendanceOverview = () => {
   const [attendance, setAttendance] = useState<any[]>([]);
@@ -19,10 +24,24 @@ const AttendanceOverview = () => {
   const [stats, setStats] = useState({ present: 0, absent: 0, late: 0, total: 0 });
   const [customStartDate, setCustomStartDate] = useState<Date>();
   const [customEndDate, setCustomEndDate] = useState<Date>();
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
   useEffect(() => {
     fetchAttendance();
-  }, [selectedRange, customStartDate, customEndDate]);
+  }, [selectedRange, customStartDate, customEndDate, selectedEmployee]);
+
+  const fetchEmployees = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .order("full_name");
+    setEmployees(data || []);
+  };
 
   const getDateRange = () => {
     const today = new Date();
@@ -68,6 +87,10 @@ const AttendanceOverview = () => {
       query = query.eq("date", end);
     } else {
       query = query.gte("date", start).lte("date", end);
+    }
+
+    if (selectedEmployee !== "all") {
+      query = query.eq("user_id", selectedEmployee);
     }
 
     const { data } = await query;
@@ -139,19 +162,35 @@ const AttendanceOverview = () => {
   return (
     <Card className="shadow-[var(--shadow-elegant)]">
       <CardHeader className="flex flex-col gap-4">
-        <div className="flex flex-row items-center justify-between">
+        <div className="flex flex-row items-center justify-between flex-wrap gap-4">
           <CardTitle>Attendance Overview</CardTitle>
-          <Select value={selectedRange} onValueChange={setSelectedRange}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">Past Week</SelectItem>
-              <SelectItem value="month">Past Month</SelectItem>
-              <SelectItem value="custom">Custom Range</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2 flex-wrap">
+            <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+              <SelectTrigger className="w-[200px]">
+                <User className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter by employee" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Employees</SelectItem>
+                {employees.map((emp) => (
+                  <SelectItem key={emp.id} value={emp.id}>
+                    {emp.full_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedRange} onValueChange={setSelectedRange}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">Past Week</SelectItem>
+                <SelectItem value="month">Past Month</SelectItem>
+                <SelectItem value="custom">Custom Range</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         
         {selectedRange === "custom" && (
@@ -207,7 +246,36 @@ const AttendanceOverview = () => {
         )}
       </CardHeader>
       <CardContent>
-        {selectedRange !== "today" && (
+        {/* Employee-specific summary cards */}
+        {selectedEmployee !== "all" && (
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <Card className="border-success/30 bg-success/5">
+              <CardContent className="pt-6 flex items-center gap-4">
+                <div className="p-3 rounded-full bg-success/20">
+                  <CheckCircle className="h-6 w-6 text-success" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-success">{stats.present}</div>
+                  <p className="text-sm text-muted-foreground">Days Present</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-destructive/30 bg-destructive/5">
+              <CardContent className="pt-6 flex items-center gap-4">
+                <div className="p-3 rounded-full bg-destructive/20">
+                  <XCircle className="h-6 w-6 text-destructive" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-destructive">{stats.absent}</div>
+                  <p className="text-sm text-muted-foreground">Days Absent</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* General stats for all employees */}
+        {selectedEmployee === "all" && selectedRange !== "today" && (
           <div className="grid grid-cols-4 gap-4 mb-6">
             <Card>
               <CardContent className="pt-6">
