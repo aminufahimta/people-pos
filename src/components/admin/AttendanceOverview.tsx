@@ -79,11 +79,20 @@ const AttendanceOverview = () => {
     }
 
     switch (selectedRange) {
+      case "yesterday":
+        startDate.setDate(today.getDate() - 1);
+        return {
+          start: startDate.toISOString().split("T")[0],
+          end: startDate.toISOString().split("T")[0]
+        };
       case "week":
         startDate.setDate(today.getDate() - 7);
         break;
       case "month":
         startDate.setMonth(today.getMonth() - 1);
+        break;
+      case "this_month":
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
         break;
       default:
         startDate = today;
@@ -209,7 +218,9 @@ const AttendanceOverview = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="yesterday">Yesterday</SelectItem>
                 <SelectItem value="week">Past Week</SelectItem>
+                <SelectItem value="this_month">This Month</SelectItem>
                 <SelectItem value="month">Past Month</SelectItem>
                 <SelectItem value="custom">Custom Range</SelectItem>
               </SelectContent>
